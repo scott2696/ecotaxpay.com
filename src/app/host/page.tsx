@@ -1,0 +1,174 @@
+import { requireHost } from "@/lib/auth";
+import Link from "next/link";
+import type { MessageKey } from "@/i18n/messages/en";
+import { getI18n } from "@/i18n/server";
+import { date } from "@/i18n/translate";
+import { formatMoney } from "@/lib/calc";
+import { capFirst, quoteTitle } from "@/lib/quick";
+import { isDemoMode } from "@/lib/config";
+import { upcomingStays } from "@/lib/calendar";
+import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
+import { markPaidOffline } from "./actions";
+import CopyLink from "./CopyLink";
+import ApartmentFilter from "./ApartmentFilter";
+import UpcomingGuests from "./UpcomingGuests";
+
+export const dynamic = "force-dynamic";
+
+const badge: Record<PaymentStatus, string> = {
+  paid: "bg-emerald-400/15 text-emerald-300",
+  paid_offline: "bg-emerald-400/10 text-emerald-300",
+  pending: "bg-amber-400/15 text-amber-200", // link sent, not paid yet
+  refunded: "bg-white/10 text-zinc-300",
+};
+
+export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string }> }) {
+  const { apartment = "" } = await searchParams;
+  const host = await requireHost();
+  const [payments, properties] = await Promise.all([listPayments(host.id), listProperties(host.id)]);
+  // Table filter: one apartment, or all of them.
+  const selected = properties.find((p) => p.id === apartment);
+  const shown = selected ? payments.filter((p) => p.propertyId === selected.id) : payments;
+  const connected = properties.some((p) => p.calendars?.airbnb || p.calendars?.booking);
+  const calendar = connected ? await upcomingStays(properties) : { stays: [], errors: [] };
+  const { t, locale } = await getI18n();
+  const fm = (n: number, cur = "EUR") => formatMoney(n, cur, locale);
+  const paid = payments.filter((p) => p.status === "paid" || p.status === "paid_offline");
+  // Totals per currency (destinations can use €, £, Kč…).
+  const sumBy = (pick: (q: (typeof paid)[number]["quote"]) => number) => {
+    const m = new Map<string, number>();
+    for (const p of paid) m.set(p.quote.currency, (m.get(p.quote.currency) ?? 0) + pick(p.quote));
+    return [...m].map(([cur, v]) => fm(v, cur)).join(" + ") || fm(0);
+  };
+  const taxTotal = sumBy((q) => q.taxCents);
+  const feeTotal = sumBy((q) => q.feeCents);
+
+  const byRegion = new Map<string, { cents: number; currency: string }>();
+  for (const p of paid) {
+    if (p.quote.manual) continue; // quick links have no destination
+    const r = byRegion.get(p.quote.regionName) ?? { cents: 0, currency: p.quote.currency };
+    r.cents += p.quote.taxCents;
+    byRegion.set(p.quote.regionName, r);
+  }
+
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">{t("dash.title")}</h1>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/host/properties" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">
+            🏠 {t("nav.apartments")}
+          </Link>
+          <a href="/api/host/export" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">
+            ⬇ {t("dash.export")}
+          </a>
+          <a href="/host/new?quick=1" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">
+            ⚡ {t("quick.tab.quick")}
+          </a>
+          <a href="/host/new" className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
+            + {t("dash.newLink")}
+          </a>
+        </div>
+      </div>
+      {isDemoMode() && <p className="mb-6 rounded-lg bg-sky-400/10 p-3 text-sm text-sky-200">{t("dash.demo")}</p>}
+
+      <div className="mb-8 grid gap-4 sm:grid-cols-4">
+        <Stat label={t("dash.stat.paid")} value={String(paid.length)} />
+        <Stat label={t("dash.stat.awaiting")} value={String(payments.length - paid.length)} />
+        <Stat label={t("dash.stat.tax")} value={taxTotal} />
+        <Stat label={t("dash.stat.fees")} value={feeTotal} />
+      </div>
+
+      <UpcomingGuests calendar={calendar} payments={payments} connected={connected} />
+
+      {byRegion.size > 0 && (
+        <section className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+          <h2 className="mb-3 font-semibold">{t("dash.byDestination")}</h2>
+          <ul className="space-y-1 text-sm">
+            {[...byRegion].map(([r, c]) => (
+              <li key={r} className="flex justify-between">
+                <span>{r}</span>
+                <span className="tabular-nums font-medium">{fm(c.cents, c.currency)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">{t("dash.guestsPayments")}</h2>
+        <ApartmentFilter
+          value={selected ? apartment : ""}
+          apartments={properties.map((p) => ({ id: p.id, name: p.name, count: payments.filter((x) => x.propertyId === p.id).length }))}
+        />
+      </div>
+      <section className="overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
+        <table className="w-full min-w-[800px] text-sm">
+          <thead className="border-b border-[var(--line)] text-start text-[var(--muted)]">
+            <tr>
+              {[t("dash.col.guest"), t("dash.col.destination"), t("dash.col.stay"), t("receipt.guests"), t("dash.col.total"), t("dash.col.status"), ""].map((h, i) => (
+                <th key={i} className="px-4 py-3 text-start font-medium">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {shown.length === 0 && (
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-[var(--muted)]">{selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</td></tr>
+            )}
+            {shown.map((p) => (
+              <tr key={p.id} className="border-b border-[var(--line)] last:border-0">
+                <td className="px-4 py-3">
+                  <div className="font-medium">{p.guestName || <span className="text-[var(--muted)]">—</span>}</div>
+                  {p.propertyName && <div className="text-xs text-[var(--muted)]">{p.propertyName}</div>}
+                  <div className="text-xs text-[var(--muted)]">{[p.guestEmail, p.guestPhone && `+${p.guestPhone}`, p.bookingRef].filter(Boolean).join(" · ")}</div>
+                  {p.documents && p.documents.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-x-2 text-xs">
+                      {p.documents.map((d) => (
+                        <a key={d.id} href={`/api/host/documents/${p.id}/${d.id}`} target="_blank" className="text-[var(--accent)] underline">
+                          📎 {d.fileName}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </td>
+                <td className="px-4 py-3">{p.quote.manual ? <>⚡ {capFirst(quoteTitle(p.quote, t))}</> : p.quote.regionName.split(" (")[0]}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {p.quote.manual
+                    ? t("quick.created", { date: date(p.createdAt, locale, { day: "numeric", month: "short", year: "numeric" }) })
+                    : `${date(p.quote.checkIn, locale, { day: "numeric", month: "short", year: "numeric" })} · ${t.plural("line.nights", p.quote.nights)}`}
+                </td>
+                <td className="px-4 py-3">{p.quote.manual ? "—" : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</td>
+                <td className="px-4 py-3 tabular-nums font-medium">{fm(p.quote.totalCents, p.quote.currency)}</td>
+                <td className="px-4 py-3">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
+                  {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
+                </td>
+                <td className="px-4 py-3 text-end whitespace-nowrap">
+                  {p.receiptNumber ? (
+                    <a href={`/api/receipt/${p.id}`} target="_blank" className="text-[var(--accent)] underline">{t("dash.receipt")}</a>
+                  ) : (
+                    <div className="flex items-center justify-end gap-3">
+                      <CopyLink path={`/p/${p.id}`} />
+                      <form action={markPaidOffline.bind(null, p.id)}>
+                        <button className="text-[var(--muted)] underline">{t("dash.markCash")}</button>
+                      </form>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </main>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+      <div className="text-sm text-[var(--muted)]">{label}</div>
+      <div className="mt-1 text-2xl font-semibold tabular-nums">{value}</div>
+    </div>
+  );
+}

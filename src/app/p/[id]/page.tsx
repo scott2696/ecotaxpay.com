@@ -1,0 +1,184 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import LanguagePicker from "@/components/LanguagePicker";
+import { getI18n, languageOptions } from "@/i18n/server";
+import { date, money, type T } from "@/i18n/translate";
+import { isDemoMode, site } from "@/lib/config";
+import { DEFAULT_DOCUMENTS_REQUEST, documentLabels, documentsInstruction } from "@/lib/documents";
+import { explainRules } from "@/lib/explain";
+import { describeLine, guestNotes } from "@/lib/format";
+import { guideItems, translateGuide } from "@/lib/guide";
+import { resolveProperty } from "@/lib/resolve";
+import { getPayment, getProperty, issuerFor, type Guide } from "@/lib/store";
+import PayButton from "./PayButton";
+import { capFirst, quoteTitle } from "@/lib/quick";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t("guest.metaTitle"), robots: { index: false } };
+}
+
+export default async function GuestPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const { id } = await params;
+  const { cancelled } = await searchParams;
+  const p = await getPayment(id);
+  if (!p || p.status === "refunded") notFound();
+  const property = p.propertyId ? await getProperty(p.propertyId) : null;
+  const issuer = await issuerFor(p);
+  const { t, locale } = await getI18n();
+  const languages = await languageOptions();
+
+  const q = p.quote;
+  const m = (n: number) => money(n, q.currency, locale);
+  const fmtDate = (iso: string) => date(iso, locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  const paid = p.status === "paid" || p.status === "paid_offline";
+  const first = p.guestName.split(/\s+/)[0];
+  const title = quoteTitle(q, t);
+  const tax = title.replace(/\s*\(.*\)\s*$/, "");
+  const who = [t.plural("guest.adults", q.adults), q.childAges.length ? t.plural("guest.children", q.childAges.length) : ""].filter(Boolean).join(", ");
+
+  // The law, written in the guest's language (falls back to the English text stored when the link was made).
+  const rules = property ? resolveProperty(property) : null;
+  const explanation = rules ? explainRules(rules.region, rules.acc, q.checkIn, t) : q.explanation;
+  const notes = guestNotes(q, t);
+
+  const docs = property && property.documents !== "off" ? property : null;
+  const uploaded = (p.documents ?? []).map(({ id, fileName, size }) => ({ id, fileName, size }));
+  const docRequest = docs?.documentsRequest ?? DEFAULT_DOCUMENTS_REQUEST;
+  const docAsk = docs
+    ? docs.documentsRequest || !docs.documentsNote
+      ? { instruction: documentsInstruction(docRequest, t), items: documentLabels(docRequest, t) }
+      : { instruction: `${docs.documentsNote}.`, items: [] } // apartments saved before the checklist existed
+    : null;
+
+  return (
+    <main className="mx-auto max-w-lg space-y-6 px-4 py-8 sm:py-12">
+      <div className="flex justify-end">
+        <LanguagePicker options={languages} />
+      </div>
+      <header className="text-center">
+        <div className="text-sm font-semibold text-[var(--accent)]">{p.propertyName}</div>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          {first
+            ? paid ? t("guest.allSet", { name: first }) : t("guest.hello", { name: first, tax })
+            : paid ? t("guest.allSetAnon") : t("guest.helloAnon", { tax })}
+        </h1>
+        {!q.manual && (
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            {fmtDate(q.checkIn)} → {fmtDate(q.checkOut)} · {t.plural("line.nights", q.nights)} · {who}
+          </p>
+        )}
+      </header>
+
+      {cancelled && !paid && <p className="rounded-lg bg-amber-400/10 p-3 text-sm text-amber-200">{t("guest.cancelled")}</p>}
+      {isDemoMode() && !paid && <p className="rounded-lg bg-sky-400/10 p-3 text-sm text-sky-200">{t("guest.demo")}</p>}
+
+      {paid ? (
+        <PaidCard t={t} id={p.id} amount={m(q.totalCents)} receiptNumber={p.receiptNumber} guestPhone={p.guestPhone} whatsappSent={!!p.whatsappSentAt} taxName={tax} hasGuide={!!property} />
+      ) : (
+        <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-center shadow-sm">
+          <div className="text-sm text-[var(--muted)]">{capFirst(title)}</div>
+          <div className="mt-1 text-5xl font-semibold tabular-nums tracking-tight">{m(q.totalCents)}</div>
+
+          {!q.manual && <div className="mt-5 rounded-xl bg-[var(--bg)] p-4 text-start text-sm leading-relaxed">
+            <div className="mb-1 font-medium">{t("guest.why")}</div>
+            <p className="text-[var(--muted)]">{explanation.join(" ")}</p>
+            <div className="my-3 border-t border-[var(--line)]" />
+            <ul className="space-y-1">
+              {q.lines.map((l, i) => (
+                <li key={i} className="flex justify-between gap-4">
+                  <span>{describeLine(l, q.currency, t)}</span>
+                  <span className="tabular-nums">{m(l.amountCents)}</span>
+                </li>
+              ))}
+              {q.feeCents > 0 && (
+                <li className="flex justify-between gap-4">
+                  <span>{t("common.serviceFee")}</span>
+                  <span className="tabular-nums">{m(q.feeCents)}</span>
+                </li>
+              )}
+            </ul>
+            {notes.length > 0 && <p className="mt-2 text-xs text-[var(--muted)]">{notes.join(" ")}</p>}
+          </div>}
+        </section>
+      )}
+
+      {!paid && (
+        <PayButton
+          id={p.id}
+          label={t("guest.pay", { amount: m(q.totalCents) })}
+          initialEmail={p.guestEmail ?? ""}
+          initialPhone={p.guestPhone ? `+${p.guestPhone}` : ""}
+          documents={docs && docAsk ? { setting: docs.documents as "optional" | "required", ask: docAsk, uploaded } : null}
+        />
+      )}
+
+      {paid && property && <ArrivalGuide t={t} guide={await translateGuide(property.guide, locale)} propertyName={property.name} />}
+
+      <p className="text-center text-xs text-[var(--muted)]">
+        {paid ? (property ? `${t("guest.bookmark")} ` : "") : `${t("guest.detailsWrong")} `}{t("guest.collectedBy", { name: issuer.name })}
+      </p>
+    </main>
+  );
+}
+
+function PaidCard(props: { t: T; id: string; amount: string; receiptNumber?: string; guestPhone?: string; whatsappSent: boolean; taxName: string; hasGuide: boolean }) {
+  const { t } = props;
+  const receiptUrl = `${site.baseUrl}/api/receipt/${props.id}`;
+  const full = t("guest.waText", { tax: props.taxName, number: props.receiptNumber ?? "", receipt: receiptUrl, guide: `${site.baseUrl}/p/${props.id}` });
+  const text = props.hasGuide ? full : full.split("\n")[0]; // quick links have no arrival guide
+  const wa = `https://wa.me/${props.guestPhone ?? ""}?text=${encodeURIComponent(text)}`;
+  return (
+    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-center shadow-sm">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--soft)] text-xl text-[var(--accent)]">✓</div>
+      <div className="font-semibold">{t("guest.paidLine", { amount: props.amount, number: props.receiptNumber ?? "" })}</div>
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <a href={`/api/receipt/${props.id}`} target="_blank" className="rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
+          {t("guest.downloadReceipt")}
+        </a>
+        {props.whatsappSent ? (
+          <span className="rounded-xl bg-[var(--soft)] px-4 py-3 text-sm">{t("guest.sentWhatsapp")}</span>
+        ) : (
+          <a href={wa} target="_blank" rel="noreferrer" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm font-semibold hover:bg-[var(--soft)]">
+            {t("guest.saveWhatsapp")}
+          </a>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ArrivalGuide({ t, guide, propertyName }: { t: T; guide: Guide & { translated?: boolean }; propertyName: string }) {
+  const items = guideItems(guide, t);
+  if (!items.length && !guide.mapsUrl) return null;
+  return (
+    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+      <h2 className="text-lg font-semibold">{t("guest.guideTitle")}</h2>
+      <p className="mt-1 text-sm text-[var(--muted)]">{propertyName}</p>
+      {guide.translated && <p className="mt-1 text-xs text-[var(--muted)]">{t("guest.autoTranslated")}</p>}
+      <div className="mt-4 space-y-4">
+        {items.map((i, n) => (
+          <div key={n} className={i.highlight ? "rounded-xl bg-[var(--soft)] p-4" : ""}>
+            <div className="text-sm font-medium">
+              {i.icon} {i.title}
+            </div>
+            <p className="mt-1 whitespace-pre-line text-sm text-[var(--muted)]">{i.body}</p>
+          </div>
+        ))}
+      </div>
+      {guide.mapsUrl && (
+        <a href={guide.mapsUrl} target="_blank" rel="noreferrer" className="mt-5 block rounded-xl border border-[var(--line)] px-4 py-3 text-center text-sm font-semibold hover:bg-[var(--soft)]">
+          {t("guest.openMaps")}
+        </a>
+      )}
+    </section>
+  );
+}
