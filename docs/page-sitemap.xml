@@ -80,391 +80,235 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/register</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/register"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/register"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/register"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/register"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/register"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/register"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/register"/>
-    <lastmod>2026-11-22T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/es/register</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/register"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/register"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/register"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/register"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/register"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/register"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/register"/>
-    <lastmod>2026-11-22T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/it/register</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/register"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/register"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/register"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/register"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/register"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/register"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/register"/>
-    <lastmod>2026-11-22T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/fr/register</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/register"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/register"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/register"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/register"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/register"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/register"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/register"/>
-    <lastmod>2026-11-22T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/de/register</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/register"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/register"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/register"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/register"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/register"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/register"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/register"/>
-    <lastmod>2026-11-22T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/mt/register</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/register"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/register"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/register"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/register"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/register"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/register"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/register"/>
-    <lastmod>2026-11-22T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/about</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about"/>
+    <loc>https://ecotaxpay.com/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/es/about</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about"/>
+    <loc>https://ecotaxpay.com/es/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/it/about</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about"/>
+    <loc>https://ecotaxpay.com/it/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/fr/about</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about"/>
+    <loc>https://ecotaxpay.com/fr/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/de/about</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about"/>
+    <loc>https://ecotaxpay.com/de/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/mt/about</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about"/>
+    <loc>https://ecotaxpay.com/mt/about/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/about/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/about/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/about/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/about/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/about/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/contact</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact"/>
+    <loc>https://ecotaxpay.com/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact/"/>
     <lastmod>2026-11-20T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/es/contact</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact"/>
+    <loc>https://ecotaxpay.com/es/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact/"/>
     <lastmod>2026-11-20T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/it/contact</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact"/>
+    <loc>https://ecotaxpay.com/it/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact/"/>
     <lastmod>2026-11-20T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/fr/contact</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact"/>
+    <loc>https://ecotaxpay.com/fr/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact/"/>
     <lastmod>2026-11-20T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/de/contact</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact"/>
+    <loc>https://ecotaxpay.com/de/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact/"/>
     <lastmod>2026-11-20T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/mt/contact</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact"/>
+    <loc>https://ecotaxpay.com/mt/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/contact/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/contact/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/contact/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/contact/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/contact/"/>
     <lastmod>2026-11-20T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/login</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/login"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/login"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/login"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/login"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/login"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/login"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/login"/>
-    <lastmod>2026-11-20T00:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/es/login</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/login"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/login"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/login"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/login"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/login"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/login"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/login"/>
-    <lastmod>2026-11-20T00:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/it/login</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/login"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/login"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/login"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/login"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/login"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/login"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/login"/>
-    <lastmod>2026-11-20T00:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/fr/login</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/login"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/login"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/login"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/login"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/login"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/login"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/login"/>
-    <lastmod>2026-11-20T00:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/de/login</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/login"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/login"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/login"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/login"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/login"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/login"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/login"/>
-    <lastmod>2026-11-20T00:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/mt/login</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/login"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/login"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/login"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/login"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/login"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/login"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/login"/>
-    <lastmod>2026-11-20T00:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://ecotaxpay.com/sitemap</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap"/>
+    <loc>https://ecotaxpay.com/sitemap/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/es/sitemap</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap"/>
+    <loc>https://ecotaxpay.com/es/sitemap/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/it/sitemap</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap"/>
+    <loc>https://ecotaxpay.com/it/sitemap/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/fr/sitemap</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap"/>
+    <loc>https://ecotaxpay.com/fr/sitemap/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/de/sitemap</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap"/>
+    <loc>https://ecotaxpay.com/de/sitemap/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://ecotaxpay.com/mt/sitemap</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap"/>
+    <loc>https://ecotaxpay.com/mt/sitemap/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ecotaxpay.com/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://ecotaxpay.com/es/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://ecotaxpay.com/it/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://ecotaxpay.com/fr/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://ecotaxpay.com/de/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="mt" href="https://ecotaxpay.com/mt/sitemap/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ecotaxpay.com/sitemap/"/>
     <lastmod>2026-11-22T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>

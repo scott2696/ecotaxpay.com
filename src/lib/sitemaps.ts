@@ -2,7 +2,7 @@
 // Host area, guest payment links and APIs are private (see robots.ts).
 import { LEGAL_UPDATED } from "@/components/LegalPage";
 import { absolute } from "./seo";
-import { STATIC_LANGS, STATIC_SITE } from "./urls";
+import { PUBLIC_PATHS, STATIC_LANGS, STATIC_SITE } from "./urls";
 
 type Freq = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
 export type SitemapPage = { path: string; priority: number; changefreq: Freq; updated: string };
@@ -50,8 +50,13 @@ export function sitemapIndex() {
 export function sitemapFor(name: keyof typeof SITEMAPS) {
   // Static public site: every language has its own address (/es/about …), linked as hreflang alternates.
   const langs = STATIC_SITE ? STATIC_LANGS : ["en"];
-  const localized = (lang: string, path: string) => absolute(lang === "en" ? path : `/${lang}${path === "/" ? "/" : path}`);
+  // Pages are served at /about/ on the static site (no redirect); sign-up and login live on the app domain.
+  const localized = (lang: string, path: string) => {
+    const p = lang === "en" ? path : `/${lang}${path === "/" ? "/" : path}`;
+    return absolute(STATIC_SITE && !p.endsWith("/") ? `${p}/` : p);
+  };
   const items = SITEMAPS[name]
+    .filter((p) => !STATIC_SITE || PUBLIC_PATHS.includes(p.path))
     .flatMap((p) =>
       langs.map((lang) => {
         const alternates = STATIC_SITE

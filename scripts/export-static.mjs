@@ -36,6 +36,11 @@ const run = (cmd, args, opts = {}) =>
   });
 
 const localized = (lang, p) => (lang === "en" ? p : `/${lang}${p === "/" ? "/" : p}`);
+/** Page address as GitHub Pages serves it: /about/ (with the slash), so canonical/hreflang/sitemap never redirect. */
+const pageAddress = (lang, p) => {
+  const path = localized(lang, p);
+  return `${SITE}${path.endsWith("/") ? path : `${path}/`}`;
+};
 const LOCAL = `http://localhost:${PORT}`;
 const pagePattern = PAGES.filter((p) => p !== "/").map((p) => p.slice(1)).join("|");
 
@@ -51,11 +56,19 @@ function localizeLinks(html, lang) {
 
 /** Canonical + hreflang for one page. */
 function headLinks(html, lang, p) {
-  const canonical = `${SITE}${localized(lang, p)}`;
+  const canonical = pageAddress(lang, p);
   html = html.replace(/<link rel="canonical" href="[^"]*"\/?>/, `<link rel="canonical" href="${canonical}"/>`);
   html = html.replace(/<meta property="og:url" content="[^"]*"\/?>/, `<meta property="og:url" content="${canonical}"/>`);
-  const alts = [...LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${localized(l, p)}"/>`), `<link rel="alternate" hreflang="x-default" href="${SITE}${p}"/>`].join("");
-  return html.replace("</head>", `${alts}</head>`);
+  const alts = [...LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${pageAddress(l, p)}"/>`), `<link rel="alternate" hreflang="x-default" href="${pageAddress("en", p)}"/>`].join("");
+  html = html.replace("</head>", `${alts}</head>`);
+  // Structured data: this language's page node points at this language's address.
+  if (lang !== "en") {
+    const en = pageAddress("en", p);
+    html = html.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g, (_, open, json, close) =>
+      open + ["", "#webpage", "#breadcrumb"].reduce((j, s) => j.split(`"${en}${s}"`).join(`"${canonical}${s}"`), json) + close,
+    );
+  }
+  return html;
 }
 
 async function waitForServer() {
