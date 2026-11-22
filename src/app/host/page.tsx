@@ -293,7 +293,7 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                   {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
                 </td>
                 <td className="px-4 py-3 text-end whitespace-nowrap">
-                  <div className="flex items-center justify-end gap-3">
+                  <div className="flex flex-wrap items-center justify-end gap-3">
                   {p.receiptNumber ? (
                     <a href={`/api/receipt/${p.id}`} target="_blank" className="text-[var(--accent)] underline">{t("dash.receipt")}</a>
                   ) : (
@@ -306,11 +306,12 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                       </form>
                     </>
                   )}
-                  <details className="relative">
-                    <summary className="cursor-pointer list-none text-[var(--muted)] hover:text-red-300" aria-label={t("dash.remove")} title={t("dash.remove")}>
+                  {/* Opens inside the row (never clipped by the table, even on the last row). */}
+                  <details className="group open:w-full">
+                    <summary className="cursor-pointer list-none text-end text-[var(--muted)] hover:text-red-300 group-open:text-red-300" aria-label={t("dash.remove")} title={t("dash.remove")}>
                       ✕
                     </summary>
-                    <div className="absolute end-0 z-20 mt-2 w-72 whitespace-normal rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-start text-sm shadow-xl">
+                    <div className="ms-auto mt-2 w-72 max-w-full whitespace-normal rounded-xl border border-red-400/30 bg-red-500/5 p-3 text-start text-sm">
                       <p>{t(p.status === "pending" ? "dash.removeConfirmPending" : "dash.removeConfirmPaid")}</p>
                       <form action={removePayment.bind(null, p.id)} className="mt-3">
                         <button className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500">{t("dash.removeYes")}</button>
