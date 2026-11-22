@@ -156,6 +156,7 @@ export const it: LocaleMessages = {
   "nav.apartments": "Appartamenti e camere",
   "nav.rates": "Tariffe",
   "nav.account": "Account",
+  "form.guestsByGuestNote": "L'ospite indica il numero di ospiti nella sua pagina di pagamento (le piattaforme di prenotazione non lo condividono).",
   "props.delete": "Elimina",
   "props.deleteConfirmText": "Eliminare «{name}»? I suoi link del calendario vengono rimossi. I link di pagamento e le ricevute già inviati restano.",
   "props.deleteConfirm": "Sì, eliminalo",

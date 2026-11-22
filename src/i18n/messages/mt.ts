@@ -171,6 +171,7 @@ export const mt: LocaleMessages = {
   "nav.apartments": "Appartamenti u kmamar",
   "nav.rates": "Rati",
   "nav.account": "Kont",
+  "form.guestsByGuestNote": "Il-mistieden idaħħal kemm hemm mistednin fil-paġna tal-ħlas tiegħu (il-pjattaformi tal-bookings ma jaqsmuhx).",
   "props.delete": "Ħassar",
   "props.deleteConfirmText": "Tħassar “{name}”? Il-links tal-kalendarju tiegħu jitneħħew. Il-links tal-ħlas u r-riċevuti diġà mibgħuta jinżammu.",
   "props.deleteConfirm": "Iva, ħassru",

@@ -53,7 +53,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
   }
   const [adults, setAdults] = useState(2);
   // Calendar bookings never include the party size: by default the guest enters it on their page.
-  const [guestsByGuest, setGuestsByGuest] = useState(validDates);
+  const guestsByGuest = validDates;
   const [childAges, setChildAges] = useState<number[]>([]);
   const [nightlyPrice, setNightlyPrice] = useState("");
   const [guestName, setGuestName] = useState(prefill.guestName ?? "");
@@ -182,19 +182,15 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
     <form onSubmit={create} className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
       <div className="min-w-0 space-y-6">
         <Card step={1} title={t("form.whichApartment")}>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {properties.map((p) => (
-              <label
-                key={p.id}
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition ${
-                  p.id === propertyId ? "border-[var(--accent)] bg-[var(--soft)]" : "border-[var(--line)] hover:bg-[var(--bg)]"
-                }`}
-              >
-                <input type="radio" name="property" className="mt-0.5 accent-[var(--accent)]" checked={p.id === propertyId} onChange={() => setPropertyId(p.id)} />
-                <span className="font-medium">{p.name}</span>
-              </label>
-            ))}
-          </div>
+          {properties.length > 1 ? (
+            <select className="input" value={propertyId} onChange={(e) => setPropertyId(e.target.value)} aria-label={t("form.whichApartment")}>
+              {properties.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          ) : (
+            <p className="rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 py-2.5 font-medium">{property.name}</p>
+          )}
           <p className="mt-3 text-xs text-[var(--muted)]">
             {info.flag} {info.place} · {info.accLabel} · {info.taxName} ·{" "}
             <Link href={`/host/properties/${property.id}`} className="underline">{t("form.editGuide")}</Link> ·{" "}
@@ -234,13 +230,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                 </div>
               </Field>
             )}
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--line)] p-3 text-sm sm:col-span-2 has-[:checked]:border-[var(--accent)]">
-              <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[var(--accent)]" checked={guestsByGuest} onChange={(e) => setGuestsByGuest(e.target.checked)} />
-              <span>
-                <span className="font-medium">{t("form.guestsByGuest")}</span>
-                <span className="mt-0.5 block text-xs text-[var(--muted)]">{t("form.guestsByGuestHint")}</span>
-              </span>
-            </label>
+            {guestsByGuest && <p className="text-sm text-[var(--muted)] sm:col-span-2">{t("form.guestsByGuestNote")}</p>}
             {!guestsByGuest && (
               <>
                 <Field label={t("form.adults")}>

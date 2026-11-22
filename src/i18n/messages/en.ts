@@ -154,6 +154,7 @@ export const en = {
   "nav.apartments": "Apartments & rooms",
   "nav.rates": "Rates",
   "nav.account": "Account",
+  "form.guestsByGuestNote": "The guest enters the number of guests on their payment page (booking platforms don't share it).",
   "props.delete": "Delete",
   "props.deleteConfirmText": "Delete “{name}”? Its calendar links are removed. Payment links and receipts already sent are kept.",
   "props.deleteConfirm": "Yes, delete it",
