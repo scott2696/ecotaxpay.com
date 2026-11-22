@@ -1,0 +1,59 @@
+# Render Blueprint: runs the Eco Tax Pay app at ecotaxpay.com.
+# Render → New → Blueprint → pick this repository. Every push to `main` redeploys automatically.
+# Secrets marked `sync: false` are entered once in the Render dashboard (never committed).
+services:
+  - type: web
+    name: ecotaxpay
+    runtime: node
+    region: frankfurt # close to Malta / EU guests
+    plan: starter # a persistent disk needs a paid instance
+    branch: main
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    # Payments, hosts, apartments and receipt numbers live in data/db.json: keep them on a disk
+    # so they survive redeploys (src/lib/store.ts uses <project>/data).
+    disk:
+      name: ecotaxpay-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+    domains:
+      - ecotaxpay.com
+      - www.ecotaxpay.com
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_PUBLIC_BASE_URL
+        value: https://ecotaxpay.com
+      - key: SESSION_SECRET
+        generateValue: true # long random value, created by Render
+      - key: BRAND_NAME
+        value: Eco Tax Pay
+      - key: SUPPORT_EMAIL
+        value: support@ecotaxpay.com
+      - key: COMPANY_LEGAL_NAME
+        sync: false
+      - key: COMPANY_ADDRESS
+        sync: false
+      - key: ADMIN_EMAILS
+        value: scott2696@hotmail.com
+      # Stripe: host subscriptions (live keys only here, in the Render dashboard)
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      # Live chat (tawk.to), loaded only after cookie consent
+      - key: NEXT_PUBLIC_TAWK_PROPERTY_ID
+        value: 6b01c62cdcbbad3ca7381386
+      - key: NEXT_PUBLIC_TAWK_WIDGET_ID
+        value: 1k7ves7v8
+      # Optional
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: Eco Tax Pay <receipts@ecotaxpay.com>
+      - key: FTD_TRACKER_KEY
+        sync: false
+      - key: GOOGLE_TRANSLATE_API_KEY
+        sync: false
