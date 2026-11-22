@@ -198,7 +198,7 @@ function methodViews(pm: PaymentMethods, p: PaymentRecord, t: T): MethodView[] {
       rows = [{ label: t("method.cardOnArrival"), value: t("pay.cardOnArrivalHint") }];
     } else if (id === "cash") rows = [{ label: t("method.cash"), value: t("pay.cashHint") }];
     if (id === "link" && pm.link?.label) title = pm.link.label;
-    return { id, icon: METHOD_ICONS[id], title, rows, brands, url: methodUrl(id, pm, cents, p.quote.currency) ?? undefined };
+    return { id, icon: METHOD_ICONS[id], title, rows, brands, url: methodUrl(id, pm, cents, p.quote.currency, paymentReference(p)) ?? undefined };
   });
   return views;
 }

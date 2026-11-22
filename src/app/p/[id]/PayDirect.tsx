@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/client";
 import PayBadges, { MethodLogo, type CardBrand } from "@/components/PayBadges";
 import { paysOnArrival } from "@/lib/payMethods";
@@ -61,6 +61,34 @@ export default function PayDirect({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const docsMissing = documents?.setting === "required" && docCount === 0;
+  const form = useRef<HTMLFormElement>(null);
+  const back = useRef<HTMLDialogElement>(null);
+  const emailInput = useRef<HTMLInputElement>(null);
+  // Guests pay in another tab or app (Stripe, PayPal, their bank…) and often never come back to say so.
+  // When they return after opening a payment button, or after being away a while, ask once.
+  const away = useRef<{ since: number; clicked: boolean } | null>(null);
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (method && !paysOnArrival(method as PayMethodId)) away.current = { since: Date.now(), clicked: away.current?.clicked ?? false };
+      } else if (away.current) {
+        const { since, clicked } = away.current;
+        away.current = null;
+        if ((clicked || Date.now() - since > 20_000) && !busy) back.current?.showModal();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [method, busy]);
+  const confirmBack = () => {
+    back.current?.close();
+    if (form.current?.checkValidity()) form.current.requestSubmit();
+    else {
+      emailInput.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      setTimeout(() => emailInput.current?.focus(), 300);
+      setError(t("pay.backNeedEmail"));
+    }
+  };
   const chosen = methods.find((m) => m.id === method);
 
   async function report(e: React.FormEvent) {
@@ -84,7 +112,24 @@ export default function PayDirect({
   }
 
   return (
-    <form onSubmit={report} className="space-y-6">
+    <form ref={form} onSubmit={report} className="space-y-6">
+      <dialog
+        ref={back}
+        onClick={(e) => e.target === back.current && back.current?.close()}
+        className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-0 text-[var(--ink)] backdrop:bg-black/60"
+      >
+        <div className="p-6 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--soft)] text-xl">✓</div>
+          <h2 className="text-lg font-semibold">{t("pay.backTitle", { amount })}</h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">{t("pay.backText")}</p>
+          <button type="button" onClick={confirmBack} className="mt-5 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110">
+            {t("pay.backYes")}
+          </button>
+          <button type="button" onClick={() => back.current?.close()} className="mt-2 w-full rounded-xl px-4 py-2.5 text-sm text-[var(--muted)] hover:bg-[var(--soft)]">
+            {t("pay.backNotYet")}
+          </button>
+        </div>
+      </dialog>
       {documents && (
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
           <DocumentUpload
@@ -133,7 +178,7 @@ export default function PayDirect({
                   ))}
                   {!paysOnArrival(m.id) && <CopyRow label={t("pay.reference")} value={reference} mono />}
                   {m.url && (
-                    <a href={m.url} target="_blank" rel="noreferrer noopener" className="mt-1 block rounded-xl bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
+                    <a href={m.url} target="_blank" rel="noreferrer noopener" onClick={() => (away.current = { since: Date.now(), clicked: true })} className="mt-1 block rounded-xl bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
                       {t("pay.openApp", { method: m.title, amount })} ↗
                     </a>
                   )}
@@ -156,7 +201,7 @@ export default function PayDirect({
           )}
           <label className="block">
             <span className="mb-1.5 block text-sm">{t("common.email")}</span>
-            <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder={t("pay.emailPlaceholder")} required />
+            <input ref={emailInput} type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder={t("pay.emailPlaceholder")} required />
           </label>
           <label className="block">
             <span className="mb-1.5 block text-sm">

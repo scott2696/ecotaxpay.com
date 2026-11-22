@@ -42,8 +42,21 @@ export const paymentReference = (p: Pick<PaymentRecord, "id">) => `ETP-${p.id.sl
 
 const amountString = (cents: number) => (cents / 100).toFixed(2);
 
+/** Stripe Payment Links: add the payment reference, so the host sees it on the payment in Stripe. */
+function withStripeReference(url: string, reference?: string): string {
+  if (!reference) return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname !== "buy.stripe.com" || u.searchParams.has("client_reference_id")) return url;
+    u.searchParams.set("client_reference_id", reference.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 200));
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 /** Ready-to-tap links that open the payment app with the right recipient (and amount where supported). */
-export function methodUrl(id: PayMethodId, m: PaymentMethods, cents: number, currency: string): string | null {
+export function methodUrl(id: PayMethodId, m: PaymentMethods, cents: number, currency: string, reference?: string): string | null {
   switch (id) {
     case "revolut":
       return m.revolut ? `https://revolut.me/${encodeURIComponent(m.revolut)}` : null;
@@ -54,10 +67,10 @@ export function methodUrl(id: PayMethodId, m: PaymentMethods, cents: number, cur
       return `https://paypal.me/${encodeURIComponent(m.paypal)}/${["JPY", "HUF", "TWD"].includes(currency.toUpperCase()) ? String(Math.round(cents / 100)) : amountString(cents)}${currency.toUpperCase()}`;
     case "wise":
       return m.wise ?? null;
-    case "link":
-      return m.link?.url ?? null;
     case "card":
-      return m.card?.url ?? null;
+      return m.card?.url ? withStripeReference(m.card.url, reference) : null;
+    case "link":
+      return m.link?.url ? withStripeReference(m.link.url, reference) : null;
     default:
       return null;
   }
