@@ -2,6 +2,7 @@
 // Revolut, PayPal, Wise, their own payment link or cash). The platform never handles the money:
 // the guest says "I've paid", the host confirms it arrived, and the receipt is issued then.
 import type { BankDetails, Host, PaymentMethods, PayMethodId, PaymentRecord } from "./store";
+import { PAYPAL_CURRENCIES } from "./currencies";
 
 // Guests pay before they arrive, so there are no "on arrival" options (cash / card machine at check-in).
 // Old records may still say a guest chose one; paysOnArrival() keeps those readable.
@@ -47,7 +48,10 @@ export function methodUrl(id: PayMethodId, m: PaymentMethods, cents: number, cur
     case "revolut":
       return m.revolut ? `https://revolut.me/${encodeURIComponent(m.revolut)}` : null;
     case "paypal":
-      return m.paypal ? `https://paypal.me/${encodeURIComponent(m.paypal)}/${amountString(cents)}${currency.toUpperCase()}` : null;
+      if (!m.paypal) return null;
+      // PayPal.Me only takes an amount in its own currencies (whole numbers for JPY, HUF, TWD).
+      if (!PAYPAL_CURRENCIES.has(currency.toUpperCase())) return `https://paypal.me/${encodeURIComponent(m.paypal)}`;
+      return `https://paypal.me/${encodeURIComponent(m.paypal)}/${["JPY", "HUF", "TWD"].includes(currency.toUpperCase()) ? String(Math.round(cents / 100)) : amountString(cents)}${currency.toUpperCase()}`;
     case "wise":
       return m.wise ?? null;
     case "link":

@@ -156,6 +156,8 @@ export const fr: LocaleMessages = {
   "nav.apartments": "Logements et chambres",
   "nav.rates": "Tarifs",
   "nav.account": "Compte",
+  "currency.popular": "Les plus utilisées",
+  "currency.all": "Toutes les devises (A–Z)",
   "upcoming.removedList": "Réservations retirées ({count}) : afficher et restaurer",
   "upcoming.restore": "Restaurer",
   "dash.remove": "Retirer",

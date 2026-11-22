@@ -154,6 +154,8 @@ export const en = {
   "nav.apartments": "Apartments & rooms",
   "nav.rates": "Rates",
   "nav.account": "Account",
+  "currency.popular": "Most used",
+  "currency.all": "All currencies (A–Z)",
   "upcoming.removedList": "Removed bookings ({count}): show and restore",
   "upcoming.restore": "Restore",
   "dash.remove": "Remove",

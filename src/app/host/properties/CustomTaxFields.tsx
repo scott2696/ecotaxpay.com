@@ -1,7 +1,8 @@
 "use client";
 
 import { useT } from "@/i18n/client";
-import { CURRENCIES, type CustomTax } from "@/lib/custom";
+import { type CustomTax } from "@/lib/custom";
+import CurrencySelect from "@/components/CurrencySelect";
 
 export type CustomTaxForm = {
   countryName: string;
@@ -58,9 +59,7 @@ export default function CustomTaxFields({ value, onChange }: { value: CustomTaxF
       </label>
       <label className="block">
         <span className={label}>{t("ct.currency")}</span>
-        <select className="input" value={value.currency} onChange={(e) => set("currency", e.target.value)}>
-          {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <CurrencySelect className="input" value={value.currency} onChange={(c) => set("currency", c)} />
       </label>
 
       <label className="block sm:col-span-2">

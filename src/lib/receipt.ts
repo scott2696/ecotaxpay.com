@@ -17,7 +17,14 @@ export async function renderReceipt(p: PaymentRecord, requestedLocale?: string):
   const { t, locale } = await getI18n(PDF_SCRIPTS.test(wanted) ? wanted : "en");
   const q = p.quote;
   const issuer = await issuerFor(p);
-  const m = (n: number) => money(n, q.currency, locale);
+  // A currency symbol the font can't draw (e.g. ฿) would print as an empty box: use the code then ("THB 300.00").
+  const glyphs = fontkit.create(readFileSync(path.join(FONT_DIR, "NotoSans-Regular.ttf"))) as unknown as { hasGlyphForCodePoint(cp: number): boolean };
+  const printable = (s: string) => [...s].every((ch) => /\s/.test(ch) || glyphs.hasGlyphForCodePoint(ch.codePointAt(0)!));
+  const m = (n: number) => {
+    const s = money(n, q.currency, locale);
+    if (printable(s)) return s;
+    return new Intl.NumberFormat(locale, { style: "currency", currency: q.currency, currencyDisplay: "code" }).format(n / 100);
+  };
   const d = (iso: string) => date(iso, locale, { day: "numeric", month: "long", year: "numeric" });
 
   const doc = await PDFDocument.create();

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
 import { money } from "@/i18n/translate";
 import { capFirst, QUICK_CURRENCIES, QUICK_MIN_CENTS } from "@/lib/quick";
+import { currencyDecimals } from "@/lib/currencies";
+import CurrencySelect from "@/components/CurrencySelect";
 import SendPanel, { type GuestTemplates } from "../SendPanel";
 import { apiFetch, errorText } from "@/lib/api";
 
@@ -26,6 +28,7 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
     } catch {}
   }, []);
 
+  const decimals = currencyDecimals(currency); // JPY 0, EUR 2…
   const cents = Math.round(Number(amount.replace(",", ".")) * 100);
   const valid = Number.isFinite(cents) && cents >= QUICK_MIN_CENTS;
   const symbol =
@@ -102,10 +105,10 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
             <input
               type="number"
               inputMode="decimal"
-              min="0.5"
-              step="0.01"
+              min={decimals ? 1 / 10 ** decimals : 1}
+              step={decimals ? 1 / 10 ** decimals : 1}
               className={`input text-lg tabular-nums ${symbol.length > 1 ? "ps-12" : "ps-7"}`}
-              placeholder="18.00"
+              placeholder={decimals ? (18).toFixed(decimals) : "1800"}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               autoFocus
@@ -115,11 +118,7 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
         </label>
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium">{t("quick.currency")}</span>
-          <select className="input w-auto" value={currency} onChange={(e) => setCurrency(e.target.value)}>
-            {QUICK_CURRENCIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          <CurrencySelect value={currency} onChange={setCurrency} className="input w-auto max-w-[14rem]" />
         </label>
       </div>
 

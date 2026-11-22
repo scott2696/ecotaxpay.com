@@ -171,6 +171,8 @@ export const mt: LocaleMessages = {
   "nav.apartments": "Appartamenti u kmamar",
   "nav.rates": "Rati",
   "nav.account": "Kont",
+  "currency.popular": "L-aktar użati",
+  "currency.all": "Il-muniti kollha (A–Z)",
   "upcoming.removedList": "Bookings imneħħija ({count}): uri u rrestawra",
   "upcoming.restore": "Irrestawra",
   "dash.remove": "Neħħi",

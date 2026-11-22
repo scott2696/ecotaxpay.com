@@ -1,13 +1,11 @@
 // "Other destination": a host anywhere can define their own local tax for one apartment.
 import type { AccommodationType, Country, Region } from "./taxRules";
+import { ALL_CURRENCIES } from "./currencies";
 
 export const CUSTOM_REGION_ID = "custom";
 
-// Currencies with 2 decimal places only (amounts are stored in minor units ×100).
-export const CURRENCIES = [
-  "EUR", "GBP", "USD", "CHF", "CZK", "PLN", "DKK", "SEK", "NOK", "RON", "BGN", "TRY",
-  "CAD", "AUD", "NZD", "MXN", "BRL", "ZAR", "AED", "SGD", "HKD", "THB", "MYR", "IDR", "INR", "PHP",
-] as const;
+// Every active currency (amounts are stored ×100).
+export const CURRENCIES = ALL_CURRENCIES;
 
 export type CustomTax = {
   countryName: string;

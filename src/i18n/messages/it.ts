@@ -156,6 +156,8 @@ export const it: LocaleMessages = {
   "nav.apartments": "Appartamenti e camere",
   "nav.rates": "Tariffe",
   "nav.account": "Account",
+  "currency.popular": "Più usate",
+  "currency.all": "Tutte le valute (A–Z)",
   "upcoming.removedList": "Prenotazioni rimosse ({count}): mostra e ripristina",
   "upcoming.restore": "Ripristina",
   "dash.remove": "Rimuovi",

@@ -2,10 +2,13 @@
 import type { T } from "@/i18n/translate";
 import type { Quote } from "./calc";
 
-/** Currencies a quick link can be charged in (all have 2 decimals at Stripe). */
-export const QUICK_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "CZK", "PLN", "SEK", "NOK", "DKK", "AUD", "CAD", "NZD"] as const;
-export const QUICK_MIN_CENTS = 50;
-export const QUICK_MAX_CENTS = 1_000_000;
+import { ALL_CURRENCIES } from "./currencies";
+
+/** Currencies a quick link can be charged in: every active currency. */
+export const QUICK_CURRENCIES = ALL_CURRENCIES;
+export const QUICK_MIN_CENTS = 1;
+/** High enough for large-unit currencies (e.g. IDR, VND), still catches a pasted wrong number. */
+export const QUICK_MAX_CENTS = 100_000_000_000_00;
 
 /** A quote holding only the amount, so links, receipts and exports work as for calculated ones. */
 export function manualQuote(amountCents: number, currency: string, description: string): Quote {
