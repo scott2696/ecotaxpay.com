@@ -86,6 +86,35 @@ export async function sendPaidEmails(p: PaymentRecord) {
   }
 }
 
+/**
+ * "Forgot your password?": email the reset link. Returns false if email isn't set up
+ * (the link is then logged on the server so an admin can pass it on).
+ */
+export async function sendPasswordResetEmail(to: { email: string; name: string; locale?: string }, link: string): Promise<boolean> {
+  const from = process.env.EMAIL_FROM;
+  if (!process.env.RESEND_API_KEY || !from) {
+    console.log(`[email] password reset for ${to.email} not sent (RESEND_API_KEY / EMAIL_FROM not set). Link: ${link}`);
+    return false;
+  }
+  const { t } = await getI18n(to.locale ?? "en");
+  try {
+    await send({
+      from,
+      to: to.email,
+      subject: t("email.resetSubject", { brand: site.name }),
+      html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:520px">
+        <p>${escape(t("email.hi", { name: to.name.split(/\s+/)[0] || "" }))}</p>
+        <p>${escape(t("email.resetBody", { brand: site.name }))}</p>
+        <p><a href="${escape(link)}" style="display:inline-block;background:#16201b;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600">${escape(t("reset.title"))}</a></p>
+        <p style="color:#5f6b65;font-size:13px">${escape(t("email.resetIgnore"))}</p></div>`,
+    });
+    return true;
+  } catch (err) {
+    console.error(`[email] password reset for ${to.email} failed`, err);
+    return false;
+  }
+}
+
 /** Tells the host a guest says they paid (or will pay cash), so they can check and confirm. */
 export async function sendReportedEmail(p: PaymentRecord) {
   const from = process.env.EMAIL_FROM;

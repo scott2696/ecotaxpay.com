@@ -59,6 +59,13 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
         />
         {register && <span className="mt-1 block text-xs text-[var(--muted)]">{t("auth.passwordHint")}</span>}
       </label>
+      {!register && (
+        <p className="-mt-2 text-end text-sm">
+          <Link href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="text-[var(--muted)] underline hover:text-[var(--ink)]">
+            {t("auth.forgot")}
+          </Link>
+        </p>
+      )}
       {register && (
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1 accent-[var(--accent)]" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} required />

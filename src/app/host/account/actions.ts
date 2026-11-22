@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import type { SaveResult } from "./MethodsForm";
 import { redirect } from "next/navigation";
-import { endSession, requireHost } from "@/lib/auth";
+import { endSession, requireHost, setPassword, startSession, verifyPassword } from "@/lib/auth";
+import { getI18n } from "@/i18n/server";
+import type { PasswordResult } from "./ChangePasswordForm";
 import { billingPortalUrl, cancelSubscription, resumeSubscription, startSubscription } from "@/lib/billing";
 import { isWiseUrl, normalizeAccountNumber, normalizeBic, normalizeRouting, normalizeSortCode, normalizeIban, normalizeIntlPhone, normalizePaypal, normalizeRevtag, normalizeUrl, normalizeWero } from "@/lib/payMethods";
 import { CARD_BRANDS } from "@/components/PayBadges";
@@ -104,6 +106,20 @@ export async function saveProfile(form: FormData) {
   });
   revalidatePath("/host/account");
   redirect("/host/account?saved=1");
+}
+
+/** "Change password": needs the current one; this device stays logged in, all others are logged out. */
+export async function changePassword(form: FormData): Promise<PasswordResult> {
+  const host = await requireHost();
+  const { t } = await getI18n();
+  const current = String(form.get("current") ?? "");
+  const password = String(form.get("password") ?? "");
+  if (!verifyPassword(current, host.passwordHash)) return { ok: false, error: t("err.currentPassword") };
+  if (password.length < 8) return { ok: false, error: t("err.password") };
+  if (password !== String(form.get("confirm") ?? "")) return { ok: false, error: t("reset.mismatch") };
+  await setPassword(host, password);
+  await startSession(host.id); // new session for this device (old ones no longer match the password)
+  return { ok: true };
 }
 
 export async function logout() {

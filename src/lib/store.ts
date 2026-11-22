@@ -53,6 +53,8 @@ export type Host = {
   };
   /** How guests pay this host directly (shown on the guest's payment page). Never via the platform. */
   paymentMethods?: PaymentMethods;
+  /** Pending "forgot password" link: only a hash of the token is stored. */
+  passwordReset?: { tokenHash: string; expires: string };
   /** Guest names the host typed for calendar bookings (iCal feeds never include names), by booking key. */
   bookingNames?: Record<string, string>;
 };

@@ -8,7 +8,8 @@ import { activeMethods, PHONE_APP_NAMES, PHONE_APPS } from "@/lib/payMethods";
 import PayBadges, { BRAND_NAMES, CARD_BRANDS, MethodLogo } from "@/components/PayBadges";
 import type { CardBrandId } from "@/lib/store";
 import { formatPlan } from "@/lib/pricing";
-import { cancel, openBillingPortal, resume, saveProfile, savePaymentMethods, subscribe } from "./actions";
+import { cancel, changePassword, openBillingPortal, resume, saveProfile, savePaymentMethods, subscribe } from "./actions";
+import ChangePasswordForm from "./ChangePasswordForm";
 import MethodsForm from "./MethodsForm";
 
 export async function generateMetadata() {
@@ -41,7 +42,8 @@ export default async function Account({ searchParams }: { searchParams: Promise<
     sp.resumed ? t("account.notice.resumed") :
     sp.saved ? t("account.notice.saved") :
     sp.cancelled_checkout ? t("account.notice.checkoutCancelled") :
-    sp.methodsSaved ? t("methods.saved") : null;
+    sp.methodsSaved ? t("methods.saved") :
+    sp.passwordChanged ? t("account.notice.passwordChanged") : null;
   const badFields = new Set((sp.methodsError ?? "").split(",").filter(Boolean));
 
   return (
@@ -211,6 +213,16 @@ export default async function Account({ searchParams }: { searchParams: Promise<
             <button className="rounded-xl bg-[var(--accent)] px-5 py-2.5 font-semibold text-[var(--on-accent)] hover:brightness-110">{t("account.save")}</button>
           </div>
         </form>
+      </section>
+
+      <section id="password" className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+        <h2 className="text-lg font-semibold">{t("account.password")}</h2>
+        <p className="mt-1 text-sm text-[var(--muted)]">{t("account.passwordHint")}</p>
+        <ChangePasswordForm action={changePassword} />
+        <p className="mt-4 text-xs text-[var(--muted)]">
+          {t("account.forgotHint")}{" "}
+          <a href={`/forgot-password?email=${encodeURIComponent(host.email)}`} className="underline">{t("auth.forgot")}</a>
+        </p>
       </section>
     </main>
   );
