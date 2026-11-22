@@ -141,3 +141,9 @@ export function normalizeUrl(raw: string, host?: RegExp): string | null {
   }
 }
 export const isWiseUrl = (raw: string) => normalizeUrl(raw, /(^|\.)wise\.com$/i);
+
+/** Display name of a payment method in the reader's language (t from the server or client). */
+export function methodTitle(id: string, t: (key: never) => string): string {
+  if (id in PHONE_APP_NAMES) return PHONE_APP_NAMES[id as PhoneApp];
+  return (t as unknown as (k: string) => string)(`method.${id}`);
+}

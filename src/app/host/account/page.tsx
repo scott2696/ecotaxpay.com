@@ -4,7 +4,7 @@ import { date, type T } from "@/i18n/translate";
 import { isAdmin, isSubscribed, requireHost } from "@/lib/auth";
 import { confirmSubscriptionCheckout, settleDemoSubscription } from "@/lib/billing";
 import { isDemoMode } from "@/lib/config";
-import { activeMethods, PHONE_APP_NAMES, PHONE_APPS } from "@/lib/payMethods";
+import { activeMethods, METHOD_ORDER, methodTitle, PHONE_APP_NAMES, PHONE_APPS } from "@/lib/payMethods";
 import PayBadges, { BRAND_NAMES, CARD_BRANDS, MethodLogo } from "@/components/PayBadges";
 import type { CardBrandId } from "@/lib/store";
 import { formatPlan } from "@/lib/pricing";
@@ -120,7 +120,11 @@ export default async function Account({ searchParams }: { searchParams: Promise<
             failed: t("methods.failed"),
             reloadKeep: t("methods.reloadKeep"),
             restored: t("methods.restored"),
+            savedList: t("methods.savedList"),
+            noneSaved: t("methods.noneSaved"),
+            guestsSee: t("methods.guestsSee"),
           }}
+          methodNames={Object.fromEntries(METHOD_ORDER.map((id) => [id, methodTitle(id, t)]))}
         >
           <Method saveLabel={t("upcoming.saveName")} name="cardOn" logo="card" on={!!pm.card} title={t("method.card")} badges>
             <p className="text-sm text-[var(--muted)] sm:col-span-2">{t("methods.cardHint")}</p>
@@ -238,12 +242,14 @@ export default async function Account({ searchParams }: { searchParams: Promise<
 
 /** One payment method: a checkbox that reveals its fields (no JS needed). */
 function Method({ name, logo, on, title, badges, saveLabel, children }: { name: string; logo: string; on: boolean; title: string; badges?: boolean; saveLabel: string; children: React.ReactNode }) {
+  const savedLabel = on ? <SavedChip /> : null;
   return (
     <div className="group rounded-xl border border-[var(--line)] p-4 has-[.method-toggle:checked]:border-[var(--accent)]">
       <label className="flex cursor-pointer items-center gap-3 font-medium">
         <input type="checkbox" name={name} defaultChecked={on} className="method-toggle h-4 w-4 accent-[var(--accent)]" />
         <MethodLogo id={logo} />
         {title}
+        {savedLabel}
         {badges && <PayBadges className="ms-auto" />}
       </label>
       <div className="mt-3 hidden grid-cols-1 gap-3 group-has-[.method-toggle:checked]:grid sm:grid-cols-2">
@@ -307,4 +313,10 @@ function CancelButton({ t }: { t: T }) {
       </div>
     </details>
   );
+}
+
+/** Shown on a payment method that is stored on the account (re-rendered after each save). */
+async function SavedChip() {
+  const { t } = await getI18n();
+  return <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs font-medium text-emerald-300">{t("methods.savedChip")}</span>;
 }

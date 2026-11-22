@@ -9,7 +9,8 @@ import { isDemoMode } from "@/lib/config";
 import { upcomingStays } from "@/lib/calendar";
 import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
 import { markPaidOffline } from "./actions";
-import { paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
+import { activeMethods, methodTitle, paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
+import { MethodLogo } from "@/components/PayBadges";
 import CopyLink from "./CopyLink";
 import ApartmentFilter from "./ApartmentFilter";
 import StayRangeFilter from "./StayRangeFilter";
@@ -46,6 +47,7 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
   const connected = properties.some((p) => Object.values(p.calendars ?? {}).some(Boolean));
   const calendar = connected ? await upcomingStays(properties) : { stays: [], errors: [] };
   const { t, locale } = await getI18n();
+  const methods = activeMethods(host.paymentMethods);
   const fm = (n: number, cur = "EUR") => formatMoney(n, cur, locale);
 
   // Month choices for the range: every month from the first stay's year to next year.
@@ -116,6 +118,33 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
         <Stat label={t("dash.stat.tax")} value={taxTotal} />
         <Stat label={t("dash.stat.fees")} value={feeTotal} />
       </div>
+
+      {/* Payment methods shortcut: what guests can pay with, and a direct link to change it. */}
+      <section className={`mb-8 rounded-2xl border p-5 ${methods.length ? "border-[var(--line)] bg-[var(--surface)]" : "border-amber-400/30 bg-amber-400/5"}`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-semibold">{t("methods.title")}</h2>
+            <p className="mt-0.5 text-sm text-[var(--muted)]">{methods.length ? t("dash.methodsOn") : t("banner.methods")}</p>
+          </div>
+          <Link
+            href="/host/account#methods"
+            className={methods.length ? "rounded-lg border border-[var(--line)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]" : "rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110"}
+          >
+            {methods.length ? t("dash.editMethods") : t("methods.add")} →
+          </Link>
+        </div>
+        {methods.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {methods.map((id) => (
+              <li key={id} className="inline-flex items-center gap-2 rounded-lg bg-[var(--bg)] px-2.5 py-1.5 text-sm">
+                <MethodLogo id={id} />
+                {methodTitle(id, t)}
+                <span className="text-emerald-300" aria-label={t("methods.savedChip")}>✓</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <UpcomingGuests
         calendar={calendar}

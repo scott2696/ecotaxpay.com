@@ -7,10 +7,10 @@ import { endSession, requireHost, setPassword, startSession, verifyPassword } fr
 import { getI18n } from "@/i18n/server";
 import type { PasswordResult } from "./ChangePasswordForm";
 import { billingPortalUrl, cancelSubscription, resumeSubscription, startSubscription } from "@/lib/billing";
-import { isWiseUrl, normalizeAccountNumber, normalizeBic, normalizeRouting, normalizeSortCode, normalizeIban, normalizeIntlPhone, normalizePaypal, normalizeRevtag, normalizeUrl, normalizeWero } from "@/lib/payMethods";
+import { activeMethods, isWiseUrl, normalizeAccountNumber, normalizeBic, normalizeRouting, normalizeSortCode, normalizeIban, normalizeIntlPhone, normalizePaypal, normalizeRevtag, normalizeUrl, normalizeWero } from "@/lib/payMethods";
 import { CARD_BRANDS } from "@/components/PayBadges";
 import type { CardBrandId } from "@/lib/store";
-import { updateHost } from "@/lib/store";
+import { getHost, updateHost } from "@/lib/store";
 
 export async function subscribe() {
   const host = await requireHost();
@@ -102,7 +102,9 @@ export async function savePaymentMethods(form: FormData): Promise<SaveResult> {
   });
   revalidatePath("/host/account");
   revalidatePath("/host");
-  return { ok: true };
+  // Tell the form exactly what is now stored, read back from the saved account.
+  const saved = activeMethods((await getHost(host.id))?.paymentMethods);
+  return { ok: true, saved };
 }
 
 export async function saveProfile(form: FormData) {
