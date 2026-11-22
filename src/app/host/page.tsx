@@ -98,6 +98,77 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
     byRegion.set(p.quote.regionName, r);
   }
 
+  // The pieces of one transaction, shown as a table row (desktop) or a card (phone).
+  const rowCells = (p: (typeof shown)[number]) => ({
+    guest: (
+      <>
+                  <div className="font-medium">{p.guestName || <span className="text-[var(--muted)]">—</span>}</div>
+                  {p.propertyName && <div className="text-xs text-[var(--muted)]">{p.propertyName}</div>}
+                  <div className="text-xs text-[var(--muted)]">{[p.guestEmail, p.guestPhone && `+${p.guestPhone}`, p.bookingRef].filter(Boolean).join(" · ")}</div>
+                  {p.documents && p.documents.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-x-2 text-xs">
+                      {p.documents.map((d) => (
+                        <a key={d.id} href={`/api/host/documents/${p.id}/${d.id}`} target="_blank" className="text-[var(--accent)] underline">
+                          📎 {d.fileName}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+      </>
+    ),
+    destination: <>{p.quote.manual ? <>⚡ {capFirst(quoteTitle(p.quote, t))}</> : p.quote.regionName.split(" (")[0]}</>,
+    stay: (
+      <>
+                  {p.quote.manual
+                    ? t("quick.created", { date: date(p.createdAt, locale, { day: "numeric", month: "short", year: "numeric" }) })
+                    : `${date(p.quote.checkIn, locale, { day: "numeric", month: "short", year: "numeric" })} · ${t.plural("line.nights", p.quote.nights)}`}
+      </>
+    ),
+    guests: <>{p.quote.manual ? "—" : p.guestsToConfirm ? <span className="text-sky-200">{t("dash.guestsToConfirm")}</span> : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</>,
+    total: fm(p.quote.totalCents, p.quote.currency),
+    status: (
+      <>
+                  {p.status === "pending" && p.reportedPaidAt ? (
+                    <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-xs font-medium text-sky-200">
+                      {t(paysOnArrival(p.paidVia) ? "status.cashPromised" : "status.reported")}
+                    </span>
+                  ) : (
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
+                  )}
+                  {p.paidVia && <div className="mt-1 text-xs text-[var(--muted)]">{p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey)} · {paymentReference(p)}</div>}
+                  {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
+      </>
+    ),
+    actions: (
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                  {p.receiptNumber ? (
+                    <a href={`/api/receipt/${p.id}`} target="_blank" className="text-[var(--accent)] underline">{t("dash.receipt")}</a>
+                  ) : (
+                    <>
+                      <CopyLink path={`/p/${p.id}`} />
+                      <form action={markPaidOffline.bind(null, p.id)}>
+                        <button className={p.reportedPaidAt ? "rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)]" : "text-[var(--muted)] underline"}>
+                          {t(p.reportedPaidAt ? "dash.confirmReceived" : "dash.markCash")}
+                        </button>
+                      </form>
+                    </>
+                  )}
+                  {/* Opens inside the row (never clipped by the table, even on the last row). */}
+                  <details className="group open:w-full">
+                    <summary className="cursor-pointer list-none text-end text-[var(--muted)] hover:text-red-300 group-open:text-red-300" aria-label={t("dash.remove")} title={t("dash.remove")}>
+                      ✕
+                    </summary>
+                    <div className="ms-auto mt-2 w-72 max-w-full whitespace-normal rounded-xl border border-red-400/30 bg-red-500/5 p-3 text-start text-sm">
+                      <p>{t(p.status === "pending" ? "dash.removeConfirmPending" : "dash.removeConfirmPaid")}</p>
+                      <form action={removePayment.bind(null, p.id)} className="mt-3">
+                        <button className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500">{t("dash.removeYes")}</button>
+                      </form>
+                    </div>
+                  </details>
+                  </div>
+    ),
+  });
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -244,7 +315,29 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
           <a href={exportHref} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)] hover:brightness-110">⬇ {t("range.export")}</a>
         </div>
       )}
-      <section className="overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
+      {/* Phones: one card per transaction (every field visible). Wider screens: the table. */}
+      <section className="space-y-3 md:hidden">
+        {shown.length === 0 && <p className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</p>}
+        {shown.map((p) => {
+          const c = rowCells(p);
+          return (
+            <article key={p.id} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">{c.guest}</div>
+                <div className="shrink-0 text-end text-base font-semibold tabular-nums">{c.total}</div>
+              </div>
+              <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-t border-[var(--line)] pt-3">
+                <dt className="text-[var(--muted)]">{t("dash.col.destination")}</dt><dd>{c.destination}</dd>
+                <dt className="text-[var(--muted)]">{t("dash.col.stay")}</dt><dd>{c.stay}</dd>
+                <dt className="text-[var(--muted)]">{t("receipt.guests")}</dt><dd>{c.guests}</dd>
+                <dt className="text-[var(--muted)]">{t("dash.col.status")}</dt><dd>{c.status}</dd>
+              </dl>
+              <div className="mt-3 border-t border-[var(--line)] pt-3">{c.actions}</div>
+            </article>
+          );
+        })}
+      </section>
+      <section className="hidden overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)] md:block">
         <table className="w-full min-w-[800px] text-sm">
           <thead className="border-b border-[var(--line)] text-start text-[var(--muted)]">
             <tr>
@@ -257,71 +350,20 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
             {shown.length === 0 && (
               <tr><td colSpan={7} className="px-4 py-8 text-center text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</td></tr>
             )}
-            {shown.map((p) => (
-              <tr key={p.id} className="border-b border-[var(--line)] last:border-0">
-                <td className="px-4 py-3">
-                  <div className="font-medium">{p.guestName || <span className="text-[var(--muted)]">—</span>}</div>
-                  {p.propertyName && <div className="text-xs text-[var(--muted)]">{p.propertyName}</div>}
-                  <div className="text-xs text-[var(--muted)]">{[p.guestEmail, p.guestPhone && `+${p.guestPhone}`, p.bookingRef].filter(Boolean).join(" · ")}</div>
-                  {p.documents && p.documents.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-x-2 text-xs">
-                      {p.documents.map((d) => (
-                        <a key={d.id} href={`/api/host/documents/${p.id}/${d.id}`} target="_blank" className="text-[var(--accent)] underline">
-                          📎 {d.fileName}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-3">{p.quote.manual ? <>⚡ {capFirst(quoteTitle(p.quote, t))}</> : p.quote.regionName.split(" (")[0]}</td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {p.quote.manual
-                    ? t("quick.created", { date: date(p.createdAt, locale, { day: "numeric", month: "short", year: "numeric" }) })
-                    : `${date(p.quote.checkIn, locale, { day: "numeric", month: "short", year: "numeric" })} · ${t.plural("line.nights", p.quote.nights)}`}
-                </td>
-                <td className="px-4 py-3">{p.quote.manual ? "—" : p.guestsToConfirm ? <span className="text-sky-200">{t("dash.guestsToConfirm")}</span> : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</td>
-                <td className="px-4 py-3 tabular-nums font-medium">{fm(p.quote.totalCents, p.quote.currency)}</td>
-                <td className="px-4 py-3">
-                  {p.status === "pending" && p.reportedPaidAt ? (
-                    <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-xs font-medium text-sky-200">
-                      {t(paysOnArrival(p.paidVia) ? "status.cashPromised" : "status.reported")}
-                    </span>
-                  ) : (
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
-                  )}
-                  {p.paidVia && <div className="mt-1 text-xs text-[var(--muted)]">{p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey)} · {paymentReference(p)}</div>}
-                  {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
-                </td>
-                <td className="px-4 py-3 text-end whitespace-nowrap">
-                  <div className="flex flex-wrap items-center justify-end gap-3">
-                  {p.receiptNumber ? (
-                    <a href={`/api/receipt/${p.id}`} target="_blank" className="text-[var(--accent)] underline">{t("dash.receipt")}</a>
-                  ) : (
-                    <>
-                      <CopyLink path={`/p/${p.id}`} />
-                      <form action={markPaidOffline.bind(null, p.id)}>
-                        <button className={p.reportedPaidAt ? "rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)]" : "text-[var(--muted)] underline"}>
-                          {t(p.reportedPaidAt ? "dash.confirmReceived" : "dash.markCash")}
-                        </button>
-                      </form>
-                    </>
-                  )}
-                  {/* Opens inside the row (never clipped by the table, even on the last row). */}
-                  <details className="group open:w-full">
-                    <summary className="cursor-pointer list-none text-end text-[var(--muted)] hover:text-red-300 group-open:text-red-300" aria-label={t("dash.remove")} title={t("dash.remove")}>
-                      ✕
-                    </summary>
-                    <div className="ms-auto mt-2 w-72 max-w-full whitespace-normal rounded-xl border border-red-400/30 bg-red-500/5 p-3 text-start text-sm">
-                      <p>{t(p.status === "pending" ? "dash.removeConfirmPending" : "dash.removeConfirmPaid")}</p>
-                      <form action={removePayment.bind(null, p.id)} className="mt-3">
-                        <button className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500">{t("dash.removeYes")}</button>
-                      </form>
-                    </div>
-                  </details>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {shown.map((p) => {
+              const c = rowCells(p);
+              return (
+                <tr key={p.id} className="border-b border-[var(--line)] last:border-0">
+                  <td className="px-4 py-3">{c.guest}</td>
+                  <td className="px-4 py-3">{c.destination}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{c.stay}</td>
+                  <td className="px-4 py-3">{c.guests}</td>
+                  <td className="px-4 py-3 tabular-nums font-medium">{c.total}</td>
+                  <td className="px-4 py-3">{c.status}</td>
+                  <td className="px-4 py-3 text-end whitespace-nowrap">{c.actions}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </section>
