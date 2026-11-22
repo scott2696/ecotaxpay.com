@@ -36,7 +36,7 @@ const GUIDE: { key: GuideTextField; long?: boolean; latinPlaceholder?: string }[
 const DOC_OPTIONS: DocumentsSetting[] = ["off", "optional", "required"];
 
 /** `property` = edit it; `template` = new one prefilled from another apartment. */
-export default function PropertyForm({ property, template }: { property?: Property; template?: Property }) {
+export default function PropertyForm({ property, template, connectAfter }: { property?: Property; template?: Property; connectAfter?: string }) {
   const base = property ?? template;
   const t = useT();
   const k = (key: string, vars?: Record<string, string | number>) => t(key as MessageKey, vars);
@@ -100,7 +100,7 @@ export default function PropertyForm({ property, template }: { property?: Proper
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      router.push("/host/properties?saved=1");
+      router.push(connectAfter ? `/host/connect?apt=${encodeURIComponent(data.id)}&platform=${encodeURIComponent(connectAfter)}` : "/host/properties?saved=1");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.error"));

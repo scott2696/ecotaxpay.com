@@ -3,11 +3,14 @@ import { requireHost } from "@/lib/auth";
 import Link from "next/link";
 import { listProperties } from "@/lib/store";
 import { PlatformIcon } from "../BrandIcons";
+import ChooseFirst from "./ChooseFirst";
 import ConnectForm from "./ConnectForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function Connect() {
+// ?apt=<id>&platform=<id>: open that apartment with that platform's link box ready (e.g. after adding an apartment).
+export default async function Connect({ searchParams }: { searchParams: Promise<{ apt?: string; platform?: string }> }) {
+  const sp = await searchParams;
   const host = await requireHost();
   const { t } = await getI18n();
   const apartments = (await listProperties(host.id)).map((p) => ({
@@ -28,12 +31,9 @@ export default async function Connect() {
         {t("connect.intro")}
       </p>
       {apartments.length ? (
-        <ConnectForm apartments={apartments} />
+        <ConnectForm apartments={apartments} focus={sp.apt && sp.platform ? { apt: sp.apt, platform: sp.platform } : undefined} />
       ) : (
-        <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface)] p-10 text-center">
-          <p className="text-[var(--muted)]">{t("form.addFirst")}</p>
-          <Link href="/host/properties/new" className="mt-4 inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">+ {t("props.add")}</Link>
-        </div>
+        <ChooseFirst />
       )}
     </main>
   );

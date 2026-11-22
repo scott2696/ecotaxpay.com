@@ -1,30 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
 import type { CalendarError } from "@/lib/calendar";
 import { calendarErrorText } from "@/lib/format";
 import { PLATFORMS, platformById } from "@/lib/platforms";
 import { PlatformIcon } from "../BrandIcons";
+import PlatformPicker from "./PlatformPicker";
 
 type Apt = { id: string; name: string; calendars: Record<string, string> };
 type Check = { ok: true; upcoming: number } | { ok: false; error: CalendarError };
 
-const GROUPS = [
-  ["ota", "connect.group.ota"],
-  ["manager", "connect.group.manager"],
-  ["other", "connect.group.other"],
-] as const;
 
 /** Paste each apartment's calendar links (any number of platforms), then save & test them live. */
-export default function ConnectForm({ apartments }: { apartments: Apt[] }) {
+export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; focus?: { apt: string; platform: string } }) {
   const t = useT();
   // Per apartment: ordered list of [platformId, link].
   const [links, setLinks] = useState<Record<string, [string, string][]>>(
     Object.fromEntries(
       apartments.map((a) => {
-        const rows = Object.entries(a.calendars).filter(([id, v]) => v && platformById(id));
+        const rows: [string, string][] = Object.entries(a.calendars).filter(([id, v]) => v && platformById(id));
+        // Arrived with a chosen platform for this apartment: make sure its link box is there.
+        if (focus?.apt === a.id && platformById(focus.platform) && !rows.some(([id]) => id === focus.platform)) rows.push([focus.platform, ""]);
         return [a.id, rows.length ? rows : [["airbnb", ""], ["booking", ""]]];
       }),
     ),
@@ -34,6 +32,15 @@ export default function ConnectForm({ apartments }: { apartments: Apt[] }) {
   const [error, setError] = useState<string | null>(null);
 
   const update = (apt: string, rows: [string, string][]) => setLinks({ ...links, [apt]: rows });
+  const [picking, setPicking] = useState<string | null>(null);
+
+  // Bring the chosen platform's link box into view, ready to paste into.
+  useEffect(() => {
+    if (!focus) return;
+    const el = document.getElementById(`link-${focus.apt}-${focus.platform}`) as HTMLInputElement | null;
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    el?.focus({ preventScroll: true });
+  }, [focus]);
   const setUrl = (apt: string, i: number, v: string) => update(apt, links[apt].map((r, j) => (j === i ? [r[0], v] : r)));
   const remove = (apt: string, i: number) => update(apt, links[apt].filter((_, j) => j !== i));
   const add = (apt: string, id: string) => id && update(apt, [...links[apt], [id, ""]]);
@@ -96,6 +103,7 @@ export default function ConnectForm({ apartments }: { apartments: Apt[] }) {
                       </button>
                     </div>
                     <input
+                      id={`link-${a.id}-${id}`}
                       className="input font-mono text-sm"
                       value={url}
                       onChange={(e) => setUrl(a.id, i, e.target.value)}
@@ -114,19 +122,27 @@ export default function ConnectForm({ apartments }: { apartments: Apt[] }) {
                   </div>
                 );
               })}
-              <label className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-medium">+ {t("connect.addPlatform")}</span>
-                <select className="input h-10 w-auto min-w-56 text-sm" value="" onChange={(e) => add(a.id, e.target.value)}>
-                  <option value="">{t("connect.choosePlatform")}</option>
-                  {GROUPS.map(([g, key]) => (
-                    <optgroup key={g} label={t(key)}>
-                      {PLATFORMS.filter((p) => p.group === g && (p.id === "other" || !used.has(p.id))).map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </label>
+              {picking === a.id ? (
+                <div className="rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{t("connect.whichChannel")}</p>
+                    <button type="button" onClick={() => setPicking(null)} className="text-xs text-[var(--muted)] underline">{t("common.cancel")}</button>
+                  </div>
+                  <PlatformPicker
+                    compact
+                    disabled={[...used]}
+                    onPick={(p) => {
+                      add(a.id, p.id);
+                      setPicking(null);
+                      setTimeout(() => document.getElementById(`link-${a.id}-${p.id}`)?.focus(), 50);
+                    }}
+                  />
+                </div>
+              ) : (
+                <button type="button" onClick={() => setPicking(a.id)} className="rounded-lg border border-dashed border-[var(--line-strong)] px-3 py-2 text-sm font-medium hover:bg-[var(--bg)]">
+                  + {t("connect.addPlatform")}
+                </button>
+              )}
             </div>
           </section>
         );
