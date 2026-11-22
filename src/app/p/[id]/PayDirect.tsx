@@ -46,6 +46,14 @@ export default function PayDirect({
 }) {
   const t = useT();
   const [method, setMethod] = useState(methods.length === 1 ? methods[0].id : "");
+  const [folded, setFolded] = useState(false); // chosen method's details hidden (click its header again)
+  const pick = (id: PayMethodId) => {
+    if (id === method) setFolded((f) => !f);
+    else {
+      setMethod(id);
+      setFolded(false);
+    }
+  };
   const [email, setEmail] = useState(initialEmail);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState(initialPhone);
@@ -96,17 +104,28 @@ export default function PayDirect({
 
         <div className="mt-4 space-y-2">
           {methods.map((m) => (
-            <label
+            <div
               key={m.id}
-              className={`block cursor-pointer rounded-xl border p-4 transition ${method === m.id ? "border-[var(--accent)] bg-[var(--soft)]" : "border-[var(--line)] hover:bg-[var(--bg)]"}`}
+              className={`rounded-xl border p-4 transition ${method === m.id ? "border-[var(--accent)] bg-[var(--soft)]" : "border-[var(--line)] hover:bg-[var(--bg)]"}`}
             >
-              <span className="flex items-center gap-3">
-                <input type="radio" name="method" value={m.id} checked={method === m.id} onChange={() => setMethod(m.id)} className="accent-[var(--accent)]" />
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  type="radio"
+                  name="method"
+                  value={m.id}
+                  checked={method === m.id}
+                  onChange={() => {}}
+                  onClick={() => pick(m.id)}
+                  className="accent-[var(--accent)]"
+                />
                 <MethodLogo id={m.id} />
                 <span className="font-medium">{m.title}</span>
-                {m.brands && <PayBadges brands={m.brands} className="ms-auto" />}
-              </span>
-              {method === m.id && (
+                <span className="ms-auto flex items-center gap-3">
+                  {m.brands && <PayBadges brands={m.brands} />}
+                  <span aria-hidden className={`text-[var(--muted)] transition-transform ${method === m.id && !folded ? "rotate-180" : ""}`}>▾</span>
+                </span>
+              </label>
+              {method === m.id && !folded && (
                 <span className="mt-3 block space-y-2">
                   {m.note && <span className="block text-sm text-[var(--muted)]">{m.note}</span>}
                   {m.rows.map((r) => (
@@ -120,7 +139,7 @@ export default function PayDirect({
                   )}
                 </span>
               )}
-            </label>
+            </div>
           ))}
         </div>
         {note && <p className="mt-4 whitespace-pre-line rounded-xl bg-[var(--bg)] p-3 text-sm text-[var(--muted)]">{note}</p>}
