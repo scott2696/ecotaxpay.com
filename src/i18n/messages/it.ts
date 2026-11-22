@@ -156,6 +156,7 @@ export const it: LocaleMessages = {
   "nav.apartments": "Appartamenti e camere",
   "nav.rates": "Tariffe",
   "nav.account": "Account",
+  "pf.calendarsSaveHint": "I link vengono salvati insieme all'alloggio quando premi Salva. Le prossime prenotazioni compariranno poi nella dashboard.",
   "common.cancel": "Annulla",
   "connect.whichChannel": "Quale canale vuoi sincronizzare?",
   "connect.whichChannelSub": "Scegli la piattaforma di cui vuoi collegare il calendario. Potrai aggiungerne altre in seguito.",

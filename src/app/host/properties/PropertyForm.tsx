@@ -9,11 +9,10 @@ import type { Property, Guide, GuideNote, GuideTextField, DocumentsSetting } fro
 import { DEFAULT_DOCUMENTS_REQUEST, type DocumentsRequest } from "@/lib/documents";
 import { capSummary, rateSummary } from "@/lib/explain";
 import { COUNTRIES, DEFAULT_REGION_ID, findRegion } from "@/lib/taxRules";
-import { PlatformBadge, PlatformIcon } from "../BrandIcons";
-import { PLATFORMS } from "@/lib/platforms";
+import { PlatformIcon } from "../BrandIcons";
+import PlatformPicker from "../connect/PlatformPicker";
+import { platformById } from "@/lib/platforms";
 
-/** Platforms shown as logos before any calendar is connected. */
-const SHOWCASE = ["airbnb", "booking", "vrbo", "misterbandb", "expedia", "agoda", "holidu", "tripadvisor"];
 import CustomTaxFields, { toForm, type CustomTaxForm } from "./CustomTaxFields";
 import DocumentsPicker from "./DocumentsPicker";
 import { GUIDE_NOTES } from "@/lib/guideLimits";
@@ -54,7 +53,17 @@ export default function PropertyForm({ property, template, connectAfter }: { pro
   const [guide, setGuide] = useState<Guide>({ ...(base?.guide ?? {}) });
   // Calendar links are specific to one listing, so they are never copied from another apartment.
   // Calendar links are managed on the "Connect calendars" page (any number of platforms).
-  const connectedPlatforms = Object.entries(property?.calendars ?? {}).filter(([, v]) => v).map(([id]) => id);
+  // Calendar links, one per platform, saved together with the apartment.
+  const [calRows, setCalRows] = useState<[string, string][]>(
+    Object.entries(property?.calendars ?? {}).filter((e): e is [string, string] => !!e[1] && !!platformById(e[0])),
+  );
+  const [picking, setPicking] = useState(false);
+  const addCalendar = (id: string) => {
+    if (id !== "other" && calRows.some(([p]) => p === id)) return;
+    setCalRows([...calRows, [id, ""]]);
+    setPicking(false);
+    setTimeout(() => document.getElementById(`cal-${id}-${calRows.length}`)?.focus(), 50);
+  };
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // "Other destination": the host sets their own rate.
@@ -96,6 +105,7 @@ export default function PropertyForm({ property, template, connectAfter }: { pro
           documents,
           documentsRequest,
           guide,
+          calendars: Object.fromEntries(calRows.filter(([, v]) => v.trim()).map(([id, v]) => [id, v.trim()])),
         }),
       });
       const data = await res.json();
@@ -198,21 +208,48 @@ export default function PropertyForm({ property, template, connectAfter }: { pro
       </Card>
 
       <Card title={t("upcoming.connect")} subtitle={t("pf.calendarsSub")}>
-        <div className="flex flex-wrap items-center gap-2">
-          {connectedPlatforms.length ? (
-            connectedPlatforms.map((id) => <PlatformBadge key={id} platform={id} />)
+        <div className="space-y-4">
+          {calRows.map(([id, url], i) => {
+            const p = platformById(id)!;
+            return (
+              <div key={`${id}-${i}`}>
+                <div className="mb-1.5 flex items-center gap-2 text-sm font-medium">
+                  <PlatformIcon id={id} size={18} />
+                  {t("connect.linkFor", { platform: p.name })}
+                  <button type="button" onClick={() => setCalRows(calRows.filter((_, j) => j !== i))} className="ms-auto text-xs text-[var(--muted)] underline hover:text-[var(--ink)]">
+                    {t("common.remove")}
+                  </button>
+                </div>
+                <input
+                  id={`cal-${id}-${i}`}
+                  className="input font-mono text-sm"
+                  value={url}
+                  onChange={(e) => setCalRows(calRows.map((r, j) => (j === i ? [r[0], e.target.value] : r)))}
+                  placeholder={p.placeholder ?? "https://….ics"}
+                  inputMode="url"
+                />
+                <span className="mt-1 block text-xs text-[var(--muted)]">{p.where ? `${p.name}: ${p.where}` : t("connect.whereGeneric", { platform: p.name })}</span>
+              </div>
+            );
+          })}
+
+          {calRows.length === 0 || picking ? (
+            <div className={calRows.length ? "rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4" : ""}>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-medium">{t("connect.whichChannel")}</p>
+                {calRows.length > 0 && (
+                  <button type="button" onClick={() => setPicking(false)} className="text-xs text-[var(--muted)] underline">{t("common.cancel")}</button>
+                )}
+              </div>
+              <PlatformPicker compact disabled={calRows.map(([id]) => id)} onPick={(pl) => addCalendar(pl.id)} />
+            </div>
           ) : (
-            // Nothing connected yet: show which platforms this means.
-            <span className="flex flex-wrap items-center gap-1.5" aria-label={t("connect.supported")}>
-              {SHOWCASE.map((id) => <PlatformIcon key={id} id={id} size={22} />)}
-              <span className="ms-1 text-xs text-[var(--muted)]">{t("connect.nMore", { count: PLATFORMS.length - SHOWCASE.length - 1 })}</span>
-            </span>
+            <button type="button" onClick={() => setPicking(true)} className="rounded-lg border border-dashed border-[var(--line-strong)] px-3 py-2 text-sm font-medium hover:bg-[var(--bg)]">
+              + {t("connect.addPlatform")}
+            </button>
           )}
-          <Link href="/host/connect" className="ms-auto rounded-lg border border-[var(--line)] px-3 py-2 text-sm font-medium hover:bg-[var(--soft)]">
-            {connectedPlatforms.length ? t("upcoming.manage") : t("upcoming.connect")} →
-          </Link>
+          {calRows.length > 0 && <p className="text-xs text-[var(--muted)]">{t("pf.calendarsSaveHint")}</p>}
         </div>
-        {!property && <p className="mt-3 text-xs text-[var(--muted)]">{t("pf.calendarsAfterSave")}</p>}
       </Card>
 
       <Card title={t("pf.docs")} subtitle={t("pf.docsSub")}>

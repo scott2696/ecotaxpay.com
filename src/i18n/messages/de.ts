@@ -156,6 +156,7 @@ export const de: LocaleMessages = {
   "nav.apartments": "Wohnungen & Zimmer",
   "nav.rates": "Steuersätze",
   "nav.account": "Konto",
+  "pf.calendarsSaveHint": "Die Links werden beim Speichern zusammen mit der Unterkunft gespeichert. Kommende Buchungen erscheinen dann in Ihrem Dashboard.",
   "common.cancel": "Abbrechen",
   "connect.whichChannel": "Welchen Kanal möchten Sie synchronisieren?",
   "connect.whichChannelSub": "Wählen Sie die Plattform, deren Kalender Sie verbinden möchten. Weitere können Sie später hinzufügen.",

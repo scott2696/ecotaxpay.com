@@ -154,6 +154,7 @@ export const en = {
   "nav.apartments": "Apartments & rooms",
   "nav.rates": "Rates",
   "nav.account": "Account",
+  "pf.calendarsSaveHint": "The links are saved together with the apartment when you press Save. Upcoming bookings then appear on your dashboard.",
   "common.cancel": "Cancel",
   "connect.whichChannel": "Which channel do you want to sync?",
   "connect.whichChannelSub": "Choose the platform whose calendar you want to connect. You can add more later.",

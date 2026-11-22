@@ -171,6 +171,7 @@ export const mt: LocaleMessages = {
   "nav.apartments": "Appartamenti u kmamar",
   "nav.rates": "Rati",
   "nav.account": "Kont",
+  "pf.calendarsSaveHint": "Il-links jiġu ssejvjati flimkien mal-appartament meta tagħfas Issejvja. Imbagħad il-bookings li ġejjin jidhru fid-dashboard tiegħek.",
   "common.cancel": "Ikkanċella",
   "connect.whichChannel": "Liema channel trid tissinkronizza?",
   "connect.whichChannelSub": "Agħżel il-pjattaforma li trid tqabbad il-kalendarju tagħha. Tista' żżid oħrajn aktar tard.",
