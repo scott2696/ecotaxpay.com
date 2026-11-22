@@ -156,7 +156,7 @@ export default async function GuestPage({
 /** What the guest sees for each of the host's payment methods. */
 function methodViews(pm: PaymentMethods, p: PaymentRecord, t: T): MethodView[] {
   const cents = p.quote.totalCents;
-  return activeMethods(pm).map((id) => {
+  const views: MethodView[] = activeMethods(pm).map((id) => {
     let rows: MethodView["rows"] = [];
     let title = t(`method.${id}` as MessageKey);
     let brands: MethodView["brands"];
@@ -191,6 +191,21 @@ function methodViews(pm: PaymentMethods, p: PaymentRecord, t: T): MethodView[] {
     if (id === "link" && pm.link?.label) title = pm.link.label;
     return { id, icon: METHOD_ICONS[id], title, rows, brands, url: methodUrl(id, pm, cents, p.quote.currency) ?? undefined };
   });
+  // No card link of their own, but a Revolut link: Revolut.me takes card and Apple Pay from anyone
+  // (no Revolut account needed), so offer card payment through it, first in the list.
+  if (!pm.card && pm.revolut) {
+    const url = methodUrl("revolut", pm, cents, p.quote.currency) ?? undefined;
+    views.unshift({
+      id: "card",
+      icon: METHOD_ICONS.card,
+      title: t("pay.cardViaRevolut"),
+      rows: [],
+      note: t("pay.cardViaRevolutHint"),
+      brands: ["visa", "mastercard", "applepay"],
+      url,
+    });
+  }
+  return views;
 }
 
 function PaidCard(props: { t: T; id: string; amount: string; receiptNumber?: string; guestPhone?: string; whatsappSent: boolean; taxName: string; hasGuide: boolean }) {

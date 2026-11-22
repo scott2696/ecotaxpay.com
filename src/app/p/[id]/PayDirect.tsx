@@ -15,6 +15,7 @@ export type MethodView = {
   rows: { label: string; value: string; mono?: boolean }[];
   url?: string;
   brands?: CardBrand[];
+  note?: string; // plain instructions (not something to copy)
 };
 
 /**
@@ -107,6 +108,7 @@ export default function PayDirect({
               </span>
               {method === m.id && (
                 <span className="mt-3 block space-y-2">
+                  {m.note && <span className="block text-sm text-[var(--muted)]">{m.note}</span>}
                   {m.rows.map((r) => (
                     <CopyRow key={r.label} {...r} />
                   ))}

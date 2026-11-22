@@ -110,6 +110,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
           </span>
         </div>
         <p className="mt-1 text-sm text-[var(--muted)]">{t("methods.intro")}</p>
+        {!pm.card && pm.revolut && <p className="mt-3 rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-200">💳 {t("methods.cardViaRevolut")}</p>}
         <MethodsForm
           action={savePaymentMethods}
           labels={{
