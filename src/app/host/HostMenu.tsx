@@ -39,7 +39,7 @@ export default function HostMenu({ links, logout }: { links: { href: string; lab
         aria-expanded={open}
         aria-controls="host-menu"
         aria-label={open ? t("nav.close") : t("nav.menu")}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--line)] hover:border-[var(--line-strong)]"
+        className="btn btn-secondary btn-icon relative h-9 w-9"
       >
         <span className={`absolute h-px w-4 bg-[var(--ink)] transition-transform duration-300 ${open ? "rotate-45" : "-translate-y-[4px]"}`} />
         <span className={`absolute h-px w-4 bg-[var(--ink)] transition-opacity duration-300 ${open ? "opacity-0" : ""}`} />

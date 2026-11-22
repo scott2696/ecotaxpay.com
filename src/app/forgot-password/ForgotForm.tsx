@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import Link from "next/link";
 import { useState } from "react";
 import { useT } from "@/i18n/client";
@@ -36,7 +37,7 @@ export default function ForgotForm({ initialEmail, supportEmail }: { initialEmai
         <p className="text-sm text-[var(--muted)]">
           {t("forgot.noEmail")} <a href={`mailto:${supportEmail}`} className="underline">{supportEmail}</a>
         </p>
-        <Link href="/login" className="block text-center text-sm font-medium text-[var(--accent)] underline">← {t("auth.login")}</Link>
+        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm font-medium text-[var(--muted)] hover:text-[var(--ink)]"><Icon name="arrowLeft" size={14} /> {t("auth.login")}</Link>
       </div>
     );
 
@@ -46,12 +47,12 @@ export default function ForgotForm({ initialEmail, supportEmail }: { initialEmai
         <span className="mb-1.5 block text-sm font-medium">{t("common.email")}</span>
         <input type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required autoFocus />
       </label>
-      {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
-      <button disabled={busy} className="w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+      {error && <p className="note note-danger">{error}</p>}
+      <button disabled={busy} className="btn btn-primary btn-lg w-full">
         {busy ? t("common.wait") : t("forgot.send")}
       </button>
       <p className="text-center text-sm text-[var(--muted)]">
-        <Link href="/login" className="font-medium text-[var(--accent)] underline">← {t("auth.login")}</Link>
+        <Link href="/login" className="link font-medium">{t("auth.login")}</Link>
       </p>
     </form>
   );

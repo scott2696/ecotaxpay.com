@@ -1,6 +1,6 @@
 import { getI18n } from "@/i18n/server";
 import { requireHost } from "@/lib/auth";
-import Link from "next/link";
+import PageHeader, { PageBody } from "@/components/PageHeader";
 import { notFound } from "next/navigation";
 import { getProperty } from "@/lib/store";
 import PropertyForm from "../PropertyForm";
@@ -13,10 +13,9 @@ export default async function EditProperty({ params }: { params: Promise<{ id: s
   const property = await getProperty((await params).id);
   if (!property || property.hostId !== host.id) notFound();
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/host/properties" className="text-sm text-[var(--muted)] underline">← {t("nav.apartments")}</Link>
-      <h1 className="mb-6 mt-3 text-2xl font-semibold">{property.name}</h1>
+    <PageBody narrow>
+      <PageHeader back={{ href: "/host/properties", label: t("nav.apartments") }} eyebrow={t("props.edit")} title={property.name} />
       <PropertyForm property={property} />
-    </main>
+    </PageBody>
   );
 }

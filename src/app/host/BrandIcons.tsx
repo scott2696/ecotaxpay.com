@@ -52,7 +52,7 @@ export function PlatformIcon({ id, size = 20 }: { id: string; size?: number }) {
 /** Logo + name chip, e.g. on the dashboard and connect page. */
 export function PlatformBadge({ platform }: { platform: string }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold">
+    <span className="inline-flex h-9 items-center gap-2 rounded-[var(--r-md)] border border-[var(--line)] bg-white/[0.03] px-3 text-sm font-medium shadow-[var(--edge)]">
       <PlatformIcon id={platform} />
       <span>{platformName(platform)}</span>
     </span>

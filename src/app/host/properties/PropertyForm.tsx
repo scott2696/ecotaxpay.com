@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useT } from "@/i18n/client";
@@ -124,7 +125,7 @@ export default function PropertyForm({ property, template, connectAfter, returnT
                   {c.flag} {countryName(c.code, c.name)}
                 </option>
               ))}
-              <option value="__custom">🌍 {t("pf.other")}</option>
+              <option value="__custom">{t("pf.other")}</option>
             </select>
             {/* The manual option, visible without opening the list. */}
             <button
@@ -241,12 +242,12 @@ export default function PropertyForm({ property, template, connectAfter, returnT
         <GuideNotes notes={guide.notes ?? []} onChange={(notes) => setGuide({ ...guide, notes })} />
       </Card>
 
-      {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
+      {error && <p className="note note-danger">{error}</p>}
       <div className="flex gap-3">
-        <button disabled={saving} className="rounded-xl bg-[var(--accent)] px-6 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+        <button disabled={saving} className="btn btn-primary btn-lg">
           {saving ? t("pf.saving") : property ? t("pf.saveChanges") : t("pf.save")}
         </button>
-        <Link href="/host/properties" className="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-6 py-3 font-medium">
+        <Link href="/host/properties" className="btn btn-secondary btn-lg">
           {t("pf.cancel")}
         </Link>
       </div>
@@ -256,10 +257,10 @@ export default function PropertyForm({ property, template, connectAfter, returnT
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      {subtitle && <p className="mt-1 text-sm text-[var(--muted)]">{subtitle}</p>}
-      <div className="mt-4">{children}</div>
+    <section className="panel panel-pad">
+      <h2 className="panel-title text-base">{title}</h2>
+      {subtitle && <p className="panel-sub">{subtitle}</p>}
+      <div className="mt-5">{children}</div>
     </section>
   );
 }
@@ -267,9 +268,9 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
 function Field({ label, hint, className = "", children }: { label: string; hint?: string; className?: string; children: React.ReactNode }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium">{label}</span>
+      <span className="label">{label}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-[var(--muted)]">{hint}</span>}
+      {hint && <span className="help block">{hint}</span>}
     </label>
   );
 }
@@ -303,7 +304,7 @@ function GuideNotes({ notes, onChange }: { notes: GuideNote[]; onChange: (notes:
 
       <div className="mt-4 space-y-3">
         {notes.map((n, i) => (
-          <div key={i} className="rounded-xl border border-[var(--line)] bg-[var(--soft)] p-4">
+          <div key={i} className="panel-inset p-4">
             <div className="flex items-end gap-3">
               <label className="block flex-1">
                 <span className="mb-1.5 block text-sm font-medium">{t("gf.noteTitle")}</span>
@@ -312,7 +313,7 @@ function GuideNotes({ notes, onChange }: { notes: GuideNote[]; onChange: (notes:
               <button
                 type="button"
                 onClick={() => onChange(notes.filter((_, j) => j !== i))}
-                className="h-11 rounded-lg border border-[var(--line)] px-3 text-sm text-[var(--muted)] hover:border-red-400/40 hover:text-red-300"
+                className="btn btn-quiet h-11 hover:text-red-300"
               >
                 {t("common.remove")}
               </button>
@@ -339,7 +340,7 @@ function GuideNotes({ notes, onChange }: { notes: GuideNote[]; onChange: (notes:
           <span className="ms-1 text-sm text-[var(--muted)]">{t("gf.suggest")}</span>
           {NOTE_SUGGESTIONS.map((s) => k(`gf.sugg.${s}`)).filter((title) => !used.has(title)).map((title) => (
             <button key={title} type="button" onClick={() => add(title)} className="rounded-full border border-[var(--line)] px-3 py-1 text-xs text-[var(--muted)] hover:border-[var(--line-strong)] hover:text-[var(--ink)]">
-              + {title}
+              <Icon name="plus" size={14} /> {title}
             </button>
           ))}
         </div>

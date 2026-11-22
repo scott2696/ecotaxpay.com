@@ -82,7 +82,7 @@ export default function ChooseFirst() {
       <PlatformPicker value={p?.id ?? ""} onPick={pick} />
 
       {p && !done && (
-        <form onSubmit={save} className="space-y-3 rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4">
+        <form onSubmit={save} className="panel-inset space-y-3 p-4">
           <div className="flex items-center gap-2 font-medium">
             <PlatformIcon id={p.id} size={20} /> {t("connect.linkFor", { platform: p.name })}
           </div>
@@ -101,15 +101,15 @@ export default function ChooseFirst() {
             <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("pf.namePh")} required maxLength={120} />
             <span className="mt-1 block text-xs text-[var(--muted)]">{t("connect.apartmentDefault", { place: region.name })}</span>
           </label>
-          {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
-          <button disabled={busy} className="rounded-xl bg-[var(--accent)] px-5 py-2.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+          {error && <p className="note note-danger">{error}</p>}
+          <button disabled={busy} className="btn btn-primary">
             {busy ? t("connect.syncing") : t("connect.saveFirst")}
           </button>
         </form>
       )}
 
       {done && p && (
-        <div role="status" className="space-y-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-sm">
+        <div role="status" className="note note-success flex-col p-4">
           <p className="font-semibold text-emerald-200">✓ {t("connect.savedFirst", { platform: p.name, name })}</p>
           {done.check && (
             <p className={done.check.ok ? "text-emerald-300" : "text-red-300"}>
@@ -117,10 +117,10 @@ export default function ChooseFirst() {
             </p>
           )}
           <div className="flex flex-wrap gap-3 pt-1">
-            <button type="button" onClick={() => router.refresh()} className="rounded-lg bg-[var(--accent)] px-4 py-2 font-semibold text-[var(--on-accent)]">
+            <button type="button" onClick={() => router.refresh()} className="btn btn-primary">
               {t("connect.seeUpcoming")} →
             </button>
-            <Link href={`/host/properties/${done.id}`} className="rounded-lg border border-[var(--line)] px-4 py-2 font-medium">{t("connect.editApartment")}</Link>
+            <Link href={`/host/properties/${done.id}`} className="btn btn-secondary">{t("connect.editApartment")}</Link>
           </div>
         </div>
       )}

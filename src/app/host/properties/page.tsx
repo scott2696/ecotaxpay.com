@@ -5,6 +5,8 @@ import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
 import { requireHost } from "@/lib/auth";
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import PageHeader, { PageBody } from "@/components/PageHeader";
 import { listProperties } from "@/lib/store";
 import { capSummary, rateSummary } from "@/lib/explain";
 import { resolveProperty } from "@/lib/resolve";
@@ -16,76 +18,86 @@ export default async function Properties({ searchParams }: { searchParams: Promi
   const { t } = await getI18n();
   const [properties, { saved, deleted }] = await Promise.all([listProperties(host.id), searchParams]);
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <a href="/host" className="text-sm text-[var(--muted)] underline">← {t("nav.dashboard")}</a>
-      <div className="mb-6 mt-3 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{t("nav.apartments")}</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">{t("props.intro")}</p>
-        </div>
-        <Link href="/host/properties/new" className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">+ {t("props.add")}</Link>
-        <Link href="/host/rates" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium">🌍 {t("rates.title")}</Link>
-      </div>
-      {saved && <p className="mb-4 rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-300">{t("account.notice.saved")}</p>}
-      {deleted && <p className="mb-4 rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-300">{t("props.deleted")}</p>}
+    <PageBody>
+      <PageHeader
+        title={t("nav.apartments")}
+        description={t("props.intro")}
+        actions={
+          <>
+            <Link href="/host/rates" className="btn btn-secondary"><Icon name="globe" size={15} /> {t("rates.title")}</Link>
+            <Link href="/host/properties/new" className="btn btn-primary"><Icon name="plus" size={15} strokeWidth={2.25} /> {t("props.add")}</Link>
+          </>
+        }
+      />
+      {saved && <p className="note note-success rise mb-5"><Icon name="check" size={16} className="mt-0.5" /> {t("account.notice.saved")}</p>}
+      {deleted && <p className="note note-success rise mb-5"><Icon name="check" size={16} className="mt-0.5" /> {t("props.deleted")}</p>}
       {properties.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface)] p-10 text-center text-[var(--muted)]">
-          {t("props.empty")}
+        <div className="panel flex flex-col items-center border-dashed p-12 text-center">
+          <span className="icon-chip mb-4"><Icon name="building" size={17} /></span>
+          <p className="max-w-sm text-sm text-[var(--muted)]">{t("props.empty")}</p>
+          <Link href="/host/properties/new" className="btn btn-primary mt-5"><Icon name="plus" size={15} /> {t("props.add")}</Link>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="stagger grid grid-cols-1 gap-4 lg:grid-cols-2">
           {properties.map((p) => {
             const r = resolveProperty(p);
             const acc = r?.acc;
             const today = new Date().toISOString().slice(0, 10);
             const count = guideCount(p.guide);
+            const cals = Object.entries(p.calendars ?? {}).filter(([, v]) => v).map(([id]) => platformName(id));
+            const cap = r && acc ? capSummary(r.region, acc, today, t) : null;
             return (
-              <li key={p.id} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="font-semibold">{p.name}</div>
-                    <div className="mt-1 text-sm text-[var(--muted)]">
+              <li key={p.id} className="panel flex flex-col transition-colors hover:border-[var(--line-strong)]">
+                <div className="flex items-start gap-4 p-5 sm:p-6">
+                  <span className="icon-chip h-11 w-11"><Icon name="building" size={19} /></span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-base font-semibold tracking-tight">{p.name}</h2>
+                    <p className="mt-0.5 text-sm text-[var(--muted)]">
                       {r?.country.flag} {r?.region.name.split(" (")[0]}
                       {r?.region.id.startsWith("custom:") ? ` (${t("props.ownRate", { country: r.country.name })})` : ""} · {acc && t.raw(`a:${acc.label}`)}
-                    </div>
-                    {r && acc && (
-                      <div className="mt-1 text-sm">
-                        {r.region.taxName}: {rateSummary(r.region, acc, today, t)} ·{" "}
-                        <span className={capSummary(r.region, acc, today) ? "text-emerald-300" : "text-[var(--muted)]"}>
-                          {capSummary(r.region, acc, today, t) ?? t("props.noCap")}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2 text-sm">
-                    <Link href={`/host/properties/${p.id}`} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 font-semibold text-[var(--on-accent)]">{t("props.edit")}</Link>
-                    <Link href={`/host/properties/new?from=${p.id}`} className="rounded-lg border border-[var(--line)] px-3 py-1.5 font-medium hover:bg-[var(--soft)]" title={t("props.copyHint")}>{t("props.copy")}</Link>
-                    {/* Two-step delete (no browser dialogs): open, then confirm. */}
-                    <details className="relative">
-                      <summary className="cursor-pointer list-none rounded-lg border border-[var(--line)] px-3 py-1.5 font-medium text-red-300 hover:bg-red-500/10">{t("props.delete")}</summary>
-                      <div className="absolute end-0 z-10 mt-2 w-72 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm shadow-lg">
-                        <p>{t("props.deleteConfirmText", { name: p.name })}</p>
-                        <form action={removeProperty.bind(null, p.id)} className="mt-3">
-                          <button className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">{t("props.deleteConfirm")}</button>
-                        </form>
-                      </div>
-                    </details>
+                    </p>
                   </div>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className={`rounded-full px-2 py-0.5 ${Object.values(p.calendars ?? {}).some(Boolean) ? "bg-[var(--soft)]" : "bg-white/10 text-zinc-300"}`}>
-                    {t("props.calendars", { list: Object.entries(p.calendars ?? {}).filter(([, v]) => v).map(([id]) => platformName(id)).join(" + ") || t("props.none") })}
-                  </span>
-                  <span className="rounded-full bg-[var(--soft)] px-2 py-0.5">{t("props.docsBadge", { value: t(`props.docs.${p.documents}` as MessageKey) })}</span>
-                  <span className={`rounded-full px-2 py-0.5 ${count ? "bg-[var(--soft)]" : "bg-amber-400/15 text-amber-200"}`}>
-                    {count ? t.plural("props.guideItems", count) : t("props.guideEmpty")}
-                  </span>
+                {r && acc && (
+                  <div className="mx-5 rounded-[var(--r-md)] border border-[var(--line)] bg-white/[0.02] px-4 py-3 sm:mx-6">
+                    <div className="eyebrow">{r.region.taxName}</div>
+                    <div className="mt-1 text-sm font-medium">{rateSummary(r.region, acc, today, t)}</div>
+                    <div className={`mt-0.5 text-xs ${cap ? "text-emerald-300" : "text-[var(--muted)]"}`}>{cap ?? t("props.noCap")}</div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 px-5 pb-5 pt-4 sm:px-6">
+                  <span className={`pill ${cals.length ? "pill-success" : "pill-neutral"}`}>{t("props.calendars", { list: cals.join(" + ") || t("props.none") })}</span>
+                  <span className="pill pill-neutral pill-plain"><Icon name="file" size={12} /> {t("props.docsBadge", { value: t(`props.docs.${p.documents}` as MessageKey) })}</span>
+                  <span className={`pill ${count ? "pill-neutral pill-plain" : "pill-warning"}`}>{count ? t.plural("props.guideItems", count) : t("props.guideEmpty")}</span>
                 </div>
+                <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-[var(--line)] px-5 py-3 sm:px-6">
+                  <Link href={`/host/properties/${p.id}`} className="btn btn-secondary btn-sm"><Icon name="edit" size={14} /> {t("props.edit")}</Link>
+                  <Link href={`/host/properties/new?from=${p.id}`} className="btn btn-quiet btn-sm" title={t("props.copyHint")}><Icon name="copy" size={14} /> {t("props.copy")}</Link>
+                  {/* Two-step delete (no browser dialogs): open, then confirm. */}
+                  <details className="group ms-auto">
+                    <summary className="btn btn-quiet btn-sm list-none hover:text-red-300 group-open:bg-red-500/10 group-open:text-red-300 [&::-webkit-details-marker]:hidden">
+                      <Icon name="trash" size={14} /> {t("props.delete")}
+                    </summary>
+                  </details>
+                </div>
+                <DeleteConfirm id={p.id} name={p.name} text={t("props.deleteConfirmText", { name: p.name })} confirm={t("props.deleteConfirm")} />
               </li>
             );
           })}
         </ul>
       )}
-    </main>
+    </PageBody>
+  );
+}
+
+/** Confirmation strip shown under a card while its Delete is open (CSS :has, no browser dialogs). */
+function DeleteConfirm({ id, text, confirm }: { id: string; name: string; text: string; confirm: string }) {
+  return (
+    <div className="hidden border-t border-red-400/20 bg-red-500/[0.05] px-5 py-4 text-sm sm:px-6 [li:has(details[open])_&]:block">
+      <p className="text-red-100">{text}</p>
+      <form action={removeProperty.bind(null, id)} className="mt-3">
+        <button className="btn btn-danger-solid btn-sm">{confirm}</button>
+      </form>
+    </div>
   );
 }

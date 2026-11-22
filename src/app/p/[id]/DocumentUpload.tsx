@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import { useRef, useState } from "react";
 import { useT } from "@/i18n/client";
 import { apiFetch, errorText } from "@/lib/api";
@@ -83,7 +84,7 @@ export default function DocumentUpload({
         <ul className="mt-3 space-y-2">
           {docs.map((d) => (
             <li key={d.id} className="flex items-center justify-between gap-3 rounded-lg bg-[var(--soft)] px-3 py-2 text-sm">
-              <span className="truncate">📎 {d.fileName} <span className="text-[var(--muted)]">· {kb(d.size)}</span></span>
+              <span className="inline-flex min-w-0 items-center gap-1.5 truncate"><Icon name="paperclip" size={13} /> {d.fileName} <span className="text-[var(--muted)]">· {kb(d.size)}</span></span>
               {canDelete && (
                 <button type="button" onClick={() => remove(d.id)} className="shrink-0 text-xs text-[var(--muted)] underline">
                   {t("common.remove")}

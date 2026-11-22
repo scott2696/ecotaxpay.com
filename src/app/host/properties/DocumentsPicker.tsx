@@ -55,7 +55,7 @@ export default function DocumentsPicker({ value, onChange }: { value: DocumentsR
             </span>
           </button>
           {open && (
-            <div className="absolute z-20 mt-1 w-full rounded-xl border border-[var(--line)] bg-[var(--surface)] p-2 shadow-lg">
+            <div className="dialog absolute z-20 mt-1 w-full p-2">
               {DOCUMENT_OPTIONS.map((o) => (
                 <label key={o.id} className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-[var(--soft)]">
                   <input
@@ -68,7 +68,7 @@ export default function DocumentsPicker({ value, onChange }: { value: DocumentsR
                 </label>
               ))}
               <div className="flex justify-end border-t border-[var(--line)] px-2 pt-2">
-                <button type="button" onClick={() => setOpen(false)} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-semibold text-[var(--on-accent)]">
+                <button type="button" onClick={() => setOpen(false)} className="btn btn-primary btn-sm">
                   Done
                 </button>
               </div>

@@ -102,7 +102,7 @@ export default function MethodsForm({
   return (
     <form ref={form} onSubmit={submit} onInput={() => status === "saved" && setStatus("idle")} className="mt-4 space-y-3 [&_[data-bad]]:!border-red-400 [&_[data-bad]]:!outline-red-400">
       {status === "saved" && (
-        <div ref={summary} role="status" className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4">
+        <div ref={summary} role="status" className="note note-success flex-col p-4">
           <p className="font-semibold text-emerald-200">✓ {savedNow.length ? labels.savedList : labels.noneSaved}</p>
           {savedNow.length > 0 && (
             <>
@@ -121,7 +121,7 @@ export default function MethodsForm({
         </div>
       )}
       {children}
-      <div className="sticky bottom-3 z-10 -mx-2 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[rgba(14,15,18,0.92)] px-4 py-3 shadow-2xl backdrop-blur">
+      <div className="sticky bottom-24 z-10 -mx-2 mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[var(--r-lg)] border border-[var(--line-strong)] bg-[rgba(16,17,20,0.9)] px-4 py-3 shadow-[var(--edge),var(--shadow-2)] backdrop-blur-xl lg:bottom-4">
         <p role="status" aria-live="polite" className={`text-sm ${status === "error" || status === "failed" ? "text-red-300" : status === "restored" ? "text-amber-200" : "text-emerald-300"}`}>
           {status === "saved" ? `✓ ${labels.saved}` : status === "error" ? labels.invalid : status === "failed" ? labels.failed : status === "restored" ? labels.restored : ""}
           {status === "failed" && (
@@ -130,7 +130,7 @@ export default function MethodsForm({
             </button>
           )}
         </p>
-        <button disabled={pending} className="ms-auto rounded-xl bg-[var(--accent)] px-5 py-2.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+        <button disabled={pending} className="btn btn-primary ms-auto">
           {pending ? labels.saving : labels.save}
         </button>
       </div>

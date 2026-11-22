@@ -9,6 +9,7 @@ import { stayKey, type ListedStay } from "@/lib/bookings";
 import { AirbnbIcon, BookingIcon, PlatformBadge, PlatformIcon } from "./BrandIcons";
 import { platformName } from "@/lib/platforms";
 import CopyLink from "./CopyLink";
+import Icon from "@/components/Icon";
 
 
 
@@ -42,11 +43,11 @@ export default async function UpcomingGuests({
   const fmt = (iso: string) => date(iso, locale, { weekday: "short", day: "numeric", month: "short" });
   if (!connected)
     return (
-      <section className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+      <section className="panel panel-pad">
         <div className="flex flex-wrap items-center justify-between gap-5">
           <div className="min-w-0 max-w-xl">
-            <h2 className="text-lg font-semibold">{t("upcoming.title")}</h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <h2 className="panel-title">{t("upcoming.title")}</h2>
+            <p className="panel-sub">
               {t("upcoming.connectIntro")}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -56,7 +57,7 @@ export default async function UpcomingGuests({
           </div>
           <Link
             href="#calendars"
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--on-accent)] shadow-sm hover:brightness-110"
+            className="btn btn-primary btn-lg"
           >
             <span className="flex -space-x-1">
               <span className="rounded-full bg-white p-0.5"><AirbnbIcon size={16} /></span>
@@ -106,55 +107,56 @@ export default async function UpcomingGuests({
     payments.find((p) => p.propertyId === propertyId && p.quote.checkIn === checkIn && p.status !== "refunded");
 
   return (
-    <section className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] px-5 py-4">
-        <div className="flex items-center gap-3">
-          <h2 className="font-semibold">{t("upcoming.title")}</h2>
-          <span className="flex items-center gap-1">{["airbnb", "booking", "vrbo"].map((id) => <PlatformIcon key={id} id={id} size={18} />)}</span>
+    <section className="panel overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="icon-chip"><Icon name="calendar" size={17} /></span>
+          <div className="min-w-0">
+            <h2 className="panel-title">{t("upcoming.title")}</h2>
+            <p className="hidden text-xs text-[var(--muted)] sm:block">{t("upcoming.autoRefresh")}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-xs text-[var(--muted)] sm:inline">{t("upcoming.autoRefresh")}</span>
-          <Link href="#calendars" className="text-[var(--muted)] underline">{t("upcoming.manage")}</Link>
+        <div className="flex items-center gap-1.5">
+          <Link href="#calendars" className="btn btn-quiet btn-sm"><Icon name="settings" size={14} /> {t("upcoming.manage")}</Link>
           <form action={syncCalendars}>
-            <button className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 font-medium hover:bg-[var(--soft)]">↻ {t("upcoming.syncNow")}</button>
+            <button className="btn btn-secondary btn-sm"><Icon name="refresh" size={14} /> {t("upcoming.syncNow")}</button>
           </form>
         </div>
       </div>
 
       {calendar.errors.map((e) => (
-        <p key={`${e.propertyName}${e.source}`} className="mx-5 mt-3 rounded-lg bg-red-500/10 p-2 text-sm text-red-300">
+        <p key={`${e.propertyName}${e.source}`} className="note note-danger mx-5 mb-3">
           {t("upcoming.calError", { platform: platformName(e.source), name: e.propertyName })} {calendarErrorText(e.error, t)}
         </p>
       ))}
 
       {apartments.length > 1 && (
-        <nav className="flex gap-1.5 overflow-x-auto border-b border-[var(--line)] px-5 py-3 text-sm" aria-label={t("upcoming.whichApartments")}>
+        <nav className="flex gap-1.5 overflow-x-auto border-t border-[var(--line)] px-5 py-3 text-sm [scrollbar-width:none]" aria-label={t("upcoming.whichApartments")}>
           {[{ id: "", name: t("upcoming.allApartments") }, ...apartments].map((a) => (
             <Link
               key={a.id || "all"}
               href={href(view, at, a.id || undefined)}
               scroll={false}
               aria-current={(onlyApt ?? "") === a.id ? "page" : undefined}
-              className={`shrink-0 rounded-full border px-3 py-1 transition-colors ${
-                (onlyApt ?? "") === a.id ? "border-[var(--accent)] bg-[var(--soft)] font-medium text-[var(--ink)]" : "border-[var(--line)] text-[var(--muted)] hover:text-[var(--ink)]"
+              className={`inline-flex h-8 shrink-0 items-center gap-2 rounded-full border px-3 transition-colors ${
+                (onlyApt ?? "") === a.id ? "border-[var(--line-strong)] bg-white/[0.08] font-medium text-[var(--ink)] shadow-[var(--edge)]" : "border-[var(--line)] text-[var(--muted)] hover:border-[var(--line-strong)] hover:text-[var(--ink)]"
               }`}
             >
               {a.name}
-              <span className="ms-1 text-[var(--muted)]">{(a.id ? calendar.stays.filter((st) => st.propertyId === a.id) : calendar.stays).length}</span>
+              <span className="rounded-full bg-white/[0.06] px-1.5 text-xs tabular-nums text-[var(--muted)]">{(a.id ? calendar.stays.filter((st) => st.propertyId === a.id) : calendar.stays).length}</span>
             </Link>
           ))}
         </nav>
       )}
 
-      <nav className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-3 text-sm" aria-label={t("upcoming.view")}>
-        <div className="inline-flex rounded-lg border border-[var(--line)] p-0.5">
+      <nav className="flex flex-wrap items-center gap-3 border-y border-[var(--line)] bg-white/[0.012] px-5 py-3 text-sm" aria-label={t("upcoming.view")}>
+        <div className="seg">
           {(["all", "month", "week", "day"] as const).map((v) => (
             <Link
               key={v}
               href={href(v, at)}
               scroll={false}
               aria-current={v === view ? "page" : undefined}
-              className={`rounded-md px-3 py-1 ${v === view ? "bg-[var(--soft)] font-medium text-[var(--ink)]" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
             >
               {t(`upcoming.view.${v}`)}
             </Link>
@@ -162,17 +164,20 @@ export default async function UpcomingGuests({
         </div>
         {view !== "all" && (
           <div className="flex items-center gap-1">
-            <Link href={href(view, step(-1))} scroll={false} aria-label={t("upcoming.prev")} className="rounded-md px-2 py-1 text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]">‹</Link>
-            <span className="min-w-40 text-center font-medium">{periodLabel}</span>
-            <Link href={href(view, step(1))} scroll={false} aria-label={t("upcoming.next")} className="rounded-md px-2 py-1 text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]">›</Link>
-            <Link href={href(view, today)} scroll={false} className="ms-1 rounded-md border border-[var(--line)] px-2 py-0.5 text-xs text-[var(--muted)] hover:text-[var(--ink)]">{t("upcoming.today")}</Link>
+            <Link href={href(view, step(-1))} scroll={false} aria-label={t("upcoming.prev")} className="btn btn-quiet btn-sm btn-icon"><Icon name="chevronLeft" size={16} /></Link>
+            <span className="min-w-36 text-center font-medium">{periodLabel}</span>
+            <Link href={href(view, step(1))} scroll={false} aria-label={t("upcoming.next")} className="btn btn-quiet btn-sm btn-icon"><Icon name="chevronRight" size={16} /></Link>
+            <Link href={href(view, today)} scroll={false} className="btn btn-secondary btn-sm ms-1 h-7 px-2.5 text-xs">{t("upcoming.today")}</Link>
           </div>
         )}
-        <span className="ms-auto text-xs text-[var(--muted)]">{t.plural("upcoming.arrivals", stays.length)}</span>
+        <span className="pill pill-neutral pill-plain ms-auto">{t.plural("upcoming.arrivals", stays.length)}</span>
       </nav>
 
       {stays.length === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-[var(--muted)]">{view === "all" ? t("upcoming.none") : t("upcoming.noneInPeriod")}</p>
+        <div className="flex flex-col items-center gap-2 px-5 py-12 text-center text-sm text-[var(--muted)]">
+          <span className="icon-chip"><Icon name="calendar" size={17} /></span>
+          {view === "all" ? t("upcoming.none") : t("upcoming.noneInPeriod")}
+        </div>
       ) : (
         <ul className="divide-y divide-[var(--line)]">
           {stays.map((s) => {
@@ -188,7 +193,12 @@ export default async function UpcomingGuests({
               ...(typed ? { name: typed } : {}),
             });
             return (
-              <li key={`${s.source}${s.uid}`} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+              <li key={`${s.source}${s.uid}`} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-5 py-4 transition-colors hover:bg-white/[0.015]">
+                <div className="flex min-w-0 items-start gap-4">
+                <div className="flex w-12 shrink-0 flex-col items-center rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--panel-raised)] py-1.5 shadow-[var(--edge)]" aria-hidden>
+                  <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-[var(--muted)]">{date(s.checkIn, locale, { month: "short" })}</span>
+                  <span className="text-lg font-semibold leading-tight tabular-nums">{date(s.checkIn, locale, { day: "numeric" })}</span>
+                </div>
                 <div className="min-w-0">
                   {/* Once a link exists we know who is coming; calendar feeds only share dates. */}
                   {!link?.guestName && <GuestName t={t} bookingKey={key} booking={{ propertyId: s.propertyId, checkIn: s.checkIn }} name={typed} />}
@@ -210,8 +220,8 @@ export default async function UpcomingGuests({
                   <div className={link ? "text-sm" : "font-medium"}>
                     {fmt(s.checkIn)} → {fmt(s.checkOut)} <span className="font-normal text-[var(--muted)]">· {t.plural("line.nights", s.nights)}</span>
                   </div>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.07] px-2 py-0.5 font-medium text-[var(--ink)]">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+                    <span className="inline-flex h-6 items-center gap-1.5 rounded-full border border-[var(--line)] bg-white/[0.04] px-2 font-medium text-[var(--ink)]">
                       <PlatformIcon id={s.source} size={12} />
                       {platformName(s.source)}
                     </span>
@@ -219,28 +229,29 @@ export default async function UpcomingGuests({
                     {s.reservationCode && <span>· {s.reservationCode}</span>}
                     {s.phoneLast4 && <span>· {t("upcoming.phone", { last4: s.phoneLast4 })}</span>}
                     {(s as { missing?: boolean }).missing && (
-                      <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-amber-200" title={t("upcoming.missingHint")}>
+                      <span className="pill pill-warning" title={t("upcoming.missingHint")}>
                         {t("upcoming.missing", { platform: platformName(s.source) })}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
+                </div>
+                <div className="flex items-center gap-1.5 text-sm max-sm:w-full max-sm:ps-16">
                   {link ? (
                     <>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${paid ? "bg-emerald-400/15 text-emerald-300" : "bg-amber-400/15 text-amber-200"}`}>
+                      <span className={`pill me-1 ${paid ? "pill-success" : "pill-warning"}`}>
                         {paid ? t("status.paid") : t("upcoming.linkSent")}
                       </span>
-                      {!paid && <CopyLink path={`/p/${link.id}`} />}
+                      {!paid && <CopyLink path={`/p/${link.id}`} compact />}
                     </>
                   ) : (
-                    <Link href={`/host/new?${params}`} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)] hover:brightness-110">
-                      {t("upcoming.createLink")}
+                    <Link href={`/host/new?${params}`} className="btn btn-primary btn-sm">
+                      <Icon name="link" size={14} /> {t("upcoming.createLink")}
                     </Link>
                   )}
                   <form action={hideStay.bind(null, stayKey(s))}>
-                    <button className="rounded-lg px-2 py-1.5 text-xs text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]" title={t("upcoming.removeHint")} aria-label={t("upcoming.remove")}>
-                      {t("upcoming.remove")}
+                    <button className="btn btn-quiet btn-sm btn-icon" title={t("upcoming.removeHint")} aria-label={t("upcoming.remove")}>
+                      <Icon name="x" size={15} />
                     </button>
                   </form>
                 </div>
@@ -250,9 +261,9 @@ export default async function UpcomingGuests({
         </ul>
       )}
       {removed.length > 0 && (
-        <details className="border-t border-[var(--line)] px-5 py-3 text-sm">
-          <summary className="cursor-pointer text-[var(--muted)] hover:text-[var(--ink)]">{t("upcoming.removedList", { count: removed.length })}</summary>
-          <ul className="mt-3 divide-y divide-[var(--line)] rounded-xl border border-[var(--line)]">
+        <details className="group border-t border-[var(--line)] px-5 py-3 text-sm">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-[var(--muted)] hover:text-[var(--ink)] [&::-webkit-details-marker]:hidden"><Icon name="chevronRight" size={14} className="transition-transform group-open:rotate-90" />{t("upcoming.removedList", { count: removed.length })}</summary>
+          <ul className="panel-inset mt-3 divide-y divide-[var(--line)]">
             {removed.map((s) => (
               <li key={s.key} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
                 <span>
@@ -260,7 +271,7 @@ export default async function UpcomingGuests({
                   <span className="text-[var(--muted)]"> · {platformName(s.source)} · {s.propertyName}</span>
                 </span>
                 <form action={restoreStay.bind(null, s.key)}>
-                  <button className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--soft)]">↺ {t("upcoming.restore")}</button>
+                  <button className="btn btn-secondary btn-sm"><Icon name="refresh" size={13} /> {t("upcoming.restore")}</button>
                 </form>
               </li>
             ))}
@@ -268,7 +279,8 @@ export default async function UpcomingGuests({
         </details>
       )}
       {calendar.stays.some((s) => s.source === "booking") && (
-        <p className="border-t border-[var(--line)] px-5 py-3 text-xs text-[var(--muted)]">
+        <p className="flex gap-2 border-t border-[var(--line)] px-5 py-3 text-xs text-[var(--muted)]">
+          <Icon name="info" size={13} className="mt-px" />
           {t("upcoming.bookingNote")}
         </p>
       )}
@@ -286,9 +298,9 @@ function GuestName({ t, bookingKey, booking, name }: { t: Awaited<ReturnType<typ
         placeholder={t("upcoming.guestNamePh")}
         aria-label={t("form.guestName")}
         maxLength={120}
-        className="input h-8 w-48 px-2 text-sm"
+        className="input h-8 w-44 rounded-[var(--r-sm)] px-2.5 text-sm"
       />
-      <button className="h-8 rounded-lg border border-[var(--line)] px-2.5 text-xs font-medium hover:bg-[var(--soft)]">{t("upcoming.saveName")}</button>
+      <button className="btn btn-secondary btn-sm">{t("upcoming.saveName")}</button>
     </form>
   );
   if (!name) return <div className="mb-1.5">{form}</div>;

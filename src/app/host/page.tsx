@@ -20,14 +20,18 @@ import ChooseFirst from "./connect/ChooseFirst";
 import { PlatformIcon } from "./BrandIcons";
 import { PLATFORMS } from "@/lib/platforms";
 import ConnectForm from "./connect/ConnectForm";
+import Icon, { type IconName } from "@/components/Icon";
+import PageHeader, { PageBody } from "@/components/PageHeader";
+import { cookies } from "next/headers";
+import { TZ_COOKIE } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
 const badge: Record<PaymentStatus, string> = {
-  paid: "bg-emerald-400/15 text-emerald-300",
-  paid_offline: "bg-emerald-400/10 text-emerald-300",
-  pending: "bg-amber-400/15 text-amber-200", // link sent, not paid yet
-  refunded: "bg-white/10 text-zinc-300",
+  paid: "pill-success",
+  paid_offline: "pill-success",
+  pending: "pill-warning", // link sent, not paid yet
+  refunded: "pill-neutral",
 };
 
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -54,6 +58,16 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
   // Bookings stay until the host removes them, even if a feed hiccups or a booking leaves a calendar.
   const calendar = { stays: connected ? await rememberStays(host, properties, live) : [], errors: live.errors };
   const { t, locale } = await getI18n();
+  const tzRaw = (await cookies()).get(TZ_COOKIE)?.value;
+  const tz = (() => {
+    try {
+      const z = tzRaw ? decodeURIComponent(tzRaw) : "Europe/Malta";
+      new Intl.DateTimeFormat("en", { timeZone: z });
+      return z;
+    } catch {
+      return "Europe/Malta";
+    }
+  })();
   const methods = activeMethods(host.paymentMethods);
   const fm = (n: number, cur = "EUR") => formatMoney(n, cur, locale);
 
@@ -108,20 +122,23 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                   {p.documents && p.documents.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-x-2 text-xs">
                       {p.documents.map((d) => (
-                        <a key={d.id} href={`/api/host/documents/${p.id}/${d.id}`} target="_blank" className="text-[var(--accent)] underline">
-                          📎 {d.fileName}
+                        <a key={d.id} href={`/api/host/documents/${p.id}/${d.id}`} target="_blank" className="link inline-flex items-center gap-1">
+                          <Icon name="paperclip" size={12} /> {d.fileName}
                         </a>
                       ))}
                     </div>
                   )}
       </>
     ),
-    destination: <>{p.quote.manual ? <>⚡ {capFirst(quoteTitle(p.quote, t))}</> : p.quote.regionName.split(" (")[0]}</>,
+    destination: <>{p.quote.manual ? <span className="inline-flex items-center gap-1.5"><Icon name="zap" size={14} className="text-[var(--muted)]" /> {capFirst(quoteTitle(p.quote, t))}</span> : p.quote.regionName.split(" (")[0]}</>,
     stay: (
       <>
+                  <div className="whitespace-nowrap">
                   {p.quote.manual
                     ? t("quick.created", { date: date(p.createdAt, locale, { day: "numeric", month: "short", year: "numeric" }) })
                     : `${date(p.quote.checkIn, locale, { day: "numeric", month: "short", year: "numeric" })} · ${t.plural("line.nights", p.quote.nights)}`}
+                  </div>
+                  <div className="mt-0.5 text-xs text-[var(--muted)]">{p.quote.manual ? <span className="inline-flex items-center gap-1"><Icon name="zap" size={11} /> {capFirst(quoteTitle(p.quote, t))}</span> : p.quote.regionName.split(" (")[0]}</div>
       </>
     ),
     guests: <>{p.quote.manual ? "—" : p.guestsToConfirm ? <span className="text-sky-200">{t("dash.guestsToConfirm")}</span> : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</>,
@@ -129,39 +146,40 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
     status: (
       <>
                   {p.status === "pending" && p.reportedPaidAt ? (
-                    <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-xs font-medium text-sky-200">
-                      {t(paysOnArrival(p.paidVia) ? "status.cashPromised" : "status.reported")}
-                    </span>
+                    <span className="pill pill-info">{t(paysOnArrival(p.paidVia) ? "status.cashPromised" : "status.reported")}</span>
                   ) : (
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
+                    <span className={`pill ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
                   )}
                   {p.paidVia && <div className="mt-1 text-xs text-[var(--muted)]">{p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey)} · {paymentReference(p)}</div>}
                   {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
       </>
     ),
     actions: (
-                  <div className="flex flex-wrap items-center justify-end gap-3">
+                  <div className="flex items-center justify-end gap-1.5 max-md:flex-wrap max-md:justify-start">
                   {p.receiptNumber ? (
-                    <a href={`/api/receipt/${p.id}`} target="_blank" className="text-[var(--accent)] underline">{t("dash.receipt")}</a>
+                    <a href={`/api/receipt/${p.id}`} target="_blank" className="btn btn-secondary btn-sm">
+                      <Icon name="receipt" size={14} /> {t("dash.receipt")}
+                    </a>
                   ) : (
                     <>
-                      <CopyLink path={`/p/${p.id}`} />
+                      <span className="md:hidden"><CopyLink path={`/p/${p.id}`} /></span>
+                      <span className="max-md:hidden"><CopyLink path={`/p/${p.id}`} compact /></span>
                       <form action={markPaidOffline.bind(null, p.id)}>
-                        <button className={p.reportedPaidAt ? "rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)]" : "text-[var(--muted)] underline"}>
-                          {t(p.reportedPaidAt ? "dash.confirmReceived" : "dash.markCash")}
+                        <button className={`btn btn-sm ${p.reportedPaidAt ? "btn-primary" : "btn-secondary"}`}>
+                          <Icon name="check" size={14} /> {t(p.reportedPaidAt ? "dash.confirmReceived" : "dash.markCash")}
                         </button>
                       </form>
                     </>
                   )}
                   {/* Opens inside the row (never clipped by the table, even on the last row). */}
                   <details className="group open:w-full">
-                    <summary className="cursor-pointer list-none text-end text-[var(--muted)] hover:text-red-300 group-open:text-red-300" aria-label={t("dash.remove")} title={t("dash.remove")}>
-                      ✕
+                    <summary className="btn btn-quiet btn-sm btn-icon ms-auto list-none hover:text-red-300 group-open:bg-red-500/10 group-open:text-red-300 [&::-webkit-details-marker]:hidden" aria-label={t("dash.remove")} title={t("dash.remove")}>
+                      <Icon name="trash" size={15} />
                     </summary>
-                    <div className="ms-auto mt-2 w-72 max-w-full whitespace-normal rounded-xl border border-red-400/30 bg-red-500/5 p-3 text-start text-sm">
+                    <div className="note note-danger ms-auto mt-2 w-72 max-w-full flex-col whitespace-normal text-start">
                       <p>{t(p.status === "pending" ? "dash.removeConfirmPending" : "dash.removeConfirmPaid")}</p>
-                      <form action={removePayment.bind(null, p.id)} className="mt-3">
-                        <button className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500">{t("dash.removeYes")}</button>
+                      <form action={removePayment.bind(null, p.id)}>
+                        <button className="btn btn-danger-solid btn-sm">{t("dash.removeYes")}</button>
                       </form>
                     </div>
                   </details>
@@ -169,90 +187,70 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
     ),
   });
 
-  return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">{t("dash.title")}</h1>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/host/properties" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">
-            🏠 {t("nav.apartments")}
-          </Link>
-          <a href="/api/host/export" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">
-            ⬇ {t("dash.export")}
-          </a>
-          <a href="/host/new?quick=1" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">
-            ⚡ {t("quick.tab.quick")}
-          </a>
-          <a href="/host/new" className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
-            + {t("dash.newLink")}
-          </a>
-        </div>
-      </div>
-      {isDemoMode() && <p className="mb-6 rounded-lg bg-sky-400/10 p-3 text-sm text-sky-200">{t("dash.demo")}</p>}
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: tz }).format(new Date()));
+  const greeting = t(hour < 12 ? "dash.hello.morning" : hour < 18 ? "dash.hello.afternoon" : "dash.hello.evening", { name: host.name.split(/\s+/)[0] || host.name });
+  const today = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: tz }).format(new Date());
 
-      <div className="mb-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-4">
-        <Stat label={t("dash.stat.paid")} value={String(paid.length)} />
-        <Stat label={t("dash.stat.awaiting")} value={String(payments.length - paid.length)} />
-        <Stat label={t("dash.stat.tax")} value={taxTotal} />
-        <Stat label={t("dash.stat.fees")} value={feeTotal} />
-      </div>
-
-      {/* Payment methods shortcut: what guests can pay with, and a direct link to change it. */}
-      <section className={`mb-8 rounded-2xl border p-5 ${methods.length ? "border-[var(--line)] bg-[var(--surface)]" : "border-amber-400/30 bg-amber-400/5"}`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+  const methodsCard = (
+    <section className={`panel panel-pad ${methods.length ? "" : "border-amber-400/30"}`}>
+      <div className="panel-head">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="icon-chip"><Icon name="wallet" size={17} /></span>
           <div className="min-w-0">
-            <h2 className="font-semibold">{t("methods.title")}</h2>
-            <p className="mt-0.5 text-sm text-[var(--muted)]">{methods.length ? t("dash.methodsOn") : t("banner.methods")}</p>
+            <h2 className="panel-title">{t("methods.title")}</h2>
+            <p className="panel-sub">{methods.length ? t("dash.methodsOn") : t("banner.methods")}</p>
           </div>
-          <Link
-            href="/host/account#methods"
-            className={methods.length ? "rounded-lg border border-[var(--line)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]" : "rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110"}
-          >
-            {methods.length ? t("dash.editMethods") : t("methods.add")} →
-          </Link>
         </div>
-        {methods.length > 0 && (
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {methods.map((id) => (
-              <li key={id} className="inline-flex items-center gap-2 rounded-lg bg-[var(--bg)] px-2.5 py-1.5 text-sm">
-                <MethodLogo id={id} />
-                {methodTitle(id, t)}
-                <span className="text-emerald-300" aria-label={t("methods.savedChip")}>✓</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {connected && (
-        <UpcomingGuests
-          calendar={calendar}
-          removed={removedStays(host, properties)}
-          payments={payments}
-          connected={connected}
-          names={host.bookingNames ?? {}}
-          month={month}
-          view={sp.view}
-          at={sp.at}
-          keep={{ ...(apartment ? { apartment } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }}
-          apartments={properties.filter((p) => Object.values(p.calendars ?? {}).some(Boolean)).map((p) => ({ id: p.id, name: p.name }))}
-          only={sp.stays}
-        />
+      </div>
+      {methods.length > 0 && (
+        <ul className="mt-4 space-y-1.5">
+          {methods.map((id) => (
+            <li key={id} className="flex items-center gap-2.5 rounded-[var(--r-md)] border border-[var(--line)] bg-white/[0.02] px-3 py-2 text-sm">
+              <MethodLogo id={id} />
+              <span className="min-w-0 flex-1 truncate">{methodTitle(id, t)}</span>
+              <Icon name="check" size={15} className="text-emerald-300" />
+            </li>
+          ))}
+        </ul>
       )}
+      <Link href="/host/account#methods" className={`btn btn-sm mt-4 w-full ${methods.length ? "btn-secondary" : "btn-primary"}`}>
+        {methods.length ? t("dash.editMethods") : t("methods.add")} <Icon name="arrowRight" size={14} />
+      </Link>
+    </section>
+  );
 
-      {/* Connect calendars: choose a channel from the list, paste its iCal link, Save. Only here on the dashboard. */}
-      <section id="calendars" className="mb-8 scroll-mt-24 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+  const regionCard = byRegion.size > 0 && (
+    <section className="panel panel-pad">
+      <div className="flex items-center gap-3">
+        <span className="icon-chip"><Icon name="globe" size={17} /></span>
+        <h2 className="panel-title">{t("dash.byDestination")}</h2>
+      </div>
+      <ul className="mt-4 divide-y divide-[var(--line)] text-sm">
+        {[...byRegion].map(([r, c]) => (
+          <li key={r} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+            <span className="text-[var(--muted)]">{r}</span>
+            <span className="font-semibold tabular-nums">{fm(c.cents, c.currency)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+
+  // Connect calendars: choose a channel from the list, paste its iCal link, Save. Only here on the dashboard.
+  const calendarsCard = (
+      <section id="calendars" className="panel panel-pad scroll-mt-24">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <h2 className="font-semibold">{t("upcoming.connect")}</h2>
-          {/* A few logos so it's clear at a glance which calendars this is about. */}
-          <span className="flex flex-wrap items-center gap-1.5" aria-hidden>
+          <span className="icon-chip"><Icon name="calendar" size={17} /></span>
+          <h2 className="panel-title">{t("upcoming.connect")}</h2>
+          {/* A few logos so it's clear at a glance which calendars this is about (while setting up). */}
+          {!connected && <span className="flex flex-wrap items-center gap-1.5" aria-hidden>
             {["airbnb", "booking", "vrbo", "misterbandb", "expedia", "agoda"].map((id) => (
               <PlatformIcon key={id} id={id} size={20} />
             ))}
             <span className="text-xs text-[var(--muted)]">{t("connect.nMore", { count: PLATFORMS.length - 7 })}</span>
-          </span>
+          </span>}
         </div>
-        <p className="mb-4 mt-1 text-sm text-[var(--muted)]">{t("pf.calendarsSub")}</p>
+        <p className="panel-sub mb-4 mt-2">{t("pf.calendarsSub")}</p>
         {properties.length ? (
           <ConnectForm
             apartments={properties.map((p) => ({
@@ -264,41 +262,88 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
           />
         ) : null}
         {properties.length ? (
-          <Link href="/host/properties/new?then=calendars" className="mt-4 inline-flex rounded-lg border border-dashed border-[var(--line-strong)] px-3 py-2 text-sm font-medium hover:bg-[var(--bg)]">
-            + {t("connect.addApartment")}
+          <Link href="/host/properties/new?then=calendars" className="btn btn-quiet btn-sm mt-3 border border-dashed border-[var(--line-strong)]">
+            <Icon name="plus" size={14} /> {t("connect.addApartment")}
           </Link>
         ) : (
           <ChooseFirst />
         )}
       </section>
+  );
 
-
-      {byRegion.size > 0 && (
-        <section className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
-          <h2 className="mb-3 font-semibold">{t("dash.byDestination")}</h2>
-          <ul className="space-y-1 text-sm">
-            {[...byRegion].map(([r, c]) => (
-              <li key={r} className="flex justify-between">
-                <span>{r}</span>
-                <span className="tabular-nums font-medium">{fm(c.cents, c.currency)}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+  return (
+    <PageBody>
+      <PageHeader
+        eyebrow={today}
+        title={greeting}
+        description={t("dash.subtitle")}
+        actions={
+          <>
+            <a href={exportHref} className="btn btn-secondary">
+              <Icon name="download" size={15} /> <span className="hidden sm:inline">{t("dash.export")}</span>
+            </a>
+            <a href="/host/new?quick=1" className="btn btn-secondary">
+              <Icon name="zap" size={15} /> {t("quick.tab.quick")}
+            </a>
+            <a href="/host/new" className="btn btn-primary">
+              <Icon name="plus" size={15} strokeWidth={2.25} /> {t("dash.newLink")}
+            </a>
+          </>
+        }
+      />
+      {isDemoMode() && (
+        <p className="note note-info mb-6"><Icon name="info" size={16} className="mt-0.5" /> {t("dash.demo")}</p>
       )}
 
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">{t("dash.guestsPayments")}</h2>
+      <div className="stagger mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        <Stat icon="check" label={t("dash.stat.paid")} value={String(paid.length)} />
+        <Stat icon="clock" label={t("dash.stat.awaiting")} value={String(payments.length - paid.length)} />
+        <Stat icon="coins" label={t("dash.stat.tax")} value={taxTotal} />
+        <Stat icon="receipt" label={t("dash.stat.fees")} value={feeTotal} />
+      </div>
+
+      <div className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="min-w-0 space-y-6 xl:col-span-2">
+          {connected && (
+            <UpcomingGuests
+              calendar={calendar}
+              removed={removedStays(host, properties)}
+              payments={payments}
+              connected={connected}
+              names={host.bookingNames ?? {}}
+              month={month}
+              view={sp.view}
+              at={sp.at}
+              keep={{ ...(apartment ? { apartment } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }}
+              apartments={properties.filter((p) => Object.values(p.calendars ?? {}).some(Boolean)).map((p) => ({ id: p.id, name: p.name }))}
+              only={sp.stays}
+            />
+          )}
+
+          {!connected && calendarsCard}
+        </div>
+        <aside className="min-w-0 space-y-6">
+          {methodsCard}
+          {connected && calendarsCard}
+          {regionCard}
+        </aside>
+      </div>
+
+      <div id="payments" className="mb-4 flex flex-wrap items-end justify-between gap-3 scroll-mt-24">
+        <div>
+          <div className="eyebrow mb-1">{t.plural("range.stays", shown.length)}</div>
+          <h2 className="text-lg font-semibold tracking-tight">{t("dash.guestsPayments")}</h2>
+        </div>
         <ApartmentFilter
           value={selected ? apartment : ""}
           apartments={properties.map((p) => ({ id: p.id, name: p.name, count: payments.filter((x) => x.propertyId === p.id).length }))}
         />
       </div>
-      <div className="mb-3">
+      <div className="panel mb-4 px-4 py-3">
         <StayRangeFilter months={rangeMonths} from={from} to={to} />
       </div>
       {(from || to) && (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-sm">
+        <div className="note mb-4 flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-x-5 gap-y-1">
             <span className="font-medium">
               {t("range.summary", {
@@ -312,22 +357,21 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
             <span>{t("range.paidTax", { amount: rangeTax, count: rangePaid.length })}</span>
             {shown.length > rangePaid.length && <span className="text-amber-200">{t.plural("range.unpaid", shown.length - rangePaid.length)}</span>}
           </div>
-          <a href={exportHref} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)] hover:brightness-110">⬇ {t("range.export")}</a>
+          <a href={exportHref} className="btn btn-primary btn-sm"><Icon name="download" size={14} /> {t("range.export")}</a>
         </div>
       )}
       {/* Phones: one card per transaction (every field visible). Wider screens: the table. */}
       <section className="space-y-3 md:hidden">
-        {shown.length === 0 && <p className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-4 py-8 text-center text-sm text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</p>}
+        {shown.length === 0 && <p className="panel px-4 py-10 text-center text-sm text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</p>}
         {shown.map((p) => {
           const c = rowCells(p);
           return (
-            <article key={p.id} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm">
+            <article key={p.id} className="panel p-4 text-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">{c.guest}</div>
                 <div className="shrink-0 text-end text-base font-semibold tabular-nums">{c.total}</div>
               </div>
               <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-t border-[var(--line)] pt-3">
-                <dt className="text-[var(--muted)]">{t("dash.col.destination")}</dt><dd>{c.destination}</dd>
                 <dt className="text-[var(--muted)]">{t("dash.col.stay")}</dt><dd>{c.stay}</dd>
                 <dt className="text-[var(--muted)]">{t("receipt.guests")}</dt><dd>{c.guests}</dd>
                 <dt className="text-[var(--muted)]">{t("dash.col.status")}</dt><dd>{c.status}</dd>
@@ -337,45 +381,49 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
           );
         })}
       </section>
-      <section className="hidden overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)] md:block">
-        <table className="w-full min-w-[800px] text-sm">
-          <thead className="border-b border-[var(--line)] text-start text-[var(--muted)]">
+      <section className="panel hidden overflow-x-auto md:block">
+        <table className="table-pro min-w-[760px]">
+          <thead>
             <tr>
-              {[t("dash.col.guest"), t("dash.col.destination"), t("dash.col.stay"), t("receipt.guests"), t("dash.col.total"), t("dash.col.status"), ""].map((h, i) => (
-                <th key={i} className="px-4 py-3 text-start font-medium">{h}</th>
+              {[t("dash.col.guest"), t("dash.col.stay"), t("receipt.guests"), t("dash.col.total"), t("dash.col.status"), ""].map((h, i) => (
+                <th key={i}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {shown.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</td></tr>
+              <tr><td colSpan={6} className="py-12 text-center text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</td></tr>
             )}
             {shown.map((p) => {
               const c = rowCells(p);
               return (
-                <tr key={p.id} className="border-b border-[var(--line)] last:border-0">
-                  <td className="px-4 py-3">{c.guest}</td>
-                  <td className="px-4 py-3">{c.destination}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{c.stay}</td>
-                  <td className="px-4 py-3">{c.guests}</td>
-                  <td className="px-4 py-3 tabular-nums font-medium">{c.total}</td>
-                  <td className="px-4 py-3">{c.status}</td>
-                  <td className="px-4 py-3 text-end whitespace-nowrap">{c.actions}</td>
+                <tr key={p.id}>
+                  <td>{c.guest}</td>
+                  <td>{c.stay}</td>
+                  <td className="whitespace-nowrap">{c.guests}</td>
+                  <td className="font-semibold tabular-nums">{c.total}</td>
+                  <td>{c.status}</td>
+                  <td className="text-end whitespace-nowrap">{c.actions}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </section>
-    </main>
+    </PageBody>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, icon }: { label: string; value: string; icon: IconName }) {
   return (
-    <div className="min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3.5 py-3 sm:rounded-2xl sm:p-5">
-      <div className="truncate text-xs text-[var(--muted)] sm:text-sm">{label}</div>
-      <div className="mt-0.5 truncate text-lg font-semibold tabular-nums sm:mt-1 sm:text-2xl">{value}</div>
+    <div className="kpi min-w-0">
+      <div className="flex items-center justify-between gap-2">
+        <div className="truncate text-xs font-medium text-[var(--muted)] sm:text-[0.8125rem]">{label}</div>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--line)] bg-white/[0.03] text-[var(--muted)]">
+          <Icon name={icon} size={14} />
+        </span>
+      </div>
+      <div className="kpi-value mt-3 truncate">{value}</div>
     </div>
   );
 }

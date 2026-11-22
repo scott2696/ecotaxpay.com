@@ -55,7 +55,7 @@ export default function SendPanel(props: {
   const btn = "inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-sm font-medium hover:bg-[var(--soft)]";
 
   return (
-    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+    <section className="panel panel-pad">
       <div className="mb-4 flex items-center gap-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--soft)] text-[var(--accent)]">✓</span>
         <div>
@@ -75,7 +75,7 @@ export default function SendPanel(props: {
 
       <div className="flex gap-2">
         <input className="input font-mono text-xs" readOnly value={url} onFocus={(e) => e.target.select()} />
-        <button type="button" onClick={() => copy(url, "link")} className="shrink-0 rounded-lg bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--on-accent)]">
+        <button type="button" onClick={() => copy(url, "link")} className="btn btn-primary shrink-0">
           {copied === "link" ? t("common.copied") : t("common.copyLink")}
         </button>
       </div>

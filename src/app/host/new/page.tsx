@@ -1,6 +1,8 @@
 import { isSubscribed, requireHost } from "@/lib/auth";
 import { hasPaymentMethods } from "@/lib/payMethods";
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import PageHeader, { PageBody } from "@/components/PageHeader";
 import { listProperties } from "@/lib/store";
 import { seasonsInForce } from "@/lib/explain";
 import { resolveProperty } from "@/lib/resolve";
@@ -63,37 +65,31 @@ export default async function NewRequest({ searchParams }: { searchParams: Promi
     }];
   });
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <a href="/host" className="text-sm text-[var(--muted)] underline">
-        ← {t("nav.dashboard")}
-      </a>
-      <h1 className="mb-6 mt-3 text-2xl font-semibold">{t("dash.newLink")}</h1>
+    <PageBody>
+      <PageHeader back={{ href: "/host", label: t("nav.dashboard") }} title={t("dash.newLink")} description={t("form.pageSub")} />
       {!isSubscribed(host) ? (
-        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-10 text-center">
+        <div className="panel flex flex-col items-center p-10 text-center">
+          <span className="icon-chip mb-4"><Icon name="lock" size={17} /></span>
           <p className="font-medium">{t("form.subscribeFirst")}</p>
           <p className="mt-1 text-sm text-[var(--muted)]">{t("auth.registerSub")}</p>
-          <Link href="/host/account" className="mt-4 inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">{t("account.subscribe")}</Link>
+          <Link href="/host/account" className="btn btn-primary mt-4">{t("account.subscribe")}</Link>
         </div>
       ) : !hasPaymentMethods(host) ? (
-        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-10 text-center">
+        <div className="panel flex flex-col items-center p-10 text-center">
+          <span className="icon-chip mb-4"><Icon name="wallet" size={17} /></span>
           <p className="font-medium">{t("err.methodsFirst")}</p>
           <p className="mt-1 text-sm text-[var(--muted)]">{t("methods.intro")}</p>
-          <Link href="/host/account#methods" className="mt-4 inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">{t("methods.add")}</Link>
+          <Link href="/host/account#methods" className="btn btn-primary mt-4">{t("methods.add")}</Link>
         </div>
       ) : (
         <>
-          <nav className="mb-6 inline-flex max-w-full flex-wrap rounded-xl border border-[var(--line)] bg-[var(--surface)] p-1 text-sm" aria-label={t("dash.newLink")}>
+          <nav className="seg mb-6 max-w-full" aria-label={t("dash.newLink")}>
             {[
-              { href: "/host/new", label: t("quick.tab.full"), active: !quick },
-              { href: "/host/new?quick=1", label: t("quick.tab.quick"), active: quick },
+              { href: "/host/new", label: t("quick.tab.full"), active: !quick, icon: "calendar" as const },
+              { href: "/host/new?quick=1", label: t("quick.tab.quick"), active: quick, icon: "zap" as const },
             ].map((tab) => (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                aria-current={tab.active ? "page" : undefined}
-                className={`rounded-lg px-4 py-2 font-medium transition ${tab.active ? "bg-[var(--accent)] text-[var(--on-accent)]" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
-              >
-                {tab.label}
+              <Link key={tab.href} href={tab.href} aria-current={tab.active ? "page" : undefined} className="!h-9 !px-4">
+                <Icon name={tab.icon} size={15} /> {tab.label}
               </Link>
             ))}
           </nav>
@@ -102,16 +98,17 @@ export default async function NewRequest({ searchParams }: { searchParams: Promi
           ) : properties.length ? (
             <RequestForm properties={properties} prefill={prefill} templates={templates} />
           ) : (
-            <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface)] p-10 text-center">
+            <div className="panel flex flex-col items-center border-dashed p-10 text-center">
+              <span className="icon-chip mb-4"><Icon name="building" size={17} /></span>
               <p className="text-[var(--muted)]">{t("form.addFirst")}</p>
-              <div className="mt-4 flex flex-wrap justify-center gap-3">
-                <Link href="/host/properties/new" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">+ {t("props.add")}</Link>
-                <Link href="/host/new?quick=1" className="inline-block rounded-lg border border-[var(--line)] px-4 py-2 text-sm font-semibold">{t("quick.orQuick")}</Link>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <Link href="/host/properties/new" className="btn btn-primary"><Icon name="plus" size={15} /> {t("props.add")}</Link>
+                <Link href="/host/new?quick=1" className="btn btn-secondary"><Icon name="zap" size={15} /> {t("quick.orQuick")}</Link>
               </div>
             </div>
           )}
         </>
       )}
-    </main>
+    </PageBody>
   );
 }

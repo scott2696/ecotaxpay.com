@@ -50,14 +50,14 @@ export default function GuestCount({
 
   const step = (value: number, set: (n: number) => void, min: number, max: number, label: string) => (
     <div className="flex items-center gap-2" role="group" aria-label={label}>
-      <button type="button" onClick={() => set(Math.max(min, value - 1))} disabled={value <= min} className="h-11 w-11 rounded-lg border border-[var(--line)] text-lg disabled:opacity-40">−</button>
+      <button type="button" onClick={() => set(Math.max(min, value - 1))} disabled={value <= min} className="btn btn-secondary btn-icon h-11 w-11 text-lg">−</button>
       <span className="w-10 text-center text-lg font-semibold tabular-nums">{value}</span>
-      <button type="button" onClick={() => set(Math.min(max, value + 1))} disabled={value >= max} className="h-11 w-11 rounded-lg border border-[var(--line)] text-lg disabled:opacity-40">+</button>
+      <button type="button" onClick={() => set(Math.min(max, value + 1))} disabled={value >= max} className="btn btn-secondary btn-icon h-11 w-11 text-lg">+</button>
     </div>
   );
 
   return (
-    <form onSubmit={save} className="space-y-5 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+    <form onSubmit={save} className="panel panel-pad space-y-5">
       <div>
         <h2 className="text-lg font-semibold">{t("guests.title")}</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">{t("guests.sub")}</p>
@@ -87,8 +87,8 @@ export default function GuestCount({
           {minTaxableAge ? <p className="mt-2 text-xs text-[var(--muted)]">{t("explain.childrenFree", { age: minTaxableAge })}</p> : null}
         </div>
       )}
-      {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
-      <button disabled={busy} className="w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+      {error && <p className="note note-danger">{error}</p>}
+      <button disabled={busy} className="btn btn-primary btn-lg w-full">
         {busy ? t("common.wait") : t("guests.calculate")}
       </button>
     </form>

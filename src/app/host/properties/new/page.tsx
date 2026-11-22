@@ -1,6 +1,6 @@
 import { getI18n } from "@/i18n/server";
 import { requireHost } from "@/lib/auth";
-import Link from "next/link";
+import PageHeader, { PageBody } from "@/components/PageHeader";
 import { getProperty } from "@/lib/store";
 import PropertyForm from "../PropertyForm";
 import { platformById } from "@/lib/platforms";
@@ -16,15 +16,14 @@ export default async function NewProperty({ searchParams }: { searchParams: Prom
   const found = from ? await getProperty(from) : null;
   const source = found?.hostId === host.id ? found : null;
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/host/properties" className="text-sm text-[var(--muted)] underline">← {t("nav.apartments")}</Link>
-      <h1 className="mb-2 mt-3 text-2xl font-semibold">{t("props.add")}</h1>
+    <PageBody narrow>
+      <PageHeader back={{ href: "/host/properties", label: t("nav.apartments") }} title={t("props.add")} description={t("props.intro")} />
       {source && (
-        <p className="mb-6 rounded-lg bg-[var(--soft)] p-3 text-sm">
+        <p className="note note-info mb-6">
           {t("props.copiedFrom", { name: source.name })}
         </p>
       )}
       <PropertyForm template={source ?? undefined} connectAfter={connect && platformById(connect) ? connect : undefined} returnToCalendars={then === "calendars"} />
-    </main>
+    </PageBody>
   );
 }

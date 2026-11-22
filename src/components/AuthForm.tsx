@@ -82,8 +82,8 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
           </span>
         </label>
       )}
-      {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
-      <button disabled={busy} className="w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+      {error && <p className="note note-danger">{error}</p>}
+      <button disabled={busy} className="btn btn-primary btn-lg w-full">
         {busy ? t("common.wait") : register ? t("auth.create") : t("auth.login")}
       </button>
       <p className="text-center text-sm text-[var(--muted)]">

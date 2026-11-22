@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/client";
 import PayBadges, { MethodLogo, type CardBrand } from "@/components/PayBadges";
@@ -116,13 +117,13 @@ export default function PayDirect({
       <dialog
         ref={back}
         onClick={(e) => e.target === back.current && back.current?.close()}
-        className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-0 text-[var(--ink)] backdrop:bg-black/60"
+        className="dialog w-[min(26rem,calc(100vw-2rem))]"
       >
         <div className="p-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--soft)] text-xl">✓</div>
           <h2 className="text-lg font-semibold">{t("pay.backTitle", { amount })}</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">{t("pay.backText")}</p>
-          <button type="button" onClick={confirmBack} className="mt-5 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110">
+          <button type="button" onClick={confirmBack} className="btn btn-primary btn-lg mt-5 w-full">
             {t("pay.backYes")}
           </button>
           <button type="button" onClick={() => back.current?.close()} className="mt-2 w-full rounded-xl px-4 py-2.5 text-sm text-[var(--muted)] hover:bg-[var(--soft)]">
@@ -131,7 +132,7 @@ export default function PayDirect({
         </div>
       </dialog>
       {documents && (
-        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+        <div className="panel panel-pad">
           <DocumentUpload
             paymentId={id}
             required={documents.setting === "required"}
@@ -143,7 +144,7 @@ export default function PayDirect({
         </div>
       )}
 
-      <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+      <div className="panel panel-pad">
         <div className="text-sm font-medium">{t("pay.howToPay", { amount })}</div>
         <p className="mt-1 text-xs text-[var(--muted)]">{t("pay.directHint")}</p>
 
@@ -153,7 +154,7 @@ export default function PayDirect({
               key={m.id}
               className={`rounded-xl border p-4 transition ${method === m.id ? "border-[var(--accent)] bg-[var(--soft)]" : "border-[var(--line)] hover:bg-[var(--bg)]"}`}
             >
-              <label className="flex cursor-pointer items-center gap-3">
+              <label className="flex cursor-pointer flex-wrap items-center gap-3">
                 <input
                   type="radio"
                   name="method"
@@ -164,11 +165,9 @@ export default function PayDirect({
                   className="accent-[var(--accent)]"
                 />
                 <MethodLogo id={m.id} />
-                <span className="font-medium">{m.title}</span>
-                <span className="ms-auto flex items-center gap-3">
-                  {m.brands && <PayBadges brands={m.brands} />}
-                  <span aria-hidden className={`text-[var(--muted)] transition-transform ${method === m.id && !folded ? "rotate-180" : ""}`}>▾</span>
-                </span>
+                <span className="min-w-0 flex-1 font-medium">{m.title}</span>
+                {m.brands && <PayBadges brands={m.brands} className="max-sm:order-last max-sm:basis-full max-sm:ps-7" />}
+                <Icon name="chevronDown" size={16} className={`text-[var(--muted)] transition-transform ${method === m.id && !folded ? "rotate-180" : ""}`} />
               </label>
               {method === m.id && !folded && (
                 <span className="mt-3 block space-y-2">
@@ -178,7 +177,7 @@ export default function PayDirect({
                   ))}
                   {!paysOnArrival(m.id) && <CopyRow label={t("pay.reference")} value={reference} mono />}
                   {m.url && (
-                    <a href={m.url} target="_blank" rel="noreferrer noopener" onClick={() => (away.current = { since: Date.now(), clicked: true })} className="mt-1 block rounded-xl bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
+                    <a href={m.url} target="_blank" rel="noreferrer noopener" onClick={() => (away.current = { since: Date.now(), clicked: true })} className="btn btn-primary btn-lg mt-1 flex text-center">
                       {t("pay.openApp", { method: m.title, amount })} ↗
                     </a>
                   )}
@@ -190,7 +189,7 @@ export default function PayDirect({
         {note && <p className="mt-4 whitespace-pre-line rounded-xl bg-[var(--bg)] p-3 text-sm text-[var(--muted)]">{note}</p>}
       </div>
 
-      <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+      <div className="panel panel-pad">
         <div className="mb-3 text-sm font-medium">{t("pay.receiptWhere")}</div>
         <div className="grid grid-cols-1 gap-3">
           {askName && (
@@ -211,11 +210,11 @@ export default function PayDirect({
             <span className="mt-1 block text-xs text-[var(--muted)]">{t("pay.whatsappHint")}</span>
           </label>
         </div>
-        {error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
+        {error && <p className="note note-danger mt-4">{error}</p>}
         <button
           type="submit"
           disabled={busy || docsMissing}
-          className="mt-5 w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn btn-primary btn-lg mt-5 w-full disabled:cursor-not-allowed"
         >
           {busy ? t("pay.sending") : docsMissing ? t("pay.uploadFirst") : chosen?.id === "cash" ? t("pay.willPayCash") : chosen?.id === "cardOnArrival" ? t("pay.willPayCardOnArrival") : t("pay.iHavePaid", { amount })}
         </button>

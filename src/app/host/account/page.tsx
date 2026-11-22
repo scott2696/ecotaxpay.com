@@ -1,4 +1,6 @@
 import CancelGuide from "@/components/CancelGuide";
+import Icon, { type IconName } from "@/components/Icon";
+import PageHeader, { PageBody } from "@/components/PageHeader";
 import CardWalletTip from "./CardWalletTip";
 import { getI18n } from "@/i18n/server";
 import { date, type T } from "@/i18n/translate";
@@ -48,22 +50,42 @@ export default async function Account({ searchParams }: { searchParams: Promise<
   const badFields = new Set((sp.methodsError ?? "").split(",").filter(Boolean));
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-      <h1 className="text-2xl font-semibold">{t("nav.account")}</h1>
-      {notice && <p className="rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-300">{notice}</p>}
+    <PageBody>
+      <PageHeader title={t("nav.account")} description={host.email} />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[13rem_minmax(0,1fr)]">
+      <nav aria-label={t("nav.account")} className="hidden lg:block">
+        <ul className="sticky top-8 space-y-0.5 text-sm">
+          <li className="eyebrow mb-2 px-3">{t("account.onThisPage")}</li>
+          {([
+            ["#subscription", "account.subscription", "card"],
+            ["#methods", "methods.title", "wallet"],
+            ["#cancel", "account.howToCancel", "info"],
+            ["#details", "account.details", "user"],
+            ["#password", "account.password", "lock"],
+          ] as const).map(([href, key, icon]) => (
+            <li key={href}>
+              <a href={href} className="flex h-9 items-center gap-2.5 rounded-[var(--r-md)] px-3 text-[var(--muted)] transition-colors hover:bg-white/[0.035] hover:text-[var(--ink)]">
+                <Icon name={icon} size={15} /> {t(key)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div className="min-w-0 space-y-6">
+      {notice && <p className="note note-success rise"><Icon name="check" size={16} className="mt-0.5" /> {notice}</p>}
 
-      <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">{t("account.subscription")}</h2>
+      <section id="subscription" className="panel panel-pad scroll-mt-8">
+        <SectionHead icon="card" title={t("account.subscription")} />
         {admin ? (
-          <div className="mt-3">
-            <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-medium text-emerald-300">{t("account.badge.admin")}</span>
+          <div className="mt-4">
+            <span className="pill pill-success">{t("account.badge.admin")}</span>
             <p className="mt-2 text-sm text-[var(--muted)]">{t("account.adminText")}</p>
           </div>
         ) : (
         <>
-        <div className="mt-3 flex flex-wrap items-baseline justify-between gap-3">
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-2xl font-semibold">{price} / {t("home.month")}</div>
+            <div className="flex items-baseline gap-1.5"><span className="amount-hero text-[2rem]">{price}</span><span className="text-sm text-[var(--muted)]">/ {t("home.month")}</span></div>
             <div className="mt-1 text-sm">
               {t("account.status")} <StatusBadge t={t} status={sub.status} cancelling={!!sub.cancelAtPeriodEnd} />
             </div>
@@ -74,18 +96,18 @@ export default async function Account({ searchParams }: { searchParams: Promise<
           <div className="flex flex-wrap gap-2">
             {!active && (
               <form action={subscribe}>
-                <button className="rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110">{t("account.subscribeFor")}</button>
+                <button className="btn btn-primary btn-lg">{t("account.subscribeFor")}</button>
               </form>
             )}
             {active && sub.cancelAtPeriodEnd && (
               <form action={resume}>
-                <button className="rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110">{t("account.keep")}</button>
+                <button className="btn btn-primary btn-lg">{t("account.keep")}</button>
               </form>
             )}
             {active && !sub.cancelAtPeriodEnd && <CancelButton t={t} />}
             {active && !sub.demo && sub.stripeCustomerId && (
               <form action={openBillingPortal}>
-                <button className="rounded-xl border border-[var(--line)] px-5 py-3 font-medium hover:bg-[var(--bg)]">{t("account.cardInvoices")}</button>
+                <button className="btn btn-secondary btn-lg">{t("account.cardInvoices")}</button>
               </form>
             )}
           </div>
@@ -98,19 +120,18 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         )}
         </>
         )}
-        {!admin && (sub.demo || isDemoMode()) && <p className="mt-4 rounded-lg bg-sky-400/10 p-3 text-xs text-sky-200">{t("account.demo")}</p>}
+        {!admin && (sub.demo || isDemoMode()) && <p className="note note-info mt-4 text-xs">{t("account.demo")}</p>}
 
       </section>
 
 
-      <section id="methods" className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">{t("methods.title")}</h2>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${methodsOn ? "bg-emerald-400/15 text-emerald-300" : "bg-amber-400/15 text-amber-200"}`}>
-            {methodsOn ? t("methods.badge.on") : t("methods.badge.off")}
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("methods.intro")}</p>
+      <section id="methods" className="panel panel-pad scroll-mt-8">
+        <SectionHead
+          icon="wallet"
+          title={t("methods.title")}
+          sub={t("methods.intro")}
+          aside={<span className={`pill ${methodsOn ? "pill-success" : "pill-warning"}`}>{methodsOn ? t("methods.badge.on") : t("methods.badge.off")}</span>}
+        />
         <MethodsForm
           action={savePaymentMethods}
           labels={{
@@ -144,7 +165,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
                 <legend className="mb-1.5 text-sm">{t("methods.accountType")}</legend>
                 <div className="flex flex-wrap gap-2">
                   {([["iban", t("methods.type.iban")], ["uk", t("methods.type.uk")], ["us", t("methods.type.us")]] as const).map(([v, label]) => (
-                    <label key={v} className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--line)] px-3 py-1.5 text-sm has-[:checked]:border-[var(--accent)]">
+                    <label key={v} className="flex h-9 cursor-pointer items-center gap-2 rounded-[var(--r-sm)] border border-[var(--line)] px-3 text-sm transition-colors hover:border-[var(--line-strong)] has-[:checked]:border-[var(--line-strong)] has-[:checked]:bg-white/[0.05]">
                       <input type="radio" id={`bt-${v}`} name="bankType" value={v} defaultChecked={(pm.bank?.accountType ?? "iban") === v} className="accent-[var(--accent)]" />
                       {label}
                     </label>
@@ -189,56 +210,56 @@ export default async function Account({ searchParams }: { searchParams: Promise<
             <Input name="linkUrl" label={t("methods.linkUrl")} value={pm.link?.url} bad={badFields.has("linkUrl")} placeholder="https://…" />
           </Method>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">{t("methods.note")} <span className="text-[var(--muted)]">{t("common.optional")}</span></span>
+            <span className="label">{t("methods.note")} <span className="text-[var(--muted)]">{t("common.optional")}</span></span>
             <textarea name="note" className="input min-h-20" defaultValue={pm.note ?? ""} maxLength={500} placeholder={t("methods.notePlaceholder")} />
           </label>
         </MethodsForm>
-        <p className="mt-4 text-xs text-[var(--muted)]">{t("methods.howItWorks")}</p>
+        <p className="mt-4 flex gap-2 text-xs text-[var(--muted)]"><Icon name="info" size={13} className="mt-px" /> {t("methods.howItWorks")}</p>
       </section>
 
-      <section id="cancel" className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">{t("account.howToCancel")}</h2>
-        <div className="mt-2 text-sm">
+      <section id="cancel" className="panel panel-pad scroll-mt-8">
+        <SectionHead icon="info" title={t("account.howToCancel")} />
+        <div className="mt-4 text-sm">
           <CancelGuide compact />
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">{t("account.details")}</h2>
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("account.detailsHint")}</p>
-        <form action={saveProfile} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <section id="details" className="panel panel-pad scroll-mt-8">
+        <SectionHead icon="user" title={t("account.details")} sub={t("account.detailsHint")} />
+        <form action={saveProfile} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">{t("auth.name")}</span>
+            <span className="label">{t("auth.name")}</span>
             <input name="name" className="input" defaultValue={host.name} required />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">{t("common.email")}</span>
+            <span className="label">{t("common.email")}</span>
             <input className="input" value={host.email} readOnly />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">{t("account.business")}</span>
+            <span className="label">{t("account.business")}</span>
             <input name="businessName" className="input" defaultValue={host.businessName ?? ""} placeholder="Seaview Rentals Ltd" />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">{t("account.taxId")}</span>
+            <span className="label">{t("account.taxId")}</span>
             <input name="taxId" className="input" defaultValue={host.taxId ?? ""} />
           </label>
           <div className="sm:col-span-2">
-            <button className="rounded-xl bg-[var(--accent)] px-5 py-2.5 font-semibold text-[var(--on-accent)] hover:brightness-110">{t("account.save")}</button>
+            <button className="btn btn-primary">{t("account.save")}</button>
           </div>
         </form>
       </section>
 
-      <section id="password" className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">{t("account.password")}</h2>
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("account.passwordHint")}</p>
+      <section id="password" className="panel panel-pad scroll-mt-8">
+        <SectionHead icon="lock" title={t("account.password")} sub={t("account.passwordHint")} />
         <ChangePasswordForm action={changePassword} />
         <p className="mt-4 text-xs text-[var(--muted)]">
           {t("account.forgotHint")}{" "}
-          <a href={`/forgot-password?email=${encodeURIComponent(host.email)}`} className="underline">{t("auth.forgot")}</a>
+          <a href={`/forgot-password?email=${encodeURIComponent(host.email)}`} className="link">{t("auth.forgot")}</a>
         </p>
       </section>
-    </main>
+      </div>
+      </div>
+    </PageBody>
   );
 }
 
@@ -246,18 +267,18 @@ export default async function Account({ searchParams }: { searchParams: Promise<
 function Method({ name, logo, on, title, badges, saveLabel, children }: { name: string; logo: string; on: boolean; title: string; badges?: boolean; saveLabel: string; children: React.ReactNode }) {
   const savedLabel = on ? <SavedChip /> : null;
   return (
-    <div className="group rounded-xl border border-[var(--line)] p-4 has-[.method-toggle:checked]:border-[var(--accent)]">
-      <label className="flex cursor-pointer items-center gap-3 font-medium">
+    <div className="group rounded-[var(--r-lg)] border border-[var(--line)] bg-white/[0.012] p-4 transition-colors hover:border-[var(--line-strong)] has-[.method-toggle:checked]:border-[var(--line-strong)] has-[.method-toggle:checked]:bg-white/[0.03] has-[.method-toggle:checked]:shadow-[var(--edge)]">
+      <label className="flex cursor-pointer flex-wrap items-center gap-3 font-medium">
         <input type="checkbox" name={name} defaultChecked={on} className="method-toggle h-4 w-4 accent-[var(--accent)]" />
         <MethodLogo id={logo} />
         {title}
         {savedLabel}
         {badges && <PayBadges className="ms-auto" />}
       </label>
-      <div className="mt-3 hidden grid-cols-1 gap-3 group-has-[.method-toggle:checked]:grid sm:grid-cols-2">
+      <div className="mt-4 hidden grid-cols-1 gap-4 border-t border-[var(--line)] pt-4 group-has-[.method-toggle:checked]:grid sm:grid-cols-2">
         {children}
         <div className="flex justify-end sm:col-span-2">
-          <button className="rounded-lg border border-[var(--line-strong)] px-4 py-2 text-sm font-semibold hover:bg-[var(--soft)]">{saveLabel}</button>
+          <button className="btn btn-secondary btn-sm">{saveLabel}</button>
         </div>
       </div>
     </div>
@@ -269,10 +290,10 @@ function Brands({ prefix, selected, legend }: { prefix: string; selected?: CardB
   const on = new Set(selected ?? ["visa", "mastercard", "applepay", "googlepay"]);
   return (
     <fieldset className="sm:col-span-2">
-      <legend className="mb-1.5 text-sm">{legend}</legend>
+      <legend className="label">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {CARD_BRANDS.map((b) => (
-          <label key={b} className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--line)] px-2.5 py-1.5 text-sm has-[:checked]:border-[var(--accent)]">
+          <label key={b} className="flex cursor-pointer items-center gap-2 rounded-[var(--r-sm)] border border-[var(--line)] px-2.5 py-1.5 text-sm transition-colors hover:border-[var(--line-strong)] has-[:checked]:border-[var(--line-strong)] has-[:checked]:bg-white/[0.05]">
             <input type="checkbox" name={`${prefix}_${b}`} defaultChecked={on.has(b)} className="accent-[var(--accent)]" />
             <PayBadges brands={[b]} />
             <span className="sr-only">{BRAND_NAMES[b]}</span>
@@ -286,7 +307,7 @@ function Brands({ prefix, selected, legend }: { prefix: string; selected?: CardB
 function Input({ name, label, value, bad, placeholder, mono }: { name: string; label: string; value?: string; bad?: boolean; placeholder?: string; mono?: boolean }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm">{label}</span>
+      <span className="label">{label}</span>
       <input name={name} className={`input ${mono ? "font-mono text-sm" : ""} ${bad ? "border-red-400" : ""}`} defaultValue={value ?? ""} placeholder={placeholder} aria-invalid={bad || undefined} />
     </label>
   );
@@ -294,23 +315,23 @@ function Input({ name, label, value, bad, placeholder, mono }: { name: string; l
 
 function StatusBadge({ t, status, cancelling }: { t: T; status: string; cancelling: boolean }) {
   const [label, cls] =
-    cancelling ? [t("account.badge.cancelling"), "bg-amber-400/15 text-amber-200"] :
-    status === "active" || status === "trialing" ? [t("account.badge.active"), "bg-emerald-400/15 text-emerald-300"] :
-    status === "past_due" ? [t("account.badge.failed"), "bg-red-500/15 text-red-300"] :
-    status === "canceled" ? [t("account.badge.ended"), "bg-white/10 text-zinc-300"] :
-    [t("account.badge.none"), "bg-white/10 text-zinc-300"];
-  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{label}</span>;
+    cancelling ? [t("account.badge.cancelling"), "pill-warning"] :
+    status === "active" || status === "trialing" ? [t("account.badge.active"), "pill-success"] :
+    status === "past_due" ? [t("account.badge.failed"), "pill-danger"] :
+    status === "canceled" ? [t("account.badge.ended"), "pill-neutral"] :
+    [t("account.badge.none"), "pill-neutral"];
+  return <span className={`pill ${cls}`}>{label}</span>;
 }
 
 /** Two-step cancel (no JS dialogs): open the details, then confirm. */
 function CancelButton({ t }: { t: T }) {
   return (
     <details className="relative">
-      <summary className="cursor-pointer list-none rounded-xl border border-[var(--line)] px-5 py-3 font-medium hover:bg-[var(--bg)]">{t("account.cancel")}</summary>
-      <div className="absolute end-0 z-10 mt-2 w-72 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm shadow-lg">
+      <summary className="btn btn-secondary btn-lg list-none [&::-webkit-details-marker]:hidden">{t("account.cancel")}</summary>
+      <div className="dialog absolute end-0 z-10 mt-2 w-72 p-4 text-sm">
         <p>{t("account.cancelConfirmText")}</p>
         <form action={cancel} className="mt-3">
-          <button className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">{t("account.cancelConfirm")}</button>
+          <button className="btn btn-danger-solid w-full">{t("account.cancelConfirm")}</button>
         </form>
       </div>
     </details>
@@ -320,5 +341,21 @@ function CancelButton({ t }: { t: T }) {
 /** Shown on a payment method that is stored on the account (re-rendered after each save). */
 async function SavedChip() {
   const { t } = await getI18n();
-  return <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-xs font-medium text-emerald-300">{t("methods.savedChip")}</span>;
+  return <span className="pill pill-success">{t("methods.savedChip")}</span>;
+}
+
+/** Section title with an icon, optional subtitle and something on the right. */
+function SectionHead({ icon, title, sub, aside }: { icon: IconName; title: string; sub?: string; aside?: React.ReactNode }) {
+  return (
+    <div className="panel-head">
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="icon-chip"><Icon name={icon} size={17} /></span>
+        <div className="min-w-0">
+          <h2 className="panel-title text-base">{title}</h2>
+          {sub && <p className="panel-sub max-w-xl">{sub}</p>}
+        </div>
+      </div>
+      {aside}
+    </div>
+  );
 }

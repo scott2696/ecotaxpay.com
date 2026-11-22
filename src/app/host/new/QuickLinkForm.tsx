@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
 import { money } from "@/i18n/translate";
@@ -81,11 +82,11 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
               setDescription("");
               setGuestName("");
             }}
-            className="rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--on-accent)]"
+            className="btn btn-primary"
           >
-            + {t("form.another")}
+            <Icon name="plus" size={15} /> {t("form.another")}
           </button>
-          <a href="/host" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-sm font-medium">
+          <a href="/host" className="btn btn-secondary">
             {t("form.backToDashboard")}
           </a>
         </div>
@@ -94,7 +95,7 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
   }
 
   return (
-    <form onSubmit={create} className="max-w-xl rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+    <form onSubmit={create} className="panel panel-pad max-w-xl">
       <p className="text-sm text-[var(--muted)]">{t("quick.intro")}</p>
 
       <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto] gap-3">
@@ -133,11 +134,11 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
         <input className="input" maxLength={120} value={guestName} onChange={(e) => setGuestName(e.target.value)} />
       </label>
 
-      {error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
+      {error && <p className="note note-danger mt-4">{error}</p>}
       <button
         type="submit"
         disabled={!valid || submitting}
-        className="mt-6 w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn btn-primary btn-lg mt-6 w-full disabled:cursor-not-allowed"
       >
         {submitting ? t("form.creating") : valid ? t("quick.create", { amount: money(cents, currency, t.locale) }) : t("quick.createEmpty")}
       </button>

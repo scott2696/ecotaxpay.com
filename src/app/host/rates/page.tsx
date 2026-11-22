@@ -1,6 +1,6 @@
 import { getI18n } from "@/i18n/server";
 import { date } from "@/i18n/translate";
-import Link from "next/link";
+import PageHeader, { PageBody } from "@/components/PageHeader";
 import { capSummary, rateSummary } from "@/lib/explain";
 import { regionNote } from "@/lib/format";
 import { COUNTRIES, type AccommodationType } from "@/lib/taxRules";
@@ -24,19 +24,18 @@ export default async function Rates() {
   const countries = [...COUNTRIES].sort((a, b) => countryName(a.code, a.name).localeCompare(countryName(b.code, b.name), locale));
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <Link href="/host/properties" className="text-sm text-[var(--muted)] underline">← {t("nav.apartments")}</Link>
-      <h1 className="mt-3 text-2xl font-semibold">{t("rates.title")}</h1>
-      <p className="mt-1 max-w-3xl text-sm text-[var(--muted)]">
-        {t("rates.intro", { other: t("pf.other"), date: date(today, locale, { day: "numeric", month: "long", year: "numeric" }) })}
-      </p>
+    <PageBody>
+      <PageHeader
+        title={t("rates.title")}
+        description={t("rates.intro", { other: t("pf.other"), date: date(today, locale, { day: "numeric", month: "long", year: "numeric" }) })}
+      />
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-        <table className="w-full min-w-[900px] text-sm">
-          <thead className="border-b border-[var(--line)] text-start text-[var(--muted)]">
+      <div className="panel overflow-x-auto">
+        <table className="table-pro min-w-[900px]">
+          <thead>
             <tr>
               {[t("dash.col.destination"), t("rates.col.tax"), t("rates.col.appliesTo"), t("rates.col.rate"), t("rates.col.whoPays"), t("rates.col.capped"), t("rates.col.checked")].map((h) => (
-                <th key={h} className="px-4 py-3 font-medium">{h}</th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -53,15 +52,15 @@ export default async function Rates() {
                     : acc.basis === "unit_night" ? t("rates.perProperty") : t("rates.perBooking");
                   return (
                     <tr key={`${r.id}-${label}`} className="border-b border-[var(--line)] align-top last:border-0">
-                      <td className="px-4 py-3 font-medium">{i === 0 ? <>{c.flag} {r.name.split(" (")[0]}<div className="text-xs font-normal text-[var(--muted)]">{countryName(c.code, c.name)}</div></> : ""}</td>
-                      <td className="px-4 py-3">{i === 0 ? r.taxName : ""}</td>
-                      <td className="px-4 py-3 text-[var(--muted)]">{t.raw(`g:${label}`)}</td>
-                      <td className="px-4 py-3">{rateSummary(r, acc, today, t)}</td>
-                      <td className="px-4 py-3">{who}</td>
-                      <td className="px-4 py-3">
+                      <td className="font-medium">{i === 0 ? <>{c.flag} {r.name.split(" (")[0]}<div className="text-xs font-normal text-[var(--muted)]">{countryName(c.code, c.name)}</div></> : ""}</td>
+                      <td>{i === 0 ? r.taxName : ""}</td>
+                      <td className="text-[var(--muted)]">{t.raw(`g:${label}`)}</td>
+                      <td>{rateSummary(r, acc, today, t)}</td>
+                      <td>{who}</td>
+                      <td>
                         {cap ? <span className="text-emerald-300">✓ {cap}</span> : <span className="text-[var(--muted)]">{t("props.noCap")}</span>}
                       </td>
-                      <td className="px-4 py-3 text-xs text-[var(--muted)]">
+                      <td className="text-xs text-[var(--muted)]">
                         {i === 0 && (
                           <>
                             {r.verifiedOn}
@@ -80,6 +79,6 @@ export default async function Rates() {
           </tbody>
         </table>
       </div>
-    </main>
+    </PageBody>
   );
 }

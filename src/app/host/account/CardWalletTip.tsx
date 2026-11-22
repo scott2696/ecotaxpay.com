@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import { useEffect, useRef } from "react";
 import { useT } from "@/i18n/client";
 
@@ -39,21 +40,21 @@ export default function CardWalletTip({ hasLink }: { hasLink: boolean }) {
       <button
         type="button"
         onClick={() => dialog.current?.showModal()}
-        className="justify-self-start text-sm font-medium text-[var(--accent)] underline sm:col-span-2"
+        className="btn btn-quiet btn-sm justify-self-start sm:col-span-2 -ms-2"
       >
-        💡 {t("cardTip.open")}
+        <Icon name="sparkles" size={14} /> {t("cardTip.open")}
       </button>
       <dialog
         ref={dialog}
         onClick={(e) => e.target === dialog.current && dialog.current?.close()}
-        className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-0 text-[var(--ink)] backdrop:bg-black/60"
+        className="dialog w-[min(32rem,calc(100vw-2rem))]"
       >
         <div className="p-6">
-          <h2 className="text-lg font-semibold">💳 {t("cardTip.title")}</h2>
+          <h2 className="flex items-center gap-3 text-lg font-semibold"><span className="icon-chip"><Icon name="card" size={17} /></span> {t("cardTip.title")}</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">{t("cardTip.intro")}</p>
           <div className="mt-4 grid grid-cols-2 gap-2">
             {APPS.map((a) => (
-              <a key={a.name} href={a.url} target="_blank" rel="noreferrer noopener" className="rounded-xl border border-[var(--line)] px-3 py-2.5 text-sm font-medium hover:bg-[var(--soft)]">
+              <a key={a.name} href={a.url} target="_blank" rel="noreferrer noopener" className="btn btn-secondary">
                 {a.name} ↗
               </a>
             ))}
@@ -65,7 +66,7 @@ export default function CardWalletTip({ hasLink }: { hasLink: boolean }) {
           </ol>
           <p className="mt-4 rounded-lg bg-[var(--bg)] p-3 text-xs text-[var(--muted)]">{t("cardTip.note")}</p>
           <div className="mt-5 text-end">
-            <button type="button" onClick={() => dialog.current?.close()} className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
+            <button type="button" onClick={() => dialog.current?.close()} className="btn btn-primary">
               {t("cardTip.ok")}
             </button>
           </div>

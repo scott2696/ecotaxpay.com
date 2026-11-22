@@ -39,8 +39,8 @@ export default function ResetForm({ token }: { token: string }) {
         <span className="mb-1.5 block text-sm font-medium">{t("reset.confirm")}</span>
         <input type="password" className="input" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" minLength={8} required />
       </label>
-      {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
-      <button disabled={busy} className="w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+      {error && <p className="note note-danger">{error}</p>}
+      <button disabled={busy} className="btn btn-primary btn-lg w-full">
         {busy ? t("common.wait") : t("reset.save")}
       </button>
     </form>

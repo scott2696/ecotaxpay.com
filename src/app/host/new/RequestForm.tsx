@@ -1,5 +1,6 @@
 "use client";
 
+import Icon from "@/components/Icon";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Quote } from "@/lib/calc";
@@ -163,10 +164,10 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
           templates={templates}
         />
         <div className="mt-4 flex gap-3">
-          <button type="button" onClick={reset} className="rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--on-accent)]">
-            + {t("form.another")}
+          <button type="button" onClick={reset} className="btn btn-primary">
+            <Icon name="plus" size={15} /> {t("form.another")}
           </button>
-          <a href="/host" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-sm font-medium">
+          <a href="/host" className="btn btn-secondary">
             {t("form.backToDashboard")}
           </a>
         </div>
@@ -188,12 +189,12 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
               ))}
             </select>
           ) : (
-            <p className="rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 py-2.5 font-medium">{property.name}</p>
+            <p className="flex h-11 items-center rounded-[var(--r-sm)] border border-[var(--line)] bg-white/[0.03] px-3 font-medium">{property.name}</p>
           )}
           <p className="mt-3 text-xs text-[var(--muted)]">
             {info.flag} {info.place} · {info.accLabel} · {info.taxName} ·{" "}
             <Link href={`/host/properties/${property.id}`} className="underline">{t("form.editGuide")}</Link> ·{" "}
-            <Link href="/host/properties/new" className="underline">+ {t("form.addAnother")}</Link>
+            <Link href="/host/properties/new" className="link">+ {t("form.addAnother")}</Link>
           </p>
         </Card>
 
@@ -229,8 +230,8 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                 </div>
               </Field>
             )}
-            <p role="note" className="flex gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100 sm:col-span-2">
-              <span aria-hidden>⚠️</span>
+            <p role="note" className="note note-warning sm:col-span-2">
+              <Icon name="alert" size={16} className="mt-0.5" />
               <span>
                 <strong className="font-semibold">{t("form.checkGuestsTitle")}</strong> {t("form.checkGuestsText")}
               </span>
@@ -285,9 +286,9 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
         </Card>
       </div>
 
-      <aside className="lg:sticky lg:top-6">
-        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">{t("form.guestWillPay")}</h2>
+      <aside className="lg:sticky lg:top-8">
+        <div className="panel panel-pad bg-[image:var(--panel-raised)]">
+          <h2 className="eyebrow">{t("form.guestWillPay")}</h2>
           {quote ? (
             <>
               <ul className="mt-4 space-y-2 text-sm">
@@ -304,13 +305,13 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                   </li>
                 )}
               </ul>
-              <div className="my-4 border-t border-[var(--line)]" />
-              <div className="flex items-baseline justify-between">
-                <span className="font-semibold">{t("dash.col.total")}</span>
-                <span className="text-3xl font-semibold tabular-nums">{money(quote.totalCents, quote.currency)}</span>
+              <div className="divider my-5" />
+              <div className="flex items-end justify-between gap-3">
+                <span className="pb-1 text-sm font-medium text-[var(--muted)]">{t("dash.col.total")}</span>
+                <span className="amount-hero">{money(quote.totalCents, quote.currency)}</span>
               </div>
               {quote.hostNotes.length > 0 && (
-                <p className="mt-3 rounded-lg bg-amber-400/10 p-2 text-xs text-amber-200">{t("form.noteForYou")} {regionNote(quote.regionId, quote.hostNotes.join(" "), t)}</p>
+                <p className="note note-warning mt-4 text-xs">{t("form.noteForYou")} {regionNote(quote.regionId, quote.hostNotes.join(" "), t)}</p>
               )}
               {guestNotes(quote, t).length > 0 && (
                 <ul className="mt-3 space-y-1 text-xs text-[var(--muted)]">
@@ -323,11 +324,11 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
           ) : (
             <p className="mt-4 text-sm text-[var(--muted)]">{quoteError ?? t("form.calculating")}</p>
           )}
-          {submitError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{submitError}</p>}
+          {submitError && <p className="note note-danger mt-4">{submitError}</p>}
           <button
             type="submit"
             disabled={!quote || quote.totalCents === 0 || submitting}
-            className="mt-6 w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 font-semibold text-[var(--on-accent)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn btn-primary btn-lg mt-6 w-full disabled:cursor-not-allowed"
           >
             {submitting ? t("form.creating") : quote && quote.totalCents === 0 ? t("form.noTax") : t("form.createFor", { name: property.name })}
           </button>
@@ -340,9 +341,9 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
 
 function Card({ step, title, children }: { step: number; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-      <h2 className="mb-4 flex items-center gap-3 text-lg font-semibold">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--soft)] text-sm text-[var(--accent)]">{step}</span>
+    <section className="panel panel-pad">
+      <h2 className="mb-5 flex items-center gap-3 text-base font-semibold tracking-tight">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[image:var(--silver-soft)] text-xs font-bold text-[var(--on-accent)] shadow-[0_0_0_4px_rgba(255,255,255,0.04)]">{step}</span>
         {title}
       </h2>
       {children}
@@ -353,15 +354,15 @@ function Card({ step, title, children }: { step: number; title: string; children
 function Field({ label, hint, className = "", children }: { label: string; hint?: string; className?: string; children: React.ReactNode }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-sm font-medium">{label}</span>
+      <span className="label">{label}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-[var(--muted)]">{hint}</span>}
+      {hint && <span className="help block">{hint}</span>}
     </label>
   );
 }
 
 function Stepper({ value, min, max, onChange }: { value: number; min: number; max: number; onChange: (n: number) => void }) {
-  const btn = "h-11 w-11 shrink-0 rounded-lg border border-[var(--line)] text-lg font-medium hover:bg-[var(--soft)] disabled:opacity-40";
+  const btn = "btn btn-secondary btn-icon h-11 w-11 shrink-0 text-lg";
   return (
     <div className="flex items-center gap-2">
       <button type="button" className={btn} onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="−">

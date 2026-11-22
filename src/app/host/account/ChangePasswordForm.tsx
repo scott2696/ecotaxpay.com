@@ -45,7 +45,7 @@ export default function ChangePasswordForm({ action }: { action: (form: FormData
       {field("password", t("reset.new"), "new-password")}
       {field("confirm", t("reset.confirm"), "new-password")}
       <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
-        <button disabled={pending} className="rounded-xl bg-[var(--accent)] px-5 py-2.5 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+        <button disabled={pending} className="btn btn-primary">
           {pending ? t("common.wait") : t("account.changePassword")}
         </button>
         {msg && <p role="status" className={`text-sm ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.ok ? "✓ " : ""}{msg.text}</p>}

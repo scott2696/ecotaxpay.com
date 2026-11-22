@@ -96,7 +96,7 @@ export default async function GuestPage({
       </header>
 
       {!paid && p.reportedPaidAt && (
-        <p className="rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-200">
+        <p className="note note-success">
           {paysOnArrival(p.paidVia) ? t("guest.cashNoted", { name: issuer.name }) : t("guest.reported", { name: issuer.name })}
         </p>
       )}
@@ -106,7 +106,7 @@ export default async function GuestPage({
       ) : paid ? (
         <PaidCard t={t} id={p.id} amount={m(q.totalCents)} receiptNumber={p.receiptNumber} guestPhone={p.guestPhone} whatsappSent={!!p.whatsappSentAt} taxName={tax} hasGuide={!!property} />
       ) : (
-        <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-center shadow-sm">
+        <section className="panel panel-pad text-center">
           <div className="text-sm text-[var(--muted)]">{capFirst(title)}</div>
           <div className="mt-1 text-5xl font-semibold tabular-nums tracking-tight">{m(q.totalCents)}</div>
 
@@ -150,7 +150,7 @@ export default async function GuestPage({
       )}
 
       {!askGuests && !paid && !p.reportedPaidAt && !(pm && activeMethods(pm).length) && (
-        <p className="rounded-lg bg-amber-400/10 p-3 text-sm text-amber-200">{t("guest.noMethods", { name: issuer.name })}</p>
+        <p className="note note-warning">{t("guest.noMethods", { name: issuer.name })}</p>
       )}
 
       {paid && property && <ArrivalGuide t={t} guide={await translateGuide(property.guide, locale)} propertyName={property.name} />}
@@ -210,17 +210,17 @@ function PaidCard(props: { t: T; id: string; amount: string; receiptNumber?: str
   const text = props.hasGuide ? full : full.split("\n")[0]; // quick links have no arrival guide
   const wa = `https://wa.me/${props.guestPhone ?? ""}?text=${encodeURIComponent(text)}`;
   return (
-    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-center shadow-sm">
+    <section className="panel panel-pad text-center">
       <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--soft)] text-xl text-[var(--accent)]">✓</div>
       <div className="font-semibold">{t("guest.paidLine", { amount: props.amount, number: props.receiptNumber ?? "" })}</div>
       <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <a href={`/api/receipt/${props.id}`} target="_blank" className="rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--on-accent)] hover:brightness-110">
+        <a href={`/api/receipt/${props.id}`} target="_blank" className="btn btn-primary btn-lg">
           {t("guest.downloadReceipt")}
         </a>
         {props.whatsappSent ? (
           <span className="rounded-xl bg-[var(--soft)] px-4 py-3 text-sm">{t("guest.sentWhatsapp")}</span>
         ) : (
-          <a href={wa} target="_blank" rel="noreferrer" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm font-semibold hover:bg-[var(--soft)]">
+          <a href={wa} target="_blank" rel="noreferrer" className="btn btn-secondary btn-lg">
             {t("guest.saveWhatsapp")}
           </a>
         )}
@@ -233,7 +233,7 @@ function ArrivalGuide({ t, guide, propertyName }: { t: T; guide: Guide & { trans
   const items = guideItems(guide, t);
   if (!items.length && !guide.mapsUrl) return null;
   return (
-    <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+    <section className="panel panel-pad">
       <h2 className="text-lg font-semibold">{t("guest.guideTitle")}</h2>
       <p className="mt-1 text-sm text-[var(--muted)]">{propertyName}</p>
       {guide.translated && <p className="mt-1 text-xs text-[var(--muted)]">{t("guest.autoTranslated")}</p>}
@@ -248,7 +248,7 @@ function ArrivalGuide({ t, guide, propertyName }: { t: T; guide: Guide & { trans
         ))}
       </div>
       {guide.mapsUrl && (
-        <a href={guide.mapsUrl} target="_blank" rel="noreferrer" className="mt-5 block rounded-xl border border-[var(--line)] px-4 py-3 text-center text-sm font-semibold hover:bg-[var(--soft)]">
+        <a href={guide.mapsUrl} target="_blank" rel="noreferrer" className="btn btn-secondary btn-lg mt-5 flex text-center">
           {t("guest.openMaps")}
         </a>
       )}

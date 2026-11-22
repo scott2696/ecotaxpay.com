@@ -23,7 +23,7 @@ export default async function ResetPassword({ searchParams }: { searchParams: Pr
       ) : (
         <div className="space-y-4">
           <p className="rounded-lg bg-amber-400/10 p-3 text-sm text-amber-200">{t("reset.invalid")}</p>
-          <Link href="/forgot-password" className="block w-full rounded-xl bg-[var(--accent)] px-4 py-3.5 text-center font-semibold text-[var(--on-accent)] hover:brightness-110">
+          <Link href="/forgot-password" className="btn btn-primary btn-lg flex w-full text-center">
             {t("forgot.send")}
           </Link>
         </div>

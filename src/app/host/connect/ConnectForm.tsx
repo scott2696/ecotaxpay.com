@@ -81,7 +81,7 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
         {apartments.map((a) => {
           const rows = links[a.id].filter(([, v]) => v.trim());
           return (
-            <div key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-3 text-sm">
+            <div key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-[var(--r-md)] border border-[var(--line)] bg-white/[0.02] px-4 py-3 text-sm">
               <span className="font-medium">{a.name}</span>
               {rows.length === 0 && <span className="text-[var(--muted)]">{t("props.none")}</span>}
               {rows.map(([id]) => {
@@ -98,7 +98,7 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
           );
         })}
         {Object.keys(results).length > 0 && <p className="text-xs text-emerald-300">✓ {t("connect.savedSynced")}</p>}
-        <button type="button" onClick={() => setCollapsed(false)} className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm font-medium hover:bg-[var(--soft)]">
+        <button type="button" onClick={() => setCollapsed(false)} className="btn btn-secondary btn-sm">
           {t("connect.editCalendars")}
         </button>
       </div>
@@ -109,7 +109,7 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
       {apartments.map((a) => {
         const used = new Set(links[a.id].map(([id]) => id));
         return (
-          <section key={a.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4 sm:p-5">
+          <section key={a.id} className="panel-inset p-4 sm:p-5">
             <h3 className="font-semibold">{a.name}</h3>
             <div className="mt-4 space-y-5">
               {links[a.id].map(([id, url], i) => {
@@ -145,7 +145,7 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
                 );
               })}
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium">+ {t("connect.addPlatform")}</span>
+                <span className="label">+ {t("connect.addPlatform")}</span>
                 <PlatformPicker
                   disabled={[...used]}
                   onPick={(p) => {
@@ -159,13 +159,13 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
         );
       })}
 
-      {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
+      {error && <p className="note note-danger">{error}</p>}
       <div className="flex flex-wrap items-center gap-3">
-        <button disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110 disabled:opacity-60">
+        <button disabled={busy} className="btn btn-primary btn-lg">
           {busy ? t("connect.syncing") : t("connect.save")}
         </button>
         {allOk && (
-          <a href="/host" className="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-6 py-3 font-medium">
+          <a href="/host" className="btn btn-secondary btn-lg">
             {t("connect.seeUpcoming")} →
           </a>
         )}
