@@ -10,13 +10,13 @@ const GROUPS = [
 ] as const;
 
 /** Dropdown to choose which channel's calendar to connect (grouped; already-added ones disabled). */
-export default function PlatformPicker({ disabled = [], onPick, id }: { disabled?: string[]; onPick: (p: Platform) => void; id?: string }) {
+export default function PlatformPicker({ disabled = [], onPick, id, value = "" }: { disabled?: string[]; onPick: (p: Platform) => void; id?: string; value?: string }) {
   const t = useT();
   return (
     <select
       id={id}
       className="input h-11 w-full max-w-md text-sm"
-      value=""
+      value={value}
       aria-label={t("connect.whichChannel")}
       onChange={(e) => {
         const p = platformById(e.target.value);

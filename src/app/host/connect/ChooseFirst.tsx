@@ -6,9 +6,10 @@ import { useState } from "react";
 import { useT } from "@/i18n/client";
 import type { CalendarError } from "@/lib/calendar";
 import { calendarErrorText } from "@/lib/format";
-import { PLATFORMS, type Platform } from "@/lib/platforms";
+import { type Platform } from "@/lib/platforms";
 import { DEFAULT_REGION_ID, findRegion } from "@/lib/taxRules";
 import { PlatformIcon } from "../BrandIcons";
+import PlatformPicker from "./PlatformPicker";
 
 type Check = { ok: true; upcoming: number } | { ok: false; error: CalendarError };
 
@@ -77,23 +78,7 @@ export default function ChooseFirst() {
         <p className="mt-0.5 text-sm text-[var(--muted)]">{t("connect.whichChannelSub")}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {PLATFORMS.map((pl) => (
-          <button
-            key={pl.id}
-            type="button"
-            onClick={() => pick(pl)}
-            aria-pressed={p?.id === pl.id}
-            title={pl.name}
-            className={`flex h-[72px] w-[92px] flex-col items-center justify-center gap-1.5 rounded-xl border px-1 text-center text-[11px] leading-tight transition-colors ${
-              p?.id === pl.id ? "border-[var(--accent)] bg-[var(--soft)] text-[var(--ink)]" : "border-[var(--line)] text-[var(--muted)] hover:border-[var(--line-strong)] hover:text-[var(--ink)]"
-            }`}
-          >
-            <PlatformIcon id={pl.id} size={26} />
-            <span className="line-clamp-2">{pl.name}</span>
-          </button>
-        ))}
-      </div>
+      <PlatformPicker value={p?.id ?? ""} onPick={pick} />
 
       {p && !done && (
         <form onSubmit={save} className="space-y-3 rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4">

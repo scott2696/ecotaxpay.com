@@ -16,6 +16,8 @@ import ApartmentFilter from "./ApartmentFilter";
 import StayRangeFilter from "./StayRangeFilter";
 import UpcomingGuests from "./UpcomingGuests";
 import ChooseFirst from "./connect/ChooseFirst";
+import { PlatformIcon } from "./BrandIcons";
+import { PLATFORMS } from "@/lib/platforms";
 import ConnectForm from "./connect/ConnectForm";
 
 export const dynamic = "force-dynamic";
@@ -163,8 +165,17 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
 
       {/* Connect calendars: choose a channel from the list, paste its iCal link, Save. Only here on the dashboard. */}
       <section id="calendars" className="mb-8 scroll-mt-24 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-        <h2 className="font-semibold">{t("upcoming.connect")}</h2>
-        <p className="mb-4 mt-0.5 text-sm text-[var(--muted)]">{t("pf.calendarsSub")}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h2 className="font-semibold">{t("upcoming.connect")}</h2>
+          {/* A few logos so it's clear at a glance which calendars this is about. */}
+          <span className="flex flex-wrap items-center gap-1.5" aria-hidden>
+            {["airbnb", "booking", "vrbo", "misterbandb", "expedia", "agoda"].map((id) => (
+              <PlatformIcon key={id} id={id} size={20} />
+            ))}
+            <span className="text-xs text-[var(--muted)]">{t("connect.nMore", { count: PLATFORMS.length - 7 })}</span>
+          </span>
+        </div>
+        <p className="mb-4 mt-1 text-sm text-[var(--muted)]">{t("pf.calendarsSub")}</p>
         {properties.length ? (
           <ConnectForm
             apartments={properties.map((p) => ({
