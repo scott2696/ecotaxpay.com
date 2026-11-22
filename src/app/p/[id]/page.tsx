@@ -200,20 +200,6 @@ function methodViews(pm: PaymentMethods, p: PaymentRecord, t: T): MethodView[] {
     if (id === "link" && pm.link?.label) title = pm.link.label;
     return { id, icon: METHOD_ICONS[id], title, rows, brands, url: methodUrl(id, pm, cents, p.quote.currency) ?? undefined };
   });
-  // No card link of their own, but a Revolut link: Revolut.me takes card and Apple Pay from anyone
-  // (no Revolut account needed), so offer card payment through it, first in the list.
-  if (!pm.card && pm.revolut) {
-    const url = methodUrl("revolut", pm, cents, p.quote.currency) ?? undefined;
-    views.unshift({
-      id: "card",
-      icon: METHOD_ICONS.card,
-      title: t("pay.cardViaRevolut"),
-      rows: [],
-      note: t("pay.cardViaRevolutHint"),
-      brands: ["visa", "mastercard", "applepay"],
-      url,
-    });
-  }
   return views;
 }
 
