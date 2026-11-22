@@ -160,7 +160,7 @@ export const de: LocaleMessages = {
   "form.checkGuestsText": "Buchungsplattformen übertragen die Zahl der Erwachsenen und Kinder nicht immer korrekt. Vergleichen Sie mit der Buchung und korrigieren Sie die Zahlen bei Bedarf: Die Abgabe wird daraus berechnet.",
   "methods.cardViaRevolut": "Funktioniert bereits: Ihre Gäste können per Karte oder Apple Pay über Ihren Revolut-Link zahlen (kein Revolut-Konto nötig). Fügen Sie hier nur einen eigenen Kartenlink hinzu, wenn Sie einen anderen Anbieter bevorzugen.",
   "pay.cardViaRevolut": "Karte oder Apple Pay",
-  "pay.cardViaRevolutHint": "Zahlen Sie mit Karte oder Apple Pay auf der sicheren Revolut-Seite. Kein Revolut-Konto nötig: „Mit Karte zahlen“ wählen, Betrag eingeben und die Referenz angeben.",
+  "pay.cardViaRevolutHint": "Zahlen Sie mit Karte oder Apple Pay auf der sicheren Revolut-Seite. Kein Revolut-Konto nötig: „Mit Karte zahlen“ wählen, Betrag eingeben und die Referenz angeben. Wenn Revolut einen Fehler zeigt oder die Karte ablehnt, gehen Sie zurück und wählen Sie unten eine andere Zahlungsart.",
   "connect.editCalendars": "Kalender bearbeiten",
   "connect.savedSynced": "Gespeichert und synchronisiert. Ihre Buchungen stehen unter Kommende Gäste.",
   "upcoming.remove": "Entfernen",

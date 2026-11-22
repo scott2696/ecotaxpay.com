@@ -175,7 +175,7 @@ export const mt: LocaleMessages = {
   "form.checkGuestsText": "Il-pjattaformi tal-bookings mhux dejjem jissinkronizzaw sew in-numru ta' adulti u tfal. Qabbel mal-booking u kkoreġi n-numri hawn taħt jekk hemm bżonn: it-taxxa tiġi kkalkulata minnhom.",
   "methods.cardViaRevolut": "Diġà jaħdem: il-mistednin tiegħek jistgħu jħallsu b'karta jew Apple Pay permezz tal-link tar-Revolut tiegħek (bla kont Revolut). Żid link tal-karta tiegħek hawn biss jekk tippreferi fornitur ieħor.",
   "pay.cardViaRevolut": "Karta jew Apple Pay",
-  "pay.cardViaRevolutHint": "Ħallas b'karta jew Apple Pay fuq il-paġna sigura ta' Revolut. M'għandekx bżonn kont Revolut: agħżel “Pay with card”, daħħal l-ammont u żid ir-referenza.",
+  "pay.cardViaRevolutHint": "Ħallas b'karta jew Apple Pay fuq il-paġna sigura ta' Revolut. M'għandekx bżonn kont Revolut: agħżel “Pay with card”, daħħal l-ammont u żid ir-referenza. Jekk Revolut juri żball jew jirrifjuta l-karta, erġa' lura u agħżel metodu ieħor ta' ħlas hawn taħt.",
   "connect.editCalendars": "Editja l-kalendarji",
   "connect.savedSynced": "Issejvjat u sinkronizzat. Il-bookings tiegħek jidhru taħt Mistednin li ġejjin.",
   "upcoming.remove": "Neħħi",

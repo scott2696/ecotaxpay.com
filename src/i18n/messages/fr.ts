@@ -160,7 +160,7 @@ export const fr: LocaleMessages = {
   "form.checkGuestsText": "Les plateformes de réservation ne synchronisent pas toujours correctement le nombre d'adultes et d'enfants. Comparez avec la réservation et corrigez les chiffres si besoin : la taxe est calculée à partir d'eux.",
   "methods.cardViaRevolut": "Déjà actif : vos voyageurs peuvent payer par carte ou Apple Pay via votre lien Revolut (sans compte Revolut). Ajoutez votre propre lien carte seulement si vous préférez un autre prestataire.",
   "pay.cardViaRevolut": "Carte ou Apple Pay",
-  "pay.cardViaRevolutHint": "Payez par carte ou Apple Pay sur la page sécurisée de Revolut. Pas besoin de compte Revolut : choisissez « Payer par carte », saisissez le montant et ajoutez la référence.",
+  "pay.cardViaRevolutHint": "Payez par carte ou Apple Pay sur la page sécurisée de Revolut. Pas besoin de compte Revolut : choisissez « Payer par carte », saisissez le montant et ajoutez la référence. Si Revolut affiche une erreur ou refuse la carte, revenez et choisissez un autre moyen de paiement ci-dessous.",
   "connect.editCalendars": "Modifier les calendriers",
   "connect.savedSynced": "Enregistré et synchronisé. Vos réservations sont listées dans Prochains voyageurs.",
   "upcoming.remove": "Retirer",

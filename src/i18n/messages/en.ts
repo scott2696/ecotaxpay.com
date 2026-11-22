@@ -158,7 +158,7 @@ export const en = {
   "form.checkGuestsText": "Booking platforms don't always sync the number of adults and children correctly. Compare with the booking and amend the numbers below if needed: the tax is calculated from them.",
   "methods.cardViaRevolut": "Already working: your guests can pay by card or Apple Pay through your Revolut link (no Revolut account needed). Add your own card link here only if you prefer another provider.",
   "pay.cardViaRevolut": "Card or Apple Pay",
-  "pay.cardViaRevolutHint": "Pay by card or Apple Pay on Revolut's secure page. No Revolut account needed: choose “Pay with card”, enter the amount and add the reference.",
+  "pay.cardViaRevolutHint": "Pay by card or Apple Pay on Revolut's secure page. No Revolut account needed: choose “Pay with card”, enter the amount and add the reference. If Revolut shows an error or declines the card, go back and choose another payment method below.",
   "connect.editCalendars": "Edit calendars",
   "connect.savedSynced": "Saved and synced. Your bookings are listed under Upcoming guests.",
   "upcoming.remove": "Remove",

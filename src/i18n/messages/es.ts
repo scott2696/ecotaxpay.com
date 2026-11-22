@@ -160,7 +160,7 @@ export const es: LocaleMessages = {
   "form.checkGuestsText": "Las plataformas de reservas no siempre sincronizan bien el número de adultos y niños. Compáralo con la reserva y corrige los números si hace falta: el impuesto se calcula a partir de ellos.",
   "methods.cardViaRevolut": "Ya funciona: tus huéspedes pueden pagar con tarjeta o Apple Pay a través de tu enlace de Revolut (sin cuenta de Revolut). Añade tu propio enlace de tarjeta solo si prefieres otro proveedor.",
   "pay.cardViaRevolut": "Tarjeta o Apple Pay",
-  "pay.cardViaRevolutHint": "Paga con tarjeta o Apple Pay en la página segura de Revolut. No necesitas cuenta de Revolut: elige «Pagar con tarjeta», introduce el importe y añade la referencia.",
+  "pay.cardViaRevolutHint": "Paga con tarjeta o Apple Pay en la página segura de Revolut. No necesitas cuenta de Revolut: elige «Pagar con tarjeta», introduce el importe y añade la referencia. Si Revolut muestra un error o rechaza la tarjeta, vuelve y elige otro método de pago de abajo.",
   "connect.editCalendars": "Editar calendarios",
   "connect.savedSynced": "Guardado y sincronizado. Tus reservas aparecen en Próximos huéspedes.",
   "upcoming.remove": "Quitar",
