@@ -13,7 +13,7 @@ services:
     autoDeploy: true
     buildCommand: npm ci && npm run build
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /api/health # never redirected (the onrender.com address redirects to app.ecotaxpay.com)
     # Payments, hosts, apartments and receipt numbers live in data/db.json: keep them on a disk
     # so they survive redeploys (src/lib/store.ts uses <project>/data).
     disk:

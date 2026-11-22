@@ -6,8 +6,22 @@ const LANG_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/;
 const MARKETING_URL = (process.env.NEXT_PUBLIC_MARKETING_URL ?? "").replace(/\/$/, "");
 const PUBLIC_PAGES = new Set(["/", "/about", "/contact", "/terms", "/privacy", "/cookies", "/sitemap", "/sitemap.xml", "/page-sitemap.xml", "/legal-sitemap.xml"]);
 
+// The app's own address (app.ecotaxpay.com). Visits on the host's default address
+// (e.g. ecotaxpay.onrender.com) are sent there, so that address never shows.
+const APP_HOST = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_BASE_URL ? new URL(process.env.NEXT_PUBLIC_BASE_URL).host : "";
+  } catch {
+    return "";
+  }
+})();
+
 export function middleware(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
+
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  if (APP_HOST && host && host !== APP_HOST && /\.onrender\.com$/i.test(host) && pathname !== "/api/health")
+    return NextResponse.redirect(`https://${APP_HOST}${pathname}${req.nextUrl.search}`, 308);
 
   if (MARKETING_URL && PUBLIC_PAGES.has(pathname)) return NextResponse.redirect(`${MARKETING_URL}${pathname}${req.nextUrl.search}`, 308);
 
