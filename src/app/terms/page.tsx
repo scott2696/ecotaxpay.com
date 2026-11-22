@@ -4,6 +4,7 @@ import LegalPage from "@/components/LegalPage";
 import { getI18n } from "@/i18n/server";
 import { site } from "@/lib/config";
 import { pageMeta } from "@/lib/seo";
+import { appHref } from "@/lib/urls";
 
 const DESC = `The terms that apply when hosts and guests use ${site.name}.`;
 
@@ -34,7 +35,7 @@ export default function Terms() {
 
       <h2>2. Tax rates</h2>
       <p>
-        Built-in rates are researched from public sources and dated on the <Link href="/host/rates">Destinations &amp; rates</Link> page, but rates and rules change
+        Built-in rates are researched from public sources and dated on the <Link href={appHref("/host/rates")}>Destinations &amp; rates</Link> page, but rates and rules change
         and sources sometimes disagree. Hosts must check that the rate, exemptions and caps applied to each stay are correct before sending a link. Rates entered
         by a Host (&quot;Other destination&quot;) are the Host&apos;s responsibility. We are not liable for tax under- or over-charged because of an incorrect rate.
       </p>

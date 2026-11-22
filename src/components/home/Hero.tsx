@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/client";
 import type { DemoCard } from "@/lib/demoQuote";
+import { appHref } from "@/lib/urls";
 
 /**
  * Hero that sells in one glance: plain headline, one-line promise with the price,
@@ -106,7 +107,7 @@ export default function Hero({ card: demo }: { card: DemoCard }) {
             ))}
           </ul>
           <div className="hero-fade mt-9 flex flex-wrap items-center gap-3" style={{ animationDelay: "0.55s" }}>
-            <Link href="/register" className="btn-silver h-14 px-8 text-[15px]">
+            <Link href={appHref("/register")} className="btn-silver h-14 px-8 text-[15px]">
               {t("home.start")} <Arrow />
             </Link>
             <Link href="#how" className="btn-ghost h-14 px-7 text-[15px]">{t("home.how")}</Link>

@@ -58,3 +58,22 @@ Add a destination by copying a region block, then add a test in `scripts/test-ca
 ## Hosting note
 Payments are stored in `data/db.json` (fine for a single server or VPS, e.g. Railway, Render or Fly.io with a volume).
 **Vercel/serverless has no persistent disk.** Before deploying there, replace `src/lib/store.ts` with Postgres (Supabase/Neon). The rest of the app only uses the functions it exports.
+
+## Deploying
+
+Two parts, two places:
+
+| Domain | What | How |
+|---|---|---|
+| **ecotaxpay.com** | Public pages (home, about, contact, legal, sitemap) in 6 languages | Static files in `docs/`, served by **GitHub Pages** from `main:/docs` |
+| **app.ecotaxpay.com** | Login, sign-up, host dashboard, guest payment pages, APIs, Stripe webhook | Any Node.js host (e.g. `render.yaml`), with `NEXT_PUBLIC_BASE_URL=https://app.ecotaxpay.com` and `NEXT_PUBLIC_MARKETING_URL=https://ecotaxpay.com` |
+
+After changing any public page, rebuild the static site and push:
+
+```bash
+npm run export:static   # builds docs/ (all languages, sitemaps, robots.txt, 404, CNAME)
+git add docs && git commit -m "Update public site" && git push
+```
+
+On the app domain, public pages redirect to ecotaxpay.com, the app is `noindex`, and the contact form on
+the static site posts to `app.ecotaxpay.com/api/contact` (CORS allows ecotaxpay.com).

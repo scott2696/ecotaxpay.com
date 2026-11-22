@@ -1,0 +1,29 @@
+User-Agent: *
+Allow: /
+Disallow: /host
+Disallow: /api/
+Disallow: /p/
+Disallow: /success
+
+User-Agent: AhrefsBot
+Disallow: /
+
+User-Agent: SemrushBot
+Disallow: /
+
+User-Agent: MJ12bot
+Disallow: /
+
+User-Agent: DotBot
+Disallow: /
+
+User-Agent: Rogerbot
+Disallow: /
+
+User-Agent: serpstatbot
+Disallow: /
+
+User-Agent: SistrixBot
+Disallow: /
+
+Sitemap: https://ecotaxpay.com/sitemap.xml

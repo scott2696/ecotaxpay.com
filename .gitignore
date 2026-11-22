@@ -47,3 +47,6 @@ data/uploads/
 data/.session-secret
 data/uploads/
 data/i18n/
+
+# static export build folder
+/.next-static/

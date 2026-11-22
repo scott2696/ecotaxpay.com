@@ -15,6 +15,7 @@ import { site } from "@/lib/config";
 import { graph, LANGUAGES, pageMeta, pageSchema, siteSchema } from "@/lib/seo";
 import { PLATFORMS } from "@/lib/platforms";
 import { COUNTRIES } from "@/lib/taxRules";
+import { appHref } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -28,7 +29,7 @@ export default async function Home() {
   // Sample stay for the visitor's country (?country=ES previews another one).
   const card = demoCard(await visitorCountry(), t);
   const k = (key: string) => t(key as MessageKey);
-  const primary = host ? { href: "/host", label: t("home.toDashboard") } : { href: "/register", label: t("home.start") };
+  const primary = host ? { href: appHref("/host"), label: t("home.toDashboard") } : { href: appHref("/register"), label: t("home.start") };
 
   // Product + FAQ structured data (the FAQ text matches what's shown on the page).
   const faqText = (id: string) => (id === "cancel" ? [1, 2, 3].map((n) => k(`cancel.step${n}`).replace(/\*\*/g, "")).join(" ") : k(`home.faq.${id}.a`));

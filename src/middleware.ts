@@ -2,8 +2,14 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const LANG_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/;
 
+// On the app domain (app.ecotaxpay.com), the public pages live on the public site.
+const MARKETING_URL = (process.env.NEXT_PUBLIC_MARKETING_URL ?? "").replace(/\/$/, "");
+const PUBLIC_PAGES = new Set(["/", "/about", "/contact", "/terms", "/privacy", "/cookies", "/sitemap", "/sitemap.xml", "/page-sitemap.xml", "/legal-sitemap.xml"]);
+
 export function middleware(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
+
+  if (MARKETING_URL && PUBLIC_PAGES.has(pathname)) return NextResponse.redirect(`${MARKETING_URL}${pathname}${req.nextUrl.search}`, 308);
 
   // ?lang=xx (e.g. in a link the host sends) → remember the language, then show the clean URL.
   const lang = searchParams.get("lang");
@@ -19,7 +25,11 @@ export function middleware(req: NextRequest) {
   const preview = searchParams.get("country")?.toUpperCase();
   const forward = preview && /^[A-Z]{2}$/.test(preview) ? new Headers(req.headers) : null;
   forward?.set("x-preview-country", preview!);
-  const next = () => (forward ? NextResponse.next({ request: { headers: forward } }) : NextResponse.next());
+  const next = () => {
+    const res = forward ? NextResponse.next({ request: { headers: forward } }) : NextResponse.next();
+    if (MARKETING_URL) res.headers.set("X-Robots-Tag", "noindex, nofollow"); // the app itself stays out of search results
+    return res;
+  };
 
   // Host area: no session cookie → log in. The cookie's signature and the host's ownership of
   // each record are verified on the server (lib/auth.ts) by every page and API.

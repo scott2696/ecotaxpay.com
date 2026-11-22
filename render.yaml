@@ -1,4 +1,6 @@
-# Render Blueprint: runs the Eco Tax Pay app at ecotaxpay.com.
+# Render Blueprint: runs the Eco Tax Pay app at app.ecotaxpay.com (login, dashboard, guest payment
+# pages, APIs). The public site ecotaxpay.com stays on GitHub Pages (docs/, built with
+# `npm run export:static`).
 # Render → New → Blueprint → pick this repository. Every push to `main` redeploys automatically.
 # Secrets marked `sync: false` are entered once in the Render dashboard (never committed).
 services:
@@ -19,12 +21,14 @@ services:
       mountPath: /opt/render/project/src/data
       sizeGB: 1
     domains:
-      - ecotaxpay.com
-      - www.ecotaxpay.com
+      - app.ecotaxpay.com
     envVars:
       - key: NODE_VERSION
         value: "22"
       - key: NEXT_PUBLIC_BASE_URL
+        value: https://app.ecotaxpay.com
+      # Public pages live on the static site: the app redirects them there and stays out of search.
+      - key: NEXT_PUBLIC_MARKETING_URL
         value: https://ecotaxpay.com
       - key: SESSION_SECRET
         generateValue: true # long random value, created by Render

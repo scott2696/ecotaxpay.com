@@ -3,12 +3,13 @@ import { CookieSettingsLink } from "./CookieConsent";
 import { getI18n } from "@/i18n/server";
 import { site } from "@/lib/config";
 import { Leaf } from "./SiteHeader";
+import { appHref } from "@/lib/urls";
 
 /** Footer for all public pages: company, product, legal and technical links. */
 export default async function SiteFooter() {
   const { t } = await getI18n();
   const cols: [string, [string, string][]][] = [
-    [t("footer.product"), [["/#pricing", t("home.nav.pricing")], ["/#faq", t("home.nav.faq")], ["/register", t("auth.signup")], ["/login", t("auth.login")]]],
+    [t("footer.product"), [["/#pricing", t("home.nav.pricing")], ["/#faq", t("home.nav.faq")], [appHref("/register"), t("auth.signup")], [appHref("/login"), t("auth.login")]]],
     [t("footer.company"), [["/about", t("nav.about")], ["/contact", t("nav.contact")]]],
     [t("footer.legal"), [["/terms", t("legal.terms")], ["/privacy", t("legal.privacy")], ["/cookies", t("legal.cookies")]]],
     [t("footer.site"), [["/sitemap", "Sitemap"], ["/sitemap.xml", "XML sitemap"], ["/robots.txt", "robots.txt"]]],

@@ -15,6 +15,8 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
+      ".next-static/**",
+      "docs/**", // generated static site (npm run export:static)
       "out/**",
       "build/**",
       "next-env.d.ts",

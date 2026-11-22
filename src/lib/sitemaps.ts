@@ -2,6 +2,7 @@
 // Host area, guest payment links and APIs are private (see robots.ts).
 import { LEGAL_UPDATED } from "@/components/LegalPage";
 import { absolute } from "./seo";
+import { STATIC_LANGS, STATIC_SITE } from "./urls";
 
 type Freq = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
 export type SitemapPage = { path: string; priority: number; changefreq: Freq; updated: string };
@@ -47,11 +48,18 @@ export function sitemapIndex() {
 
 /** /<name>-sitemap.xml: the pages in one group. */
 export function sitemapFor(name: keyof typeof SITEMAPS) {
+  // Static public site: every language has its own address (/es/about …), linked as hreflang alternates.
+  const langs = STATIC_SITE ? STATIC_LANGS : ["en"];
+  const localized = (lang: string, path: string) => absolute(lang === "en" ? path : `/${lang}${path === "/" ? "/" : path}`);
   const items = SITEMAPS[name]
-    .map(
-      (p) =>
-        `  <url>\n    <loc>${esc(absolute(p.path))}</loc>\n    <lastmod>${iso(p.updated)}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority.toFixed(1)}</priority>\n  </url>`,
+    .flatMap((p) =>
+      langs.map((lang) => {
+        const alternates = STATIC_SITE
+          ? [...STATIC_LANGS.map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${esc(localized(l, p.path))}"/>`), `    <xhtml:link rel="alternate" hreflang="x-default" href="${esc(localized("en", p.path))}"/>`].join("\n") + "\n"
+          : "";
+        return `  <url>\n    <loc>${esc(localized(lang, p.path))}</loc>\n${alternates}    <lastmod>${iso(p.updated)}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority.toFixed(1)}</priority>\n  </url>`;
+      }),
     )
     .join("\n");
-  return xml(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${items}\n</urlset>\n`);
+  return xml(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${STATIC_SITE ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"' : ""}>\n${items}\n</urlset>\n`);
 }

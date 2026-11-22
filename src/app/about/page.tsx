@@ -4,6 +4,7 @@ import PageShell from "@/components/PageShell";
 import { getI18n } from "@/i18n/server";
 import { site } from "@/lib/config";
 import { graph, pageMeta, pageSchema, siteSchema } from "@/lib/seo";
+import { appHref } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -45,7 +46,7 @@ export default async function About() {
           <h2 className="text-2xl font-semibold">{t("about.cta.title")}</h2>
           <p className="mt-2 text-[var(--muted)]">{t("about.cta.body")}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="rounded-xl bg-[var(--accent)] px-6 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110">{t("home.start")}</Link>
+            <Link href={appHref("/register")} className="rounded-xl bg-[var(--accent)] px-6 py-3 font-semibold text-[var(--on-accent)] hover:brightness-110">{t("home.start")}</Link>
             <Link href="/contact" className="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-6 py-3 font-medium">{t("nav.contact")}</Link>
           </div>
         </section>

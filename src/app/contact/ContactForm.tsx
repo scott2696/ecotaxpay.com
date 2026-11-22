@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useT } from "@/i18n/client";
+import { appHref } from "@/lib/urls";
 
 const TOPICS = ["general", "account", "billing", "tax", "bug", "partnership"] as const;
 
@@ -17,7 +18,7 @@ export default function ContactForm() {
     setState("sending");
     setError(null);
     try {
-      const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await fetch(appHref("/api/contact"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setState("sent");

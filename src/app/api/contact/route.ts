@@ -8,7 +8,25 @@ const recent = new Map<string, number[]>(); // ip → timestamps (simple flood p
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+// The public site (ecotaxpay.com, static) posts its contact form here on the app domain.
+const ALLOWED_ORIGIN = (process.env.NEXT_PUBLIC_MARKETING_URL ?? "").replace(/\/$/, "");
+const cors = (res: Response) => {
+  if (ALLOWED_ORIGIN) {
+    res.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+    res.headers.set("Vary", "Origin");
+  }
+  return res;
+};
+
+export function OPTIONS() {
+  return cors(new Response(null, { status: 204, headers: { "Access-Control-Allow-Methods": "POST", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400" } }));
+}
+
 export async function POST(req: Request) {
+  return cors(await handle(req));
+}
+
+async function handle(req: Request): Promise<Response> {
   const { t, locale } = await getI18n();
   const body = await req.json().catch(() => ({}));
   if (body.website) return NextResponse.json({ ok: true }); // honeypot filled: silently drop bots
