@@ -3,8 +3,8 @@ import LanguagePicker from "@/components/LanguagePicker";
 import { getI18n, languageOptions } from "@/i18n/server";
 import { currentHost } from "@/lib/auth";
 import { site } from "@/lib/config";
+import AccountLinks from "./AccountLinks";
 import HeaderChrome from "./HeaderChrome";
-import { appHref } from "@/lib/urls";
 
 /** Main horizontal navigation for all public pages. */
 export default async function SiteHeader() {
@@ -21,14 +21,8 @@ export default async function SiteHeader() {
       <Mark /> {site.name}
     </Link>
   );
-  const account = host ? (
-    <Link href={appHref("/host")} className="btn-silver h-10 px-5 text-sm">{t("nav.dashboard")}</Link>
-  ) : (
-    <>
-      <Link href={appHref("/login")} className="px-3 py-2 text-[13px] font-medium text-[var(--muted)] hover:text-[var(--ink)]">{t("auth.login")}</Link>
-      <Link href={appHref("/register")} className="btn-silver h-10 px-5 text-sm">{t("auth.signup")}</Link>
-    </>
-  );
+  const labels = { dashboard: t("nav.dashboard"), login: t("auth.login"), signup: t("auth.signup") };
+  const account = <AccountLinks loggedIn={!!host} labels={labels} />;
   return (
     <HeaderChrome
       brand={brand}
@@ -37,14 +31,7 @@ export default async function SiteHeader() {
       mobileActions={
         <>
           <LanguagePicker options={languages} />
-          {host ? (
-            <Link href={appHref("/host")} className="btn-silver h-12 text-base">{t("nav.dashboard")}</Link>
-          ) : (
-            <>
-              <Link href={appHref("/register")} className="btn-silver h-12 text-base">{t("auth.signup")}</Link>
-              <Link href={appHref("/login")} className="btn-ghost h-12 text-base">{t("auth.login")}</Link>
-            </>
-          )}
+          <AccountLinks loggedIn={!!host} labels={labels} mobile />
         </>
       }
     />
