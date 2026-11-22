@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useT } from "@/i18n/client";
 import { appHref } from "@/lib/urls";
+import { apiFetch, errorText } from "@/lib/api";
 
 const TOPICS = ["general", "account", "billing", "tax", "bug", "partnership"] as const;
 
@@ -18,12 +19,12 @@ export default function ContactForm() {
     setState("sending");
     setError(null);
     try {
-      const res = await fetch(appHref("/api/contact"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await apiFetch(appHref("/api/contact"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setState("sent");
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
       setState("idle");
     }
   }

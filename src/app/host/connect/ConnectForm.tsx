@@ -7,6 +7,7 @@ import { calendarErrorText } from "@/lib/format";
 import { platformById } from "@/lib/platforms";
 import { PlatformIcon } from "../BrandIcons";
 import PlatformPicker from "./PlatformPicker";
+import { apiFetch, errorText } from "@/lib/api";
 
 type Apt = { id: string; name: string; calendars: Record<string, string> };
 type Check = { ok: true; upcoming: number } | { ok: false; error: CalendarError };
@@ -50,7 +51,7 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
     setResults({});
     try {
       const calendars = Object.fromEntries(Object.entries(links).map(([apt, rows]) => [apt, Object.fromEntries(rows.filter(([, v]) => v.trim()))]));
-      const res = await fetch("/api/host/calendars", {
+      const res = await apiFetch("/api/host/calendars", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ calendars }),
@@ -59,7 +60,7 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
       if (!res.ok) throw new Error(data.error);
       setResults(data.results);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
     } finally {
       setBusy(false);
     }

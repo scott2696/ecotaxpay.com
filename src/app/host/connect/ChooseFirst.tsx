@@ -10,6 +10,7 @@ import { type Platform } from "@/lib/platforms";
 import { DEFAULT_REGION_ID, findRegion } from "@/lib/taxRules";
 import { PlatformIcon } from "../BrandIcons";
 import PlatformPicker from "./PlatformPicker";
+import { apiFetch, errorText } from "@/lib/api";
 
 type Check = { ok: true; upcoming: number } | { ok: false; error: CalendarError };
 
@@ -43,7 +44,7 @@ export default function ChooseFirst() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/host/properties", {
+      const res = await apiFetch("/api/host/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -58,14 +59,14 @@ export default function ChooseFirst() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       // Test the link straight away and show what was found.
-      const test = await fetch("/api/host/calendars", {
+      const test = await apiFetch("/api/host/calendars", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ calendars: { [data.id]: { [p.id]: url.trim() } } }),
       }).then((r) => r.json()).catch(() => ({}));
       setDone({ id: data.id, check: test.results?.[data.id]?.[p.id] });
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
     } finally {
       setBusy(false);
     }

@@ -5,6 +5,7 @@ import { useT } from "@/i18n/client";
 import { money } from "@/i18n/translate";
 import { capFirst, QUICK_CURRENCIES, QUICK_MIN_CENTS } from "@/lib/quick";
 import SendPanel, { type GuestTemplates } from "../SendPanel";
+import { apiFetch, errorText } from "@/lib/api";
 
 /** Quick link: the host types the amount and gets a payment link. Nothing else is required. */
 export default function QuickLinkForm({ templates, defaultCurrency }: { templates: GuestTemplates; defaultCurrency: string }) {
@@ -35,7 +36,7 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/host/requests", {
+      const res = await apiFetch("/api/host/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quick: true, amount, currency, description, guestName }),
@@ -48,7 +49,7 @@ export default function QuickLinkForm({ templates, defaultCurrency }: { template
       setCreated({ url: `${window.location.origin}${data.path}` });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
     } finally {
       setSubmitting(false);
     }

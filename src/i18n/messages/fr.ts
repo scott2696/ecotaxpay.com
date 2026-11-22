@@ -156,6 +156,7 @@ export const fr: LocaleMessages = {
   "nav.apartments": "Logements et chambres",
   "nav.rates": "Tarifs",
   "nav.account": "Compte",
+  "common.serverBusy": "Eco Tax Pay est en cours de mise à jour. Réessayez dans une minute.",
   "connect.apartmentName": "Nom du logement / de la chambre",
   "connect.apartmentDefault": "Enregistré comme appartement à {place}. Vous pouvez changer le lieu et le type à tout moment dans Logements.",
   "connect.saveFirst": "Enregistrer le calendrier",

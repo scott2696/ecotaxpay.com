@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useT } from "@/i18n/client";
+import { apiFetch, errorText } from "@/lib/api";
 
 /** Choose a new password from a reset link. */
 export default function ResetForm({ token }: { token: string }) {
@@ -17,12 +18,12 @@ export default function ResetForm({ token }: { token: string }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, password }) });
+      const res = await apiFetch("/api/auth/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, password }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       window.location.href = data.next;
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
       setBusy(false);
     }
   }

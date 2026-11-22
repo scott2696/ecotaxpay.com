@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useT } from "@/i18n/client";
+import { apiFetch, errorText } from "@/lib/api";
 
 /** Ask for a reset link. The reply is the same whether or not the email has an account. */
 export default function ForgotForm({ initialEmail, supportEmail }: { initialEmail: string; supportEmail: string }) {
@@ -17,12 +18,12 @@ export default function ForgotForm({ initialEmail, supportEmail }: { initialEmai
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/forgot", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      const res = await apiFetch("/api/auth/forgot", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
     } finally {
       setBusy(false);
     }

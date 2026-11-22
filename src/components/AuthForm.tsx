@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useT } from "@/i18n/client";
 import { publicHref } from "@/lib/urls";
+import { apiFetch, errorText } from "@/lib/api";
 
 /** Sign-up and log-in form (same layout, different fields and endpoint). */
 export default function AuthForm({ mode, next }: { mode: "register" | "login"; next?: string }) {
@@ -21,7 +22,7 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/auth/${mode}`, {
+      const res = await apiFetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, acceptTerms, next }),
@@ -30,7 +31,7 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
       if (!res.ok) throw new Error(data.error);
       window.location.href = data.next;
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
       setBusy(false);
     }
   }

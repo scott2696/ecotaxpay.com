@@ -7,6 +7,7 @@ import { useT } from "@/i18n/client";
 import { date, money as fmtMoney } from "@/i18n/translate";
 import { describeLine, guestNotes, regionNote } from "@/lib/format";
 import SendPanel, { type GuestTemplates } from "../SendPanel";
+import { apiFetch, errorText } from "@/lib/api";
 
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -87,7 +88,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
     const ctrl = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch("/api/host/quote", {
+        const res = await apiFetch("/api/host/quote", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(stay),
@@ -99,7 +100,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
           setQuoteError(null);
         } else {
           setQuote(null);
-          setQuoteError(data.error);
+          setQuoteError(errorText(new Error(data.error), t));
         }
       } catch {
         /* aborted */
@@ -116,7 +117,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch("/api/host/requests", {
+      const res = await apiFetch("/api/host/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...stay, propertyId, guestName, guestEmail, guestPhone, bookingRef }),
@@ -129,7 +130,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
       setCreated({ url: `${window.location.origin}${data.path}` });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : t("common.error"));
+      setSubmitError(errorText(err, t));
     } finally {
       setSubmitting(false);
     }

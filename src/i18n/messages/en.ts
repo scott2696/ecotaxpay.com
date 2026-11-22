@@ -154,6 +154,7 @@ export const en = {
   "nav.apartments": "Apartments & rooms",
   "nav.rates": "Rates",
   "nav.account": "Account",
+  "common.serverBusy": "Eco Tax Pay is being updated right now. Please try again in a minute.",
   "connect.apartmentName": "Name of the apartment / room",
   "connect.apartmentDefault": "Saved as a {place} apartment. You can change the location and type any time under Apartments & rooms.",
   "connect.saveFirst": "Save calendar",

@@ -13,6 +13,7 @@ import { COUNTRIES, DEFAULT_REGION_ID, findRegion } from "@/lib/taxRules";
 import CustomTaxFields, { toForm, type CustomTaxForm } from "./CustomTaxFields";
 import DocumentsPicker from "./DocumentsPicker";
 import { GUIDE_NOTES } from "@/lib/guideLimits";
+import { apiFetch, errorText } from "@/lib/api";
 
 // Labels/placeholders are translated: "gf.<key>" and "gf.<key>.ph" in i18n/messages.
 const GUIDE: { key: GuideTextField; long?: boolean; latinPlaceholder?: string }[] = [
@@ -79,7 +80,7 @@ export default function PropertyForm({ property, template, connectAfter }: { pro
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/host/properties", {
+      const res = await apiFetch("/api/host/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,7 +99,7 @@ export default function PropertyForm({ property, template, connectAfter }: { pro
       router.push(connectAfter ? `/host?apt=${encodeURIComponent(data.id)}&platform=${encodeURIComponent(connectAfter)}#calendars` : "/host/properties?saved=1");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
       setSaving(false);
     }
   }

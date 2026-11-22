@@ -6,6 +6,7 @@ import PayBadges, { MethodLogo, type CardBrand } from "@/components/PayBadges";
 import { paysOnArrival } from "@/lib/payMethods";
 import type { PayMethodId } from "@/lib/store";
 import DocumentUpload, { type DocItem, type DocumentAsk } from "./DocumentUpload";
+import { apiFetch, errorText } from "@/lib/api";
 
 export type MethodView = {
   id: PayMethodId;
@@ -59,7 +60,7 @@ export default function PayDirect({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/p/${id}/reported`, {
+      const res = await apiFetch(`/api/p/${id}/reported`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ method, email, phone, locale: t.locale, ...(askName ? { name } : {}) }),
@@ -68,7 +69,7 @@ export default function PayDirect({
       if (!res.ok) throw new Error(data.error);
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.error"));
+      setError(errorText(err, t));
       setBusy(false);
     }
   }

@@ -171,6 +171,7 @@ export const mt: LocaleMessages = {
   "nav.apartments": "Appartamenti u kmamar",
   "nav.rates": "Rati",
   "nav.account": "Kont",
+  "common.serverBusy": "Eco Tax Pay qed jiġi aġġornat bħalissa. Jekk jogħġbok erġa' pprova f'minuta.",
   "connect.apartmentName": "Isem l-appartament / kamra",
   "connect.apartmentDefault": "Issejvjat bħala appartament f'{place}. Tista' tbiddel il-post u t-tip meta trid taħt Appartamenti u kmamar.",
   "connect.saveFirst": "Issejvja l-kalendarju",

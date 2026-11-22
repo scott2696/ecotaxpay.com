@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useT } from "@/i18n/client";
+import { apiFetch, errorText } from "@/lib/api";
 
 export type DocItem = { id: string; fileName: string; size: number };
 export type DocumentAsk = { instruction: string; items: string[] };
@@ -43,13 +44,13 @@ export default function DocumentUpload({
       for (const file of Array.from(files)) {
         const body = new FormData();
         body.append("file", file);
-        const res = await fetch(`/api/p/${paymentId}/documents`, { method: "POST", body });
+        const res = await apiFetch(`/api/p/${paymentId}/documents`, { method: "POST", body });
         const data = await res.json();
         if (!res.ok) throw new Error(`${file.name}: ${data.error}`);
         update(data.documents);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("docs.uploadFailed"));
+      setError(e instanceof Error && e.message ? errorText(e, t) : t("docs.uploadFailed"));
     } finally {
       setBusy(false);
       if (input.current) input.current.value = "";
@@ -57,10 +58,10 @@ export default function DocumentUpload({
   }
 
   async function remove(docId: string) {
-    const res = await fetch(`/api/p/${paymentId}/documents?doc=${docId}`, { method: "DELETE" });
+    const res = await apiFetch(`/api/p/${paymentId}/documents?doc=${docId}`, { method: "DELETE" });
     const data = await res.json();
     if (res.ok) update(data.documents);
-    else setError(data.error);
+    else setError(errorText(new Error(data.error), t));
   }
 
   return (
