@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 // ?from=<id> copies another apartment's location, ID setting and arrival guide.
 // ?connect=<platform>: came from "Connect calendars": after saving, go straight back to connect that platform.
-export default async function NewProperty({ searchParams }: { searchParams: Promise<{ from?: string; connect?: string }> }) {
-  const { from, connect } = await searchParams;
+export default async function NewProperty({ searchParams }: { searchParams: Promise<{ from?: string; connect?: string; then?: string }> }) {
+  const { from, connect, then } = await searchParams;
   const host = await requireHost();
   const { t } = await getI18n();
   const found = from ? await getProperty(from) : null;
@@ -24,7 +24,7 @@ export default async function NewProperty({ searchParams }: { searchParams: Prom
           {t("props.copiedFrom", { name: source.name })}
         </p>
       )}
-      <PropertyForm template={source ?? undefined} connectAfter={connect && platformById(connect) ? connect : undefined} />
+      <PropertyForm template={source ?? undefined} connectAfter={connect && platformById(connect) ? connect : undefined} returnToCalendars={then === "calendars"} />
     </main>
   );
 }

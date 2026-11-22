@@ -4,7 +4,7 @@ import { platformById, platformName } from "@/lib/platforms";
 import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
 import { currentHost } from "@/lib/auth";
-import { getProperty, saveProperty, type DocumentsSetting, type Guide, type GuideTextField, type Property } from "@/lib/store";
+import { getProperty, saveProperty, type DocumentsSetting, type Guide, type GuideTextField, type Property, listProperties } from "@/lib/store";
 import { parseDocumentsRequest } from "@/lib/documents";
 import { CUSTOM_REGION_ID, parseCustomTax, type CustomTax } from "@/lib/custom";
 import { findRegion } from "@/lib/taxRules";
@@ -75,6 +75,10 @@ export async function POST(req: Request) {
 
   // Editing: the apartment must belong to this host.
   const id = typeof body.id === "string" && body.id ? body.id : undefined;
+  // New apartment with exactly the same name as an existing one: almost always a double save.
+  const norm = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
+  const twin = id ? undefined : (await listProperties(host.id)).find((p) => norm(p.name) === norm(name));
+  if (twin) return NextResponse.json({ error: t("err.duplicateApartment", { name: twin.name }) }, { status: 409 });
   if (id && (await getProperty(id))?.hostId !== host.id) return NextResponse.json({ error: t("err.unknownApartment") }, { status: 404 });
 
   const property = await saveProperty({

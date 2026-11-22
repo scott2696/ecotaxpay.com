@@ -33,7 +33,7 @@ const GUIDE: { key: GuideTextField; long?: boolean; latinPlaceholder?: string }[
 const DOC_OPTIONS: DocumentsSetting[] = ["off", "optional", "required"];
 
 /** `property` = edit it; `template` = new one prefilled from another apartment. */
-export default function PropertyForm({ property, template, connectAfter }: { property?: Property; template?: Property; connectAfter?: string }) {
+export default function PropertyForm({ property, template, connectAfter, returnToCalendars }: { property?: Property; template?: Property; connectAfter?: string; returnToCalendars?: boolean }) {
   const base = property ?? template;
   const t = useT();
   const k = (key: string, vars?: Record<string, string | number>) => t(key as MessageKey, vars);
@@ -96,7 +96,13 @@ export default function PropertyForm({ property, template, connectAfter }: { pro
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      router.push(connectAfter ? `/host?apt=${encodeURIComponent(data.id)}&platform=${encodeURIComponent(connectAfter)}#calendars` : "/host/properties?saved=1");
+      router.push(
+        connectAfter
+          ? `/host?apt=${encodeURIComponent(data.id)}&platform=${encodeURIComponent(connectAfter)}#calendars`
+          : returnToCalendars
+            ? "/host#calendars"
+            : "/host/properties?saved=1",
+      );
       router.refresh();
     } catch (err) {
       setError(errorText(err, t));

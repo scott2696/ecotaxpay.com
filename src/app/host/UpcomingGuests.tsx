@@ -21,6 +21,8 @@ export default async function UpcomingGuests({
   view: viewParam,
   at: atParam,
   keep = {},
+  apartments = [],
+  only,
 }: {
   calendar: CalendarResult;
   payments: PaymentRecord[];
@@ -30,6 +32,8 @@ export default async function UpcomingGuests({
   view?: string; // all | month | week | day
   at?: string; // YYYY-MM-DD inside the period shown
   keep?: Record<string, string>; // other dashboard filters to carry along in links
+  apartments?: { id: string; name: string }[]; // apartments with a connected calendar
+  only?: string; // show one apartment's bookings (?stays=<id>); otherwise all combined
 }) {
   const { t, locale } = await getI18n();
   const fmt = (iso: string) => date(iso, locale, { weekday: "short", day: "numeric", month: "short" });
@@ -79,10 +83,13 @@ export default async function UpcomingGuests({
     : view === "week" ? [weekStart(at), shift(weekStart(at), 6)]
     : view === "month" ? [`${at.slice(0, 7)}-01`, shift(addMonths(at, 1), -1)]
     : ["0000-00-00", "9999-99-99"];
-  const stays = calendar.stays.filter((s) => s.checkIn >= start && s.checkIn <= end);
+  // One apartment, or every apartment's bookings combined (the host's choice, kept in ?stays=).
+  const onlyApt = apartments.some((a) => a.id === only) ? only : undefined;
+  const mine = onlyApt ? calendar.stays.filter((s) => s.propertyId === onlyApt) : calendar.stays;
+  const stays = mine.filter((s) => s.checkIn >= start && s.checkIn <= end);
   const step = (dir: 1 | -1) => (view === "day" ? shift(at, dir) : view === "week" ? shift(at, 7 * dir) : addMonths(at, dir));
-  const href = (v: string, when?: string) =>
-    `/host?${new URLSearchParams({ ...keep, view: v, ...(when && v !== "all" ? { at: when } : {}) })}`;
+  const href = (v: string, when?: string, apt = onlyApt) =>
+    `/host?${new URLSearchParams({ ...keep, ...(apt ? { stays: apt } : {}), view: v, ...(when && v !== "all" ? { at: when } : {}) })}`;
   const long = { day: "numeric", month: "long", year: "numeric" } as const;
   const periodLabel =
     view === "day" ? date(at, locale, { weekday: "long", ...long })
@@ -116,6 +123,25 @@ export default async function UpcomingGuests({
           {t("upcoming.calError", { platform: platformName(e.source), name: e.propertyName })} {calendarErrorText(e.error, t)}
         </p>
       ))}
+
+      {apartments.length > 1 && (
+        <nav className="flex gap-1.5 overflow-x-auto border-b border-[var(--line)] px-5 py-3 text-sm" aria-label={t("upcoming.whichApartments")}>
+          {[{ id: "", name: t("upcoming.allApartments") }, ...apartments].map((a) => (
+            <Link
+              key={a.id || "all"}
+              href={href(view, at, a.id || undefined)}
+              scroll={false}
+              aria-current={(onlyApt ?? "") === a.id ? "page" : undefined}
+              className={`shrink-0 rounded-full border px-3 py-1 transition-colors ${
+                (onlyApt ?? "") === a.id ? "border-[var(--accent)] bg-[var(--soft)] font-medium text-[var(--ink)]" : "border-[var(--line)] text-[var(--muted)] hover:text-[var(--ink)]"
+              }`}
+            >
+              {a.name}
+              <span className="ms-1 text-[var(--muted)]">{(a.id ? calendar.stays.filter((st) => st.propertyId === a.id) : calendar.stays).length}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
 
       <nav className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-3 text-sm" aria-label={t("upcoming.view")}>
         <div className="inline-flex rounded-lg border border-[var(--line)] p-0.5">

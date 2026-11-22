@@ -264,6 +264,18 @@ export async function getProperty(id: string): Promise<Property | null> {
   return db.properties?.find((p) => p.id === id) ?? null;
 }
 
+/** Delete an apartment (its past payment links and receipts keep the apartment's name). */
+export async function deleteProperty(id: string, hostId: string): Promise<boolean> {
+  return withLock(async () => {
+    const db = await load();
+    const before = db.properties?.length ?? 0;
+    db.properties = (db.properties ?? []).filter((p) => !(p.id === id && p.hostId === hostId));
+    if (db.properties.length === before) return false;
+    await save(db);
+    return true;
+  });
+}
+
 export async function saveProperty(
   data: Omit<Property, "id" | "createdAt" | "updatedAt"> & { id?: string },
 ): Promise<Property> {

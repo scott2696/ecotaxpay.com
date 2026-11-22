@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireHost } from "@/lib/auth";
 import { CALENDAR_CACHE_TAG } from "@/lib/calendar";
 import { notifyPaid } from "@/lib/notify";
-import { getPayment, listPayments, markPaid, updateHost, updatePayment } from "@/lib/store";
+import { deleteProperty, getPayment, listPayments, markPaid, updateHost, updatePayment } from "@/lib/store";
 
 /** Host confirms the guest's direct payment arrived (or cash was handed over): issue the receipt. */
 export async function markPaidOffline(id: string) {
@@ -34,6 +35,15 @@ export async function saveBookingName(key: string, booking: { propertyId: string
     if (link) await updatePayment(link.id, { guestName: name });
   }
   revalidatePath("/host");
+}
+
+/** Delete one of this host's apartments (after a confirmation step on the Apartments page). */
+export async function removeProperty(id: string) {
+  const host = await requireHost();
+  await deleteProperty(id, host.id);
+  revalidatePath("/host/properties");
+  revalidatePath("/host");
+  redirect("/host/properties?deleted=1");
 }
 
 /** "Sync now": drop cached Airbnb / Booking.com calendars and reload the dashboard. */

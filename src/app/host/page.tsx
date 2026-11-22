@@ -33,7 +33,7 @@ const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 /** Last day of a YYYY-MM month as YYYY-MM-DD. */
 const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
 
-export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string; month?: string; from?: string; to?: string; view?: string; at?: string; apt?: string; platform?: string }> }) {
+export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string; month?: string; from?: string; to?: string; view?: string; at?: string; apt?: string; platform?: string; stays?: string }> }) {
   const sp = await searchParams;
   const { apartment = "", month } = sp;
   // Stay range for the accountant: guests whose check-in falls between these months (inclusive).
@@ -160,6 +160,8 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
           view={sp.view}
           at={sp.at}
           keep={{ ...(apartment ? { apartment } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }}
+          apartments={properties.filter((p) => Object.values(p.calendars ?? {}).some(Boolean)).map((p) => ({ id: p.id, name: p.name }))}
+          only={sp.stays}
         />
       )}
 
@@ -185,6 +187,11 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
             }))}
             focus={sp.apt && sp.platform ? { apt: sp.apt, platform: sp.platform } : undefined}
           />
+        ) : null}
+        {properties.length ? (
+          <Link href="/host/properties/new?then=calendars" className="mt-4 inline-flex rounded-lg border border-dashed border-[var(--line-strong)] px-3 py-2 text-sm font-medium hover:bg-[var(--bg)]">
+            + {t("connect.addApartment")}
+          </Link>
         ) : (
           <ChooseFirst />
         )}

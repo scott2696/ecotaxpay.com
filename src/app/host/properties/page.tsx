@@ -1,4 +1,5 @@
 import { platformName } from "@/lib/platforms";
+import { removeProperty } from "../actions";
 import { guideCount } from "@/lib/guide";
 import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
@@ -10,10 +11,10 @@ import { resolveProperty } from "@/lib/resolve";
 
 export const dynamic = "force-dynamic";
 
-export default async function Properties({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+export default async function Properties({ searchParams }: { searchParams: Promise<{ saved?: string; deleted?: string }> }) {
   const host = await requireHost();
   const { t } = await getI18n();
-  const [properties, { saved }] = await Promise.all([listProperties(host.id), searchParams]);
+  const [properties, { saved, deleted }] = await Promise.all([listProperties(host.id), searchParams]);
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <a href="/host" className="text-sm text-[var(--muted)] underline">← {t("nav.dashboard")}</a>
@@ -26,6 +27,7 @@ export default async function Properties({ searchParams }: { searchParams: Promi
         <Link href="/host/rates" className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium">🌍 {t("rates.title")}</Link>
       </div>
       {saved && <p className="mb-4 rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-300">{t("account.notice.saved")}</p>}
+      {deleted && <p className="mb-4 rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-300">{t("props.deleted")}</p>}
       {properties.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface)] p-10 text-center text-[var(--muted)]">
           {t("props.empty")}
@@ -58,6 +60,16 @@ export default async function Properties({ searchParams }: { searchParams: Promi
                   <div className="flex gap-2 text-sm">
                     <Link href={`/host/properties/${p.id}`} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 font-semibold text-[var(--on-accent)]">{t("props.edit")}</Link>
                     <Link href={`/host/properties/new?from=${p.id}`} className="rounded-lg border border-[var(--line)] px-3 py-1.5 font-medium hover:bg-[var(--soft)]" title={t("props.copyHint")}>{t("props.copy")}</Link>
+                    {/* Two-step delete (no browser dialogs): open, then confirm. */}
+                    <details className="relative">
+                      <summary className="cursor-pointer list-none rounded-lg border border-[var(--line)] px-3 py-1.5 font-medium text-red-300 hover:bg-red-500/10">{t("props.delete")}</summary>
+                      <div className="absolute end-0 z-10 mt-2 w-72 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm shadow-lg">
+                        <p>{t("props.deleteConfirmText", { name: p.name })}</p>
+                        <form action={removeProperty.bind(null, p.id)} className="mt-3">
+                          <button className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">{t("props.deleteConfirm")}</button>
+                        </form>
+                      </div>
+                    </details>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
