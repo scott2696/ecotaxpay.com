@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
 import type { CalendarError } from "@/lib/calendar";
@@ -28,6 +29,9 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
     ),
   );
   const [results, setResults] = useState<Record<string, Record<string, Check>>>({});
+  const router = useRouter();
+  // Once calendars are set up the section stays small: a one-line summary per apartment, "Edit" to open.
+  const [collapsed, setCollapsed] = useState(!focus && apartments.every((a) => Object.values(a.calendars).some(Boolean)));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +63,9 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setResults(data.results);
+      // Saved: fold the section back to its summary and refresh the bookings below.
+      setCollapsed(true);
+      router.refresh();
     } catch (err) {
       setError(errorText(err, t));
     } finally {
@@ -67,6 +74,35 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
   }
 
   const allOk = Object.keys(results).length > 0 && Object.values(results).every((r) => Object.values(r).every((c) => c?.ok));
+
+  if (collapsed)
+    return (
+      <div className="space-y-2">
+        {apartments.map((a) => {
+          const rows = links[a.id].filter(([, v]) => v.trim());
+          return (
+            <div key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-3 text-sm">
+              <span className="font-medium">{a.name}</span>
+              {rows.length === 0 && <span className="text-[var(--muted)]">{t("props.none")}</span>}
+              {rows.map(([id]) => {
+                const r = results[a.id]?.[id];
+                return (
+                  <span key={id} className="inline-flex items-center gap-1.5" title={r && !r.ok ? calendarErrorText(r.error, t) : undefined}>
+                    <PlatformIcon id={id} size={16} />
+                    {platformById(id)?.name}
+                    {r ? (r.ok ? <span className="text-emerald-300">✓ {r.upcoming}</span> : <span className="text-red-300">✗</span>) : <span className="text-emerald-300">✓</span>}
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })}
+        {Object.keys(results).length > 0 && <p className="text-xs text-emerald-300">✓ {t("connect.savedSynced")}</p>}
+        <button type="button" onClick={() => setCollapsed(false)} className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm font-medium hover:bg-[var(--soft)]">
+          {t("connect.editCalendars")}
+        </button>
+      </div>
+    );
 
   return (
     <form onSubmit={sync} className="space-y-4">

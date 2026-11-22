@@ -57,6 +57,13 @@ export type Host = {
   passwordReset?: { tokenHash: string; expires: string };
   /** Guest names the host typed for calendar bookings (iCal feeds never include names), by booking key. */
   bookingNames?: Record<string, string>;
+  /**
+   * Bookings synced from calendars, kept between syncs (by "<propertyId>|<source>|<uid>"), so they
+   * stay even if a feed is briefly unreachable or a booking drops out of a platform's calendar.
+   */
+  savedStays?: Record<string, SavedStay>;
+  /** Bookings the host removed from the list (by the same key): never shown again. */
+  hiddenStays?: string[];
 };
 
 /**
@@ -78,6 +85,19 @@ export type BankDetails = {
 };
 
 export type CardBrandId = "visa" | "mastercard" | "amex" | "maestro" | "applepay" | "googlepay";
+
+export type SavedStay = {
+  propertyId: string;
+  source: string;
+  uid: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  reservationCode?: string;
+  phoneLast4?: string;
+  lastSeen: string; // last sync that still listed it
+  missing?: boolean; // no longer in the platform's calendar (maybe cancelled)
+};
 
 export type PaymentMethods = {
   /** Card payment link from the host's own provider (SumUp, Square, Viva, myPOS, Stripe Payment Link, …). */

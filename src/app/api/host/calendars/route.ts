@@ -4,6 +4,7 @@ import { CALENDAR_CACHE_TAG, checkCalendarUrl, testCalendar, type CalendarError,
 import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
 import { currentHost } from "@/lib/auth";
+import { syncNow } from "@/lib/bookings";
 import { getProperty, saveProperty } from "@/lib/store";
 import { platformById, platformName } from "@/lib/platforms";
 
@@ -46,5 +47,7 @@ export async function POST(req: Request) {
     for (const [src, url] of Object.entries(links)) results[id][src] = await testCalendar(src, url!);
   }
   revalidateTag(CALENDAR_CACHE_TAG);
+  // Saved: read every calendar live and store the bookings, so they show (and stay) straight away.
+  await syncNow(host).catch(() => undefined);
   return NextResponse.json({ results });
 }

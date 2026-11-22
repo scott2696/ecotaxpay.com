@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireHost } from "@/lib/auth";
 import { CALENDAR_CACHE_TAG } from "@/lib/calendar";
+import { syncNow } from "@/lib/bookings";
 import { notifyPaid } from "@/lib/notify";
 import { deleteProperty, getPayment, listPayments, markPaid, updateHost, updatePayment } from "@/lib/store";
 
@@ -46,9 +47,21 @@ export async function removeProperty(id: string) {
   redirect("/host/properties?deleted=1");
 }
 
+/** Remove a synced booking from the dashboard list (it won't come back). */
+export async function hideStay(key: string) {
+  const host = await requireHost();
+  const hidden = new Set(host.hiddenStays ?? []);
+  hidden.add(key);
+  const saved = { ...(host.savedStays ?? {}) };
+  delete saved[key];
+  await updateHost(host.id, { hiddenStays: [...hidden].slice(-2000), savedStays: saved });
+  revalidatePath("/host");
+}
+
 /** "Sync now": drop cached Airbnb / Booking.com calendars and reload the dashboard. */
 export async function syncCalendars() {
-  await requireHost();
+  const host = await requireHost();
   revalidateTag(CALENDAR_CACHE_TAG);
+  await syncNow(host);
   revalidatePath("/host");
 }

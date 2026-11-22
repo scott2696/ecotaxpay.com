@@ -4,7 +4,8 @@ import { date, money } from "@/i18n/translate";
 import type { CalendarResult } from "@/lib/calendar";
 import { calendarErrorText } from "@/lib/format";
 import type { PaymentRecord } from "@/lib/store";
-import { saveBookingName, syncCalendars } from "./actions";
+import { hideStay, saveBookingName, syncCalendars } from "./actions";
+import { stayKey } from "@/lib/bookings";
 import { AirbnbIcon, BookingIcon, PlatformBadge, PlatformIcon } from "./BrandIcons";
 import { platformName } from "@/lib/platforms";
 import CopyLink from "./CopyLink";
@@ -215,6 +216,11 @@ export default async function UpcomingGuests({
                     <span>{s.propertyName}</span>
                     {s.reservationCode && <span>· {s.reservationCode}</span>}
                     {s.phoneLast4 && <span>· {t("upcoming.phone", { last4: s.phoneLast4 })}</span>}
+                    {(s as { missing?: boolean }).missing && (
+                      <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-amber-200" title={t("upcoming.missingHint")}>
+                        {t("upcoming.missing", { platform: platformName(s.source) })}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
@@ -230,6 +236,11 @@ export default async function UpcomingGuests({
                       {t("upcoming.createLink")}
                     </Link>
                   )}
+                  <form action={hideStay.bind(null, stayKey(s))}>
+                    <button className="rounded-lg px-2 py-1.5 text-xs text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]" title={t("upcoming.removeHint")} aria-label={t("upcoming.remove")}>
+                      {t("upcoming.remove")}
+                    </button>
+                  </form>
                 </div>
               </li>
             );

@@ -147,13 +147,13 @@ async function fetchIcs(url: string, fresh = false): Promise<string> {
 }
 
 /** Upcoming stays (check-out today or later) for all connected apartments, sorted by check-in. */
-export async function upcomingStays(properties: Property[], today = new Date().toISOString().slice(0, 10)): Promise<CalendarResult> {
+export async function upcomingStays(properties: Property[], today = new Date().toISOString().slice(0, 10), fresh = false): Promise<CalendarResult> {
   const jobs = properties.flatMap((p) =>
     Object.entries(p.calendars ?? {})
       .filter(([src, url]) => url && platformById(src))
       .map(async ([src, url]) => {
         try {
-          return { stays: toStays(parseIcs(await fetchIcs(url!)), src, p) };
+          return { stays: toStays(parseIcs(await fetchIcs(url!, fresh)), src, p) };
         } catch (e) {
           return { error: { propertyName: p.name, source: src, error: toError(e) } };
         }

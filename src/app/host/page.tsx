@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/calc";
 import { capFirst, quoteTitle } from "@/lib/quick";
 import { isDemoMode } from "@/lib/config";
 import { upcomingStays } from "@/lib/calendar";
+import { rememberStays } from "@/lib/bookings";
 import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
 import { markPaidOffline } from "./actions";
 import { activeMethods, methodTitle, paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
@@ -49,7 +50,9 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
   const inRange = (p: (typeof payments)[number]) => (!fromDate || stayDate(p) >= fromDate) && (!toDate || stayDate(p) <= toDate);
   const shown = payments.filter((p) => (!selected || p.propertyId === selected.id) && inRange(p));
   const connected = properties.some((p) => Object.values(p.calendars ?? {}).some(Boolean));
-  const calendar = connected ? await upcomingStays(properties) : { stays: [], errors: [] };
+  const live = connected ? await upcomingStays(properties) : { stays: [], errors: [] };
+  // Bookings stay until the host removes them, even if a feed hiccups or a booking leaves a calendar.
+  const calendar = { stays: connected ? await rememberStays(host, properties, live) : [], errors: live.errors };
   const { t, locale } = await getI18n();
   const methods = activeMethods(host.paymentMethods);
   const fm = (n: number, cur = "EUR") => formatMoney(n, cur, locale);
