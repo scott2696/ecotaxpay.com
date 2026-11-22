@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { renewedSession, SESSION_COOKIE } from "@/lib/sessionRefresh";
 
 const LANG_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,4})?$/;
 
@@ -16,7 +17,25 @@ const APP_HOST = (() => {
   }
 })();
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
+  const res = await route(req);
+  // Rolling login: renew the session (at most once a day) so active hosts never have to log in again.
+  // Only on normal page loads: never during form posts (e.g. "Log out") or redirects.
+  if (req.method === "GET" && !res.headers.get("location")) {
+    const renewed = await renewedSession(req.cookies.get(SESSION_COOKIE)?.value);
+    if (renewed)
+      res.cookies.set(SESSION_COOKIE, renewed.value, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        expires: renewed.expires,
+      });
+  }
+  return res;
+}
+
+function route(req: NextRequest): NextResponse {
   const { pathname, searchParams } = req.nextUrl;
 
   const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";

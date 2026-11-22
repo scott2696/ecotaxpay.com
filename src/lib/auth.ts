@@ -6,8 +6,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getHost, getHostBy, updateHost, type Host } from "./store";
 
-export const SESSION_COOKIE = "etp_session";
-const SESSION_DAYS = 30;
+import { SESSION_COOKIE, SESSION_DAYS } from "./sessionRefresh";
+export { SESSION_COOKIE };
+// Hosts stay logged in: SESSION_DAYS (180), renewed every day they use the site (middleware).
 
 /** SESSION_SECRET in production; in development a random secret is generated once and kept in data/. */
 function secret(): string {
