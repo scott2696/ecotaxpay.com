@@ -51,7 +51,54 @@ export type Host = {
     /** What this host pays each month, fixed when they subscribed (€3 or the local equivalent). */
     price?: { currency: string; amount: number };
   };
+  /** How guests pay this host directly (shown on the guest's payment page). Never via the platform. */
+  paymentMethods?: PaymentMethods;
+  /** Guest names the host typed for calendar bookings (iCal feeds never include names), by booking key. */
+  bookingNames?: Record<string, string>;
 };
+
+/**
+ * Everything a guest's bank needs for a transfer: SEPA (EUR in Europe) only needs holder + IBAN, but
+ * international (SWIFT) transfers also need the BIC, the bank's name and address, and the account
+ * holder's town and country. UK / US accounts without an IBAN use sort code / routing number instead.
+ */
+export type BankDetails = {
+  holder: string;
+  holderAddress?: string; // town and country of the account holder (SWIFT)
+  accountType?: "iban" | "uk" | "us"; // missing = "iban" (older records)
+  iban?: string;
+  sortCode?: string; // UK, "12-34-56"
+  accountNumber?: string; // UK (8 digits) / US (4–17 digits)
+  routingNumber?: string; // US ABA, 9 digits
+  bic?: string;
+  bankName?: string;
+  bankAddress?: string; // town and country of the bank
+};
+
+export type CardBrandId = "visa" | "mastercard" | "amex" | "maestro" | "applepay" | "googlepay";
+
+export type PaymentMethods = {
+  /** Card payment link from the host's own provider (SumUp, Square, Viva, myPOS, Stripe Payment Link, …). */
+  card?: { url: string; provider?: string; brands: CardBrandId[] };
+  /** Card machine at check-in. */
+  cardOnArrival?: { brands: CardBrandId[] };
+  bank?: BankDetails;
+  // Phone-number payment apps (international format, digits only).
+  bizum?: string; // Spain
+  mbway?: string; // Portugal
+  satispay?: string; // Italy
+  twint?: string; // Switzerland
+  wero?: string; // EU (phone or email)
+  revolut?: string; // Revtag without "@"
+  paypal?: string; // PayPal.Me username
+  wise?: string; // https://wise.com/pay/... link
+  link?: { label?: string; url: string }; // any other payment link (SumUp, own Stripe link, …)
+  cash?: boolean; // pay in cash on arrival
+  note?: string; // extra instructions from the host
+};
+
+export type PayMethodId =
+  | "card" | "bank" | "revolut" | "paypal" | "wise" | "bizum" | "mbway" | "satispay" | "twint" | "wero" | "link" | "cardOnArrival" | "cash";
 
 export type Property = {
   id: string;
@@ -64,7 +111,8 @@ export type Property = {
   documentsRequest?: DocumentsRequest;
   guide: Guide;
   /** iCal export links, used to list upcoming guests. */
-  calendars?: { airbnb?: string; booking?: string };
+  /** iCal export links by platform id (see platforms.ts): { airbnb: "https://…", vrbo: "https://…", … }. */
+  calendars?: Record<string, string | undefined>;
   /** Host-defined tax when regionId === "custom" (destination not in the built-in list). */
   customTax?: CustomTax;
   createdAt: string;
@@ -92,6 +140,10 @@ export type PaymentRecord = {
   stripeSessionId?: string;
   stripePaymentIntentId?: string;
   paidAt?: string;
+  /** How the guest paid the host directly (set when the guest reports it, or the host confirms). */
+  paidVia?: PayMethodId;
+  /** The guest said they paid; waiting for the host to confirm the money arrived. */
+  reportedPaidAt?: string;
   receiptNumber?: string;
   emailSentAt?: string;
   whatsappSentAt?: string;

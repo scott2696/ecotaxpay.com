@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/client";
 import type { DemoCard } from "@/lib/demoQuote";
 
@@ -14,13 +14,36 @@ export default function Hero({ card: demo }: { card: DemoCard }) {
   const t = useT();
   const video = useRef<HTMLVideoElement>(null);
   const card = useRef<HTMLDivElement>(null);
+  const [filmReady, setFilmReady] = useState(false);
 
+  // Keep the film invisible until it is really playing, so the door opens in one
+  // smooth take instead of flashing the open-door still, snapping shut and stuttering.
   useEffect(() => {
     const v = video.current;
-    if (!v || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!v) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      v.poster = "/media/hero-still.jpg";
+      setFilmReady(true);
+      return;
+    }
     const mobile = matchMedia("(max-aspect-ratio: 4/5)").matches;
+    v.poster = mobile ? "/media/hero-mobile-poster.jpg" : "/media/hero-poster.jpg";
+    const show = () => setFilmReady(true);
+    const start = () => v.play().catch(show);
+    v.addEventListener("playing", show, { once: true });
+    v.addEventListener("canplaythrough", start, { once: true });
+    v.addEventListener("error", show, { once: true });
     v.src = mobile ? "/media/hero-mobile.mp4" : "/media/hero.mp4";
-    v.play().catch(() => {});
+    v.load();
+
+    // The slow, even ending is built into the video files (re-timed and frame-interpolated),
+    // so it plays at normal speed: changing playbackRate made it stutter on phones.
+
+    return () => {
+      v.removeEventListener("playing", show);
+      v.removeEventListener("canplaythrough", start);
+      v.removeEventListener("error", show);
+    };
   }, []);
 
   // Gentle 3D tilt of the payment card toward the pointer (desktop only).
@@ -44,11 +67,10 @@ export default function Hero({ card: demo }: { card: DemoCard }) {
       <div className="absolute inset-0 -z-10">
         <video
           ref={video}
-          className="hero-film h-full w-full object-cover object-[70%_50%] [filter:brightness(0.55)_contrast(1.08)]"
+          className={`h-full w-full object-cover object-[70%_50%] transition-opacity duration-[1400ms] [filter:brightness(0.55)_contrast(1.08)] [transition-timing-function:var(--ease-out)] ${filmReady ? "opacity-100" : "opacity-0"}`}
           muted
           playsInline
           preload="auto"
-          poster="/media/hero-still.jpg"
           aria-hidden
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[rgba(5,5,6,0.92)] via-[rgba(5,5,6,0.7)] to-[rgba(5,5,6,0.25)] rtl:bg-gradient-to-l" />
@@ -126,7 +148,7 @@ function PayCard({ c }: { c: DemoCard }) {
         <p className="mt-1 text-[12px] leading-relaxed text-[var(--muted)]">{c.explanation}</p>
       </div>
       <div className="btn-silver mt-5 h-12 w-full text-[14px]" aria-hidden>{c.pay}</div>
-      <p className="mt-3 text-center text-[11px] text-[var(--muted)]">Apple Pay · Google Pay · Card</p>
+      <p className="mt-3 text-center text-[11px] text-[var(--muted)]">{t("home.preview.methods")}</p>
       {/* Result chip */}
       <div className="absolute -bottom-5 -end-3 flex items-center gap-2 rounded-full border border-emerald-400/25 bg-[rgba(10,22,17,0.92)] px-4 py-2 text-[12px] text-emerald-200 shadow-xl backdrop-blur sm:-end-6">
         <span aria-hidden>✓</span> {t("hero.paidChip")}

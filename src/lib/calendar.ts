@@ -1,9 +1,13 @@
-// Upcoming stays from Airbnb / Booking.com via their iCal export links.
-// iCal only carries dates (+ Airbnb's reservation code and the guest's last 4 phone digits),
-// never guest names or guest counts — the host completes those when creating the link.
+// Upcoming stays from booking platforms (Airbnb, Booking.com, Vrbo, Misterb&b, channel managers…)
+// via their iCal export links. iCal only carries dates (+ Airbnb's reservation code and the guest's
+// last 4 phone digits), never guest names or guest counts — the host / guest completes those.
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
+import { platformById, platformPriority } from "./platforms";
 import type { Property } from "./store";
 
-export type Source = "airbnb" | "booking";
+/** A platform id from platforms.ts ("airbnb", "booking", "vrbo", …). */
+export type Source = string;
 
 export type Stay = {
   propertyId: string;
@@ -28,13 +32,10 @@ class CalendarFetchError extends Error {
 }
 const toError = (e: unknown): CalendarError => (e instanceof CalendarFetchError ? e.info : { code: "failed" });
 
-const ALLOWED: Record<Source, RegExp> = {
-  airbnb: /(^|\.)airbnb\.[a-z.]+$/i,
-  booking: /(^|\.)booking\.com$/i,
-};
-
-/** Validate a calendar link the host pasted. Returns null, or an error message key ("cal.url.*"). Only Airbnb / Booking.com hosts (prevents the server fetching arbitrary URLs). */
+/** Validate a calendar link the host pasted. Returns null, or an error message key ("cal.url.*"). */
 export function checkCalendarUrl(source: Source, raw: string): string | null {
+  const platform = platformById(source);
+  if (!platform) return "cal.url.invalid";
   let url: URL;
   try {
     url = new URL(raw.trim());
@@ -43,9 +44,28 @@ export function checkCalendarUrl(source: Source, raw: string): string | null {
   }
   const devLocal = process.env.NODE_ENV !== "production" && url.hostname === "localhost"; // for local testing only
   if (!devLocal && url.protocol !== "https:") return "cal.url.https";
-  if (!devLocal && !ALLOWED[source].test(url.hostname))
+  if (!devLocal && platform.hosts && !platform.hosts.test(url.hostname))
     return source === "airbnb" ? "cal.url.airbnb" : "cal.url.booking";
+  if (!devLocal && (url.username || url.password || (url.port && url.port !== "443"))) return "cal.url.invalid";
+  const bare = url.hostname.replace(/^\[|\]$/g, "");
+  if (!devLocal && (bare === "localhost" || (isIP(bare) && isPrivateAddress(bare)))) return "cal.url.invalid"; // never this machine / a private network
   return null;
+}
+
+// Links can point at any platform, so the server only ever fetches public internet addresses
+// (never this machine or a private network), including after redirects.
+const PRIVATE_V4 = [/^0\./, /^10\./, /^127\./, /^169\.254\./, /^172\.(1[6-9]|2\d|3[01])\./, /^192\.168\./, /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./, /^(22[4-9]|2[3-5]\d)\./];
+function isPrivateAddress(ip: string): boolean {
+  if (isIP(ip) === 4) return PRIVATE_V4.some((r) => r.test(ip));
+  const v = ip.toLowerCase();
+  if (v.startsWith("::ffff:")) return isPrivateAddress(v.slice(7));
+  return v === "::" || v === "::1" || /^f[cd]/.test(v) || /^fe[89ab]/.test(v) || v.startsWith("ff");
+}
+async function assertPublic(url: URL) {
+  if (process.env.NODE_ENV !== "production" && url.hostname === "localhost") return; // local testing only
+  const host = url.hostname.replace(/^\[|\]$/g, "");
+  const addresses = isIP(host) ? [{ address: host }] : await lookup(host, { all: true });
+  if (!addresses.length || addresses.some((a) => isPrivateAddress(a.address))) throw new CalendarFetchError({ code: "failed" });
 }
 
 type VEvent = { uid: string; start: string; end: string; summary: string; description: string };
@@ -80,10 +100,11 @@ export function parseIcs(text: string): VEvent[] {
 
 const nightsBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
 
-/** Turn feed events into guest stays, skipping dates the host blocked on Airbnb. */
+/** Turn feed events into guest stays, skipping the host's own blocked dates where the feed marks them. */
 export function toStays(events: VEvent[], source: Source, property: Pick<Property, "id" | "name">): Stay[] {
+  const blocked = platformById(source)?.blocked ?? (source === "booking" ? undefined : /^(blocked|not available|unavailable)$/i);
   return events
-    .filter((e) => !(source === "airbnb" && /not available|blocked/i.test(e.summary)))
+    .filter((e) => !(blocked && blocked.test(e.summary.trim())))
     .map((e) => ({
       propertyId: property.id,
       propertyName: property.name,
@@ -101,13 +122,25 @@ export function toStays(events: VEvent[], source: Source, property: Pick<Propert
 export const CALENDAR_CACHE_TAG = "calendars";
 
 async function fetchIcs(url: string, fresh = false): Promise<string> {
-  const res = await fetch(url, {
-    headers: { "User-Agent": "EcoTaxPay calendar sync (+https://ecotaxpay.com)" },
-    signal: AbortSignal.timeout(10_000),
-    // Re-check each calendar at most every 10 minutes; "Sync now" clears this cache.
-    ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 600, tags: [CALENDAR_CACHE_TAG] } }),
-  });
-  if (!res.ok) throw new CalendarFetchError({ code: "status", status: res.status });
+  // Follow up to 3 redirects by hand, checking every address on the way.
+  let current = new URL(url);
+  let res: Response | undefined;
+  for (let hop = 0; hop < 4; hop++) {
+    await assertPublic(current);
+    res = await fetch(current, {
+      headers: { "User-Agent": "EcoTaxPay calendar sync (+https://ecotaxpay.com)", Accept: "text/calendar, */*" },
+      redirect: "manual",
+      signal: AbortSignal.timeout(10_000),
+      // Re-check each calendar at most every 10 minutes; "Sync now" clears this cache.
+      ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 600, tags: [CALENDAR_CACHE_TAG] } }),
+    });
+    const next = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null;
+    if (!next) break;
+    current = new URL(next, current);
+    if (current.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && current.hostname === "localhost"))
+      throw new CalendarFetchError({ code: "failed" });
+  }
+  if (!res || !res.ok) throw new CalendarFetchError({ code: "status", status: res?.status ?? 0 });
   const text = await res.text();
   if (text.length > 2_000_000 || !text.includes("BEGIN:VCALENDAR")) throw new CalendarFetchError({ code: "notCalendar" });
   return text;
@@ -116,11 +149,11 @@ async function fetchIcs(url: string, fresh = false): Promise<string> {
 /** Upcoming stays (check-out today or later) for all connected apartments, sorted by check-in. */
 export async function upcomingStays(properties: Property[], today = new Date().toISOString().slice(0, 10)): Promise<CalendarResult> {
   const jobs = properties.flatMap((p) =>
-    (["airbnb", "booking"] as Source[])
-      .filter((src) => p.calendars?.[src])
-      .map(async (src) => {
+    Object.entries(p.calendars ?? {})
+      .filter(([src, url]) => url && platformById(src))
+      .map(async ([src, url]) => {
         try {
-          return { stays: toStays(parseIcs(await fetchIcs(p.calendars![src]!)), src, p) };
+          return { stays: toStays(parseIcs(await fetchIcs(url!)), src, p) };
         } catch (e) {
           return { error: { propertyName: p.name, source: src, error: toError(e) } };
         }
@@ -129,10 +162,15 @@ export async function upcomingStays(properties: Property[], today = new Date().t
   const results = await Promise.all(jobs);
   const all = results.flatMap((r) => ("stays" in r ? r.stays! : []));
 
-  // If both calendars are synced to each other, an Airbnb booking also shows on Booking.com as "closed". Show it once.
-  const airbnbKeys = new Set(all.filter((s) => s.source === "airbnb").map((s) => `${s.propertyId}|${s.checkIn}|${s.checkOut}`));
-  const stays = all
-    .filter((s) => s.source === "airbnb" || !airbnbKeys.has(`${s.propertyId}|${s.checkIn}|${s.checkOut}`))
+  // Calendars synced with each other repeat the same stay (e.g. an Airbnb booking shows on
+  // Booking.com as "closed"). Show it once, from the platform the booking most likely came from.
+  const best = new Map<string, Stay>();
+  for (const s of all) {
+    const key = `${s.propertyId}|${s.checkIn}|${s.checkOut}`;
+    const have = best.get(key);
+    if (!have || platformPriority(s.source) < platformPriority(have.source)) best.set(key, s);
+  }
+  const stays = [...best.values()]
     .filter((s) => s.checkOut >= today)
     .sort((a, b) => a.checkIn.localeCompare(b.checkIn) || a.propertyName.localeCompare(b.propertyName));
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import MotionRoot from "@/components/motion/MotionRoot";
 import TimeZoneCookie from "@/components/TimeZoneCookie";
+import CookieConsent from "@/components/CookieConsent";
 import { I18nProvider } from "@/i18n/client";
 import { getI18n } from "@/i18n/server";
 import { site } from "@/lib/config";
@@ -44,6 +45,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <MotionRoot />
           <TimeZoneCookie />
           {children}
+          {/* Also loads the tawk.to live chat, only after consent. */}
+          <CookieConsent />
         </I18nProvider>
       </body>
     </html>

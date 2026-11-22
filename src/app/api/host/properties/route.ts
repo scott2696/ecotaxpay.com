@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { checkCalendarUrl, type Source } from "@/lib/calendar";
+import { checkCalendarUrl } from "@/lib/calendar";
+import { platformById, platformName } from "@/lib/platforms";
 import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
 import { currentHost } from "@/lib/auth";
@@ -60,14 +61,17 @@ export async function POST(req: Request) {
   if (guide.mapsUrl && !/^https?:\/\//i.test(guide.mapsUrl))
     return NextResponse.json({ error: t("err.mapsUrl") }, { status: 400 });
 
+  // Calendar links are managed on the "Connect calendars" page; the apartment form doesn't send them.
+  const sentCalendars = body.calendars && typeof body.calendars === "object";
   const calendars: NonNullable<Property["calendars"]> = {};
-  for (const src of ["airbnb", "booking"] as Source[]) {
-    const v = String(body.calendars?.[src] ?? "").trim();
-    if (!v) continue;
-    const problem = checkCalendarUrl(src, v);
-    if (problem) return NextResponse.json({ error: `${src === "airbnb" ? "Airbnb" : "Booking.com"}: ${t(problem as MessageKey)}` }, { status: 400 });
-    calendars[src] = v;
-  }
+  if (sentCalendars)
+    for (const [src, value] of Object.entries(body.calendars as Record<string, unknown>)) {
+      const v = String(value ?? "").trim();
+      if (!v || !platformById(src)) continue;
+      const problem = checkCalendarUrl(src, v);
+      if (problem) return NextResponse.json({ error: `${platformName(src)}: ${t(problem as MessageKey)}` }, { status: 400 });
+      calendars[src] = v;
+    }
 
   // Editing: the apartment must belong to this host.
   const id = typeof body.id === "string" && body.id ? body.id : undefined;
@@ -84,7 +88,7 @@ export async function POST(req: Request) {
     documentsNote: undefined,
     documentsRequest,
     guide,
-    calendars,
+    calendars: sentCalendars ? calendars : (id ? (await getProperty(id))?.calendars : undefined),
   });
   return NextResponse.json({ id: property.id });
 }

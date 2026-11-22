@@ -3,14 +3,16 @@ import { notFound } from "next/navigation";
 import LanguagePicker from "@/components/LanguagePicker";
 import { getI18n, languageOptions } from "@/i18n/server";
 import { date, money, type T } from "@/i18n/translate";
-import { isDemoMode, site } from "@/lib/config";
+import { site } from "@/lib/config";
 import { DEFAULT_DOCUMENTS_REQUEST, documentLabels, documentsInstruction } from "@/lib/documents";
 import { explainRules } from "@/lib/explain";
 import { describeLine, guestNotes } from "@/lib/format";
 import { guideItems, translateGuide } from "@/lib/guide";
 import { resolveProperty } from "@/lib/resolve";
-import { getPayment, getProperty, issuerFor, type Guide } from "@/lib/store";
-import PayButton from "./PayButton";
+import { activeMethods, METHOD_ICONS, methodUrl, PHONE_APP_NAMES, PHONE_APPS, paymentReference, paysOnArrival, type PhoneApp } from "@/lib/payMethods";
+import type { MessageKey } from "@/i18n/messages/en";
+import { getHost, getPayment, getProperty, issuerFor, type Guide, type PaymentMethods, type PaymentRecord } from "@/lib/store";
+import PayDirect, { type MethodView } from "./PayDirect";
 import { capFirst, quoteTitle } from "@/lib/quick";
 
 export const dynamic = "force-dynamic";
@@ -28,13 +30,15 @@ export default async function GuestPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { id } = await params;
-  const { cancelled } = await searchParams;
+  await searchParams;
   const p = await getPayment(id);
   if (!p || p.status === "refunded") notFound();
   const property = p.propertyId ? await getProperty(p.propertyId) : null;
   const issuer = await issuerFor(p);
   const { t, locale } = await getI18n();
   const languages = await languageOptions();
+  const host = p.hostId ? await getHost(p.hostId) : null;
+  const pm = host?.paymentMethods;
 
   const q = p.quote;
   const m = (n: number) => money(n, q.currency, locale);
@@ -78,8 +82,11 @@ export default async function GuestPage({
         )}
       </header>
 
-      {cancelled && !paid && <p className="rounded-lg bg-amber-400/10 p-3 text-sm text-amber-200">{t("guest.cancelled")}</p>}
-      {isDemoMode() && !paid && <p className="rounded-lg bg-sky-400/10 p-3 text-sm text-sky-200">{t("guest.demo")}</p>}
+      {!paid && p.reportedPaidAt && (
+        <p className="rounded-lg bg-emerald-400/10 p-3 text-sm text-emerald-200">
+          {paysOnArrival(p.paidVia) ? t("guest.cashNoted", { name: issuer.name }) : t("guest.reported", { name: issuer.name })}
+        </p>
+      )}
 
       {paid ? (
         <PaidCard t={t} id={p.id} amount={m(q.totalCents)} receiptNumber={p.receiptNumber} guestPhone={p.guestPhone} whatsappSent={!!p.whatsappSentAt} taxName={tax} hasGuide={!!property} />
@@ -111,14 +118,22 @@ export default async function GuestPage({
         </section>
       )}
 
-      {!paid && (
-        <PayButton
+      {!paid && !p.reportedPaidAt && pm && activeMethods(pm).length > 0 && (
+        <PayDirect
           id={p.id}
-          label={t("guest.pay", { amount: m(q.totalCents) })}
+          amount={m(q.totalCents)}
+          reference={paymentReference(p)}
+          methods={methodViews(pm, p, t)}
+          note={pm.note}
           initialEmail={p.guestEmail ?? ""}
+          askName={!p.guestName}
           initialPhone={p.guestPhone ? `+${p.guestPhone}` : ""}
           documents={docs && docAsk ? { setting: docs.documents as "optional" | "required", ask: docAsk, uploaded } : null}
         />
+      )}
+
+      {!paid && !p.reportedPaidAt && !(pm && activeMethods(pm).length) && (
+        <p className="rounded-lg bg-amber-400/10 p-3 text-sm text-amber-200">{t("guest.noMethods", { name: issuer.name })}</p>
       )}
 
       {paid && property && <ArrivalGuide t={t} guide={await translateGuide(property.guide, locale)} propertyName={property.name} />}
@@ -128,6 +143,46 @@ export default async function GuestPage({
       </p>
     </main>
   );
+}
+
+/** What the guest sees for each of the host's payment methods. */
+function methodViews(pm: PaymentMethods, p: PaymentRecord, t: T): MethodView[] {
+  const cents = p.quote.totalCents;
+  return activeMethods(pm).map((id) => {
+    let rows: MethodView["rows"] = [];
+    let title = t(`method.${id}` as MessageKey);
+    let brands: MethodView["brands"];
+    if (id === "bank") {
+      const b = pm.bank!;
+      const type = b.accountType ?? "iban";
+      const opt = (label: string, value?: string, mono?: boolean) => (value ? [{ label, value, mono }] : []);
+      rows = [
+        { label: t("methods.holder"), value: b.holder },
+        ...opt(t("methods.holderAddress"), b.holderAddress),
+        ...(type === "iban" ? opt("IBAN", b.iban, true) : []),
+        ...(type === "uk" ? [...opt(t("methods.sortCode"), b.sortCode, true), ...opt(t("methods.accountNumber"), b.accountNumber, true)] : []),
+        ...(type === "us" ? [...opt(t("methods.routing"), b.routingNumber, true), ...opt(t("methods.accountNumber"), b.accountNumber, true)] : []),
+        ...opt("BIC / SWIFT", b.bic, true),
+        ...opt(t("methods.bankName"), b.bankName),
+        ...opt(t("methods.bankAddress"), b.bankAddress),
+      ];
+    }
+    else if (id === "revolut") rows = [{ label: "Revtag", value: `@${pm.revolut}` }];
+    else if (id === "paypal") rows = [{ label: "PayPal.Me", value: `paypal.me/${pm.paypal}` }];
+    else if ((PHONE_APPS as readonly string[]).includes(id)) {
+      const app = id as PhoneApp;
+      title = PHONE_APP_NAMES[app];
+      rows = [{ label: t(app === "wero" && pm.wero!.includes("@") ? "common.email" : "methods.phone"), value: pm[app]!, mono: true }];
+    } else if (id === "card") {
+      brands = pm.card!.brands;
+      rows = [{ label: t("method.card"), value: t("pay.cardHint", { provider: pm.card!.provider || t("pay.cardProviderFallback") }) }];
+    } else if (id === "cardOnArrival") {
+      brands = pm.cardOnArrival!.brands;
+      rows = [{ label: t("method.cardOnArrival"), value: t("pay.cardOnArrivalHint") }];
+    } else if (id === "cash") rows = [{ label: t("method.cash"), value: t("pay.cashHint") }];
+    if (id === "link" && pm.link?.label) title = pm.link.label;
+    return { id, icon: METHOD_ICONS[id], title, rows, brands, url: methodUrl(id, pm, cents, p.quote.currency) ?? undefined };
+  });
 }
 
 function PaidCard(props: { t: T; id: string; amount: string; receiptNumber?: string; guestPhone?: string; whatsappSent: boolean; taxName: string; hasGuide: boolean }) {

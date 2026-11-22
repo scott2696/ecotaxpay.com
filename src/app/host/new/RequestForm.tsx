@@ -26,7 +26,7 @@ export type PropertyOption = {
 };
 
 /** Host fills in the stay; the guest only ever sees the resulting payment page. */
-export type Prefill = { propertyId?: string; checkIn?: string; checkOut?: string; bookingRef?: string };
+export type Prefill = { propertyId?: string; checkIn?: string; checkOut?: string; bookingRef?: string; guestName?: string };
 
 export default function RequestForm({ properties, prefill = {}, templates }: { properties: PropertyOption[]; prefill?: Prefill; templates: GuestTemplates }) {
   const t = useT();
@@ -53,7 +53,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
   const [adults, setAdults] = useState(2);
   const [childAges, setChildAges] = useState<number[]>([]);
   const [nightlyPrice, setNightlyPrice] = useState("");
-  const [guestName, setGuestName] = useState("");
+  const [guestName, setGuestName] = useState(prefill.guestName ?? "");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [bookingRef, setBookingRef] = useState(prefill.bookingRef ?? "");

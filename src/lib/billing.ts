@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 import { isDemoMode, site, stripe } from "./config";
 import { visitorPlan } from "./pricing";
 import { getHostBy, updateHost, type Host, type SubscriptionStatus } from "./store";
+import { trackEvent } from "./tracker";
 
 export const PLAN = { interval: "month" as const };
 
@@ -12,6 +13,44 @@ const addMonth = (d = new Date()) => {
   n.setUTCMonth(n.getUTCMonth() + 1);
   return n.toISOString();
 };
+
+/** One product in Stripe for the host subscription (fixed id, so it is created only once). */
+const PRODUCT_ID = "ecotaxpay_host_subscription";
+const priceCache = new Map<string, string>();
+
+/**
+ * The monthly price for this currency and amount, created in Stripe the first time it's needed and
+ * found again by its lookup key after that (no new price per sign-up, so reports stay clean).
+ */
+async function monthlyPrice(s: Stripe, currency: string, unitAmount: number): Promise<string> {
+  const key = `etp_host_monthly_${currency.toLowerCase()}_${unitAmount}`;
+  const cached = priceCache.get(key);
+  if (cached) return cached;
+  const found = (await s.prices.list({ lookup_keys: [key], active: true, limit: 1 })).data[0];
+  if (found) {
+    priceCache.set(key, found.id);
+    return found.id;
+  }
+  try {
+    await s.products.retrieve(PRODUCT_ID);
+  } catch {
+    await s.products.create({
+      id: PRODUCT_ID,
+      name: `${site.name} host subscription`,
+      description: "Unlimited properties and tourist-tax payment links. Billed monthly, cancel any time.",
+    });
+  }
+  const price = await s.prices.create({
+    product: PRODUCT_ID,
+    currency: currency.toLowerCase(),
+    unit_amount: unitAmount,
+    recurring: { interval: PLAN.interval },
+    lookup_key: key,
+    nickname: `Monthly (${currency.toUpperCase()})`,
+  });
+  priceCache.set(key, price.id);
+  return price.id;
+}
 
 /** Start a subscription. Returns the URL to send the host to (Stripe Checkout, or straight back in demo mode). */
 export async function startSubscription(host: Host): Promise<string> {
@@ -34,19 +73,22 @@ export async function startSubscription(host: Host): Promise<string> {
     mode: "subscription",
     customer: customerId,
     client_reference_id: host.id,
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: plan.currency.toLowerCase(),
-          unit_amount: plan.stripeUnitAmount,
-          recurring: { interval: PLAN.interval },
-          product_data: { name: `${site.name} host subscription` },
-        },
-      },
-    ],
+    line_items: [{ quantity: 1, price: await monthlyPrice(s, plan.currency, plan.stripeUnitAmount) }],
     subscription_data: { metadata: { hostId: host.id } },
-    success_url: `${site.baseUrl}/host/account?subscribed=1`,
+    // Proper invoices for business hosts: billing address and (optional) VAT number, saved on the customer.
+    billing_address_collection: "auto",
+    tax_id_collection: { enabled: true },
+    customer_update: { address: "auto", name: "auto" },
+    allow_promotion_codes: true,
+    // Shown just above Stripe's Pay button.
+    custom_text: {
+      submit: {
+        message: `By subscribing you agree to the ${site.name} Terms & Conditions (${site.baseUrl}/terms) and Privacy Policy (${site.baseUrl}/privacy). €3 per month (or the local equivalent shown), renewing monthly until you cancel from your Account page.`,
+      },
+    },
+    locale: "auto",
+    // Coming back, the session id lets the site confirm the payment with Stripe straight away.
+    success_url: `${site.baseUrl}/host/account?subscribed=1&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${site.baseUrl}/host/account?cancelled_checkout=1`,
   });
   return session.url!;
@@ -98,6 +140,44 @@ export async function applySubscription(sub: Stripe.Subscription) {
       demo: false,
     },
   });
+}
+
+/**
+ * Webhook `invoice.paid`: a host's subscription was charged. The first charge counts as an FTD
+ * in the FTD Tracker, renewals as deposits.
+ */
+export async function recordSubscriptionPayment(invoice: Stripe.Invoice) {
+  if (!invoice.amount_paid || !invoice.id) return;
+  const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+  const host = customerId ? await getHostBy((h) => h.subscription.stripeCustomerId === customerId) : null;
+  if (!host) return;
+  await trackEvent({
+    event: invoice.billing_reason === "subscription_create" ? "ftd" : "deposit",
+    hostId: host.id,
+    ref: invoice.id,
+    amountCents: invoice.amount_paid,
+    currency: invoice.currency,
+    date: new Date((invoice.status_transitions?.paid_at ?? invoice.created) * 1000).toISOString().slice(0, 10),
+  });
+}
+
+/**
+ * The host is back from Stripe Checkout: confirm with Stripe (never trust the redirect alone) and
+ * switch the subscription on now, without waiting for the webhook. Safe to repeat.
+ */
+export async function confirmSubscriptionCheckout(host: Host, sessionId: string): Promise<Host> {
+  const s = stripe();
+  if (!s || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return host;
+  try {
+    const session = await s.checkout.sessions.retrieve(sessionId, { expand: ["subscription"] });
+    if (session.mode !== "subscription" || session.client_reference_id !== host.id) return host;
+    const sub = session.subscription;
+    if (!sub || typeof sub === "string") return host;
+    return (await applySubscription(sub)) ?? host;
+  } catch (err) {
+    console.error("[billing] could not confirm checkout session", err);
+    return host;
+  }
 }
 
 /** In demo mode, a cancelled subscription ends once its month is over. */

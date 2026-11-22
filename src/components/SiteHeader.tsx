@@ -50,20 +50,18 @@ export default async function SiteHeader() {
   );
 }
 
-/** Brand mark: a polished-silver leaf in a graphite tile (Eco Tax Pay). */
-export function Mark({ size = 26 }: { size?: number }) {
+/** Brand mark: the polished-silver leaf logo (public/logo.png, transparent background). */
+export function Mark({ size = 28 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-      <defs>
-        <linearGradient id="mk-s" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.55" stopColor="#b9bcc3" />
-          <stop offset="1" stopColor="#eceef1" />
-        </linearGradient>
-      </defs>
-      <rect x="0.5" y="0.5" width="31" height="31" rx="8" fill="#111215" stroke="rgba(255,255,255,0.14)" />
-      <path d="M24 8c-9 0-15 4.5-15 11.5 0 1.6.4 3 1 4.2C12 17 16.5 13.5 21 12c-4 2.4-7.4 6-9.6 12.2C13 25.3 14.6 26 16.6 26 22 26 24.6 20 24 8Z" fill="url(#mk-s)" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/logo.png"
+      width={size}
+      height={size}
+      alt=""
+      aria-hidden
+      className="shrink-0 drop-shadow-[0_1px_6px_rgba(255,255,255,0.08)]"
+    />
   );
 }
 

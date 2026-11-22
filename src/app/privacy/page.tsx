@@ -39,7 +39,7 @@ export default function Privacy() {
           <tr><td>Anyone</td><td>Technical data (IP address, browser) in server logs</td><td>Security and preventing abuse</td></tr>
         </tbody>
       </table>
-      <p>We never receive full card numbers: card payments are handled entirely by Stripe.</p>
+      <p>We never receive full card numbers: the host subscription is paid on Stripe&apos;s checkout page. Guests pay their host directly, so we never see their bank or payment details; we only store which method the guest says they used.</p>
 
       <h2>3. Legal bases</h2>
       <p>
@@ -50,8 +50,9 @@ export default function Privacy() {
       <h2>4. Who we share data with</h2>
       <p>We use these service providers, under data-processing agreements:</p>
       <ul>
-        <li><strong>Stripe</strong>: card payments and the host subscription.</li>
+        <li><strong>Stripe</strong>: the host subscription.</li>
         <li><strong>Resend</strong>: sending receipt and notification emails.</li>
+        <li><strong>tawk.to</strong>: the live chat, only if you accept it in the cookie banner; it receives what you type in the chat and technical data such as your browser and IP address.</li>
         <li><strong>Meta (WhatsApp Business)</strong>: only if a WhatsApp number is given and WhatsApp receipts are switched on.</li>
         <li><strong>Google Cloud Translation</strong>: only if automatic translation is switched on; interface text and arrival-guide text are sent for translation, never identity documents.</li>
         <li>Our hosting provider, which stores the data.</li>
@@ -79,7 +80,7 @@ export default function Privacy() {
       </p>
 
       <h2>8. Cookies</h2>
-      <p>We only use essential cookies. See the <Link href="/cookies">Cookie Policy</Link>.</p>
+      <p>We use essential cookies, plus the tawk.to live chat only if you accept it in the cookie banner. See the <Link href="/cookies">Cookie Policy</Link>.</p>
 
       <h2>9. Changes</h2>
       <p>We will post any changes here and update the date above; for significant changes we will email Hosts.</p>

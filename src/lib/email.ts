@@ -1,3 +1,4 @@
+import type { MessageKey } from "@/i18n/messages/en";
 import { site } from "./config";
 import { capFirst, quoteTitle } from "./quick";
 import { renderReceipt } from "./receipt";
@@ -5,6 +6,7 @@ import { dirOf } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { date, money } from "@/i18n/translate";
 import { guideItems, translateGuide } from "./guide";
+import { paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "./payMethods";
 import { getProperty, issuerFor, updatePayment, type PaymentRecord } from "./store";
 
 async function send(body: Record<string, unknown>) {
@@ -81,6 +83,32 @@ export async function sendPaidEmails(p: PaymentRecord) {
     await updatePayment(p.id, { emailSentAt: new Date().toISOString() });
   } catch (err) {
     console.error(`[email] failed for ${p.id}`, err);
+  }
+}
+
+/** Tells the host a guest says they paid (or will pay cash), so they can check and confirm. */
+export async function sendReportedEmail(p: PaymentRecord) {
+  const from = process.env.EMAIL_FROM;
+  const issuer = await issuerFor(p);
+  if (!process.env.RESEND_API_KEY || !from || !issuer.email) {
+    console.log(`[email] reported-payment notice skipped for ${p.id}`);
+    return;
+  }
+  const { t } = await getI18n(issuer.locale ?? "en");
+  const amount = money(p.quote.totalCents, p.quote.currency, t.locale);
+  const name = p.guestName || p.guestEmail;
+  const method = !p.paidVia ? "" : p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey);
+  const onArrival = paysOnArrival(p.paidVia);
+  try {
+    await send({
+      from,
+      to: issuer.email,
+      subject: t(onArrival ? "email.reportedCashSubject" : "email.reportedSubject", { name, amount }),
+      html: `<p>${escape(t(onArrival ? "email.reportedCashBody" : "email.reportedBody", { name, amount, method, ref: paymentReference(p) }))}</p>
+        <p><a href="${site.baseUrl}/host">${escape(t("email.openDashboard"))}</a></p>`,
+    });
+  } catch (err) {
+    console.error(`[email] reported-payment notice failed for ${p.id}`, err);
   }
 }
 

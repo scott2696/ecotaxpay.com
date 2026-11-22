@@ -5,6 +5,7 @@ import { resolveProperty } from "@/lib/resolve";
 import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
 import { currentHost, isSubscribed } from "@/lib/auth";
+import { hasPaymentMethods } from "@/lib/payMethods";
 import { createPayment, getProperty } from "@/lib/store";
 import { normalizePhone } from "@/lib/whatsapp";
 import { manualQuote, QUICK_CURRENCIES, QUICK_MAX_CENTS, QUICK_MIN_CENTS } from "@/lib/quick";
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   const { t } = await getI18n();
   if (!host) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   if (!isSubscribed(host)) return NextResponse.json({ error: t("err.notSubscribed") }, { status: 402 });
+  if (!hasPaymentMethods(host)) return NextResponse.json({ error: t("err.methodsFirst") }, { status: 409 });
   const body = await req.json();
   const guestName = clean(body.guestName);
   const guestEmail = clean(body.guestEmail, 200);

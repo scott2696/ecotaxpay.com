@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/config";
-import { applySubscription } from "@/lib/billing";
+import { applySubscription, recordSubscriptionPayment } from "@/lib/billing";
 import { confirmStripeSession } from "@/lib/payments";
 
 // Stripe → POST /api/webhook
 // Events: checkout.session.completed, checkout.session.async_payment_succeeded,
-//         customer.subscription.created / .updated / .deleted
+//         customer.subscription.created / .updated / .deleted, invoice.paid
 export async function POST(req: Request) {
   const s = stripe();
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -36,6 +36,10 @@ export async function POST(req: Request) {
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
       await applySubscription(event.data.object);
+      break;
+    // A host's subscription was charged (first payment or renewal): report it to the FTD Tracker.
+    case "invoice.paid":
+      await recordSubscriptionPayment(event.data.object);
       break;
   }
   return NextResponse.json({ received: true });

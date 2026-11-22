@@ -14,10 +14,18 @@ import { useEffect } from "react";
 export default function MotionRoot({ smooth = true }: { smooth?: boolean }) {
   const pathname = usePathname();
 
-  // Smooth scroll
+  // Smooth scroll: marketing pages only. The host app and guest pages are forms, where native
+  // scrolling (including inside text boxes) must just work.
+  const appPage = /^\/(host|p)(\/|$)/.test(pathname);
   useEffect(() => {
-    if (!smooth || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ duration: 1.15, easing: (t) => 1 - Math.pow(1 - t, 4), touchMultiplier: 1.4 });
+    if (!smooth || appPage || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => 1 - Math.pow(1 - t, 4),
+      touchMultiplier: 1.4,
+      // Let text boxes, menus and anything marked data-lenis-prevent scroll on their own.
+      prevent: (node) => !!(node as HTMLElement).closest?.("textarea, select, [data-lenis-prevent]"),
+    });
     (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
     let raf = requestAnimationFrame(function loop(time) {
       lenis.raf(time);
@@ -39,7 +47,24 @@ export default function MotionRoot({ smooth = true }: { smooth?: boolean }) {
       document.removeEventListener("click", onClick);
       lenis.destroy();
     };
-  }, [smooth]);
+  }, [smooth, appPage]);
+
+  // Text boxes grow with their content (CSS field-sizing where supported; this covers the rest).
+  useEffect(() => {
+    if (CSS.supports?.("field-sizing", "content")) return;
+    const fit = (el: HTMLTextAreaElement) => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight + 2}px`; // max-height in CSS still caps it
+    };
+    const onInput = (e: Event) => e.target instanceof HTMLTextAreaElement && fit(e.target);
+    const fitAll = () => document.querySelectorAll<HTMLTextAreaElement>("textarea.input").forEach(fit);
+    const timer = setTimeout(fitAll, 50); // after React has filled in saved text
+    document.addEventListener("input", onInput);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("input", onInput);
+    };
+  }, [pathname]);
 
   // Reveal on scroll (re-scanned on every route change)
   useEffect(() => {

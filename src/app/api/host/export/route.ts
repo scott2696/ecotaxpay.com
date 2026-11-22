@@ -8,8 +8,14 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const from = url.searchParams.get("from") ?? "0000-00-00";
   const to = url.searchParams.get("to") ?? "9999-99-99";
+  const apartment = url.searchParams.get("apartment");
+  const stayDate = (p: { quote: { checkIn: string }; createdAt: string }) => p.quote.checkIn || p.createdAt.slice(0, 10);
   const rows = (await listPayments(host.id)).filter(
-    (p) => (p.status === "paid" || p.status === "paid_offline") && p.quote.checkIn >= from && p.quote.checkIn <= to,
+    (p) =>
+      (p.status === "paid" || p.status === "paid_offline") &&
+      stayDate(p) >= from &&
+      stayDate(p) <= to &&
+      (!apartment || p.propertyId === apartment),
   );
 
   const header = [
@@ -35,7 +41,7 @@ export async function GET(req: Request) {
   return new Response([header.join(","), ...lines].join("\n"), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="tourist-tax-${from === "0000-00-00" ? "all" : from}.csv"`,
+      "Content-Disposition": `attachment; filename="tourist-tax-${from === "0000-00-00" ? "all" : `${from}_to_${to === "9999-99-99" ? "now" : to}`}.csv"`,
     },
   });
 }

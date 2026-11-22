@@ -1,4 +1,5 @@
 import { isSubscribed, requireHost } from "@/lib/auth";
+import { hasPaymentMethods } from "@/lib/payMethods";
 import Link from "next/link";
 import { listProperties } from "@/lib/store";
 import { seasonsInForce } from "@/lib/explain";
@@ -19,7 +20,7 @@ const isDate = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefin
 // Opened from "Upcoming guests" with ?property=&checkin=&checkout=&ref= to prefill an imported booking.
 export default async function NewRequest({ searchParams }: { searchParams: Promise<SP> }) {
   const sp = await searchParams;
-  const prefill = { propertyId: sp.property, checkIn: isDate(sp.checkin), checkOut: isDate(sp.checkout), bookingRef: sp.ref?.slice(0, 60) };
+  const prefill = { propertyId: sp.property, checkIn: isDate(sp.checkin), checkOut: isDate(sp.checkout), bookingRef: sp.ref?.slice(0, 60), guestName: sp.name?.slice(0, 120) };
   const quick = sp.quick === "1";
   const host = await requireHost();
   const { t, plan } = await getI18n();
@@ -72,6 +73,12 @@ export default async function NewRequest({ searchParams }: { searchParams: Promi
           <p className="font-medium">{t("form.subscribeFirst")}</p>
           <p className="mt-1 text-sm text-[var(--muted)]">{t("auth.registerSub")}</p>
           <Link href="/host/account" className="mt-4 inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">{t("account.subscribe")}</Link>
+        </div>
+      ) : !hasPaymentMethods(host) ? (
+        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-10 text-center">
+          <p className="font-medium">{t("err.methodsFirst")}</p>
+          <p className="mt-1 text-sm text-[var(--muted)]">{t("methods.intro")}</p>
+          <Link href="/host/account#methods" className="mt-4 inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">{t("methods.add")}</Link>
         </div>
       ) : (
         <>

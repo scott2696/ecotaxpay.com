@@ -390,7 +390,7 @@ function ScreenGuest() {
         ))}
       </div>
       <div className="btn-silver mt-auto h-12 w-full text-[13px]">{d.pay}</div>
-      <p className="mt-2 text-[10px] text-[var(--muted)]">Apple Pay · Google Pay · Card</p>
+      <p className="mt-2 text-[10px] text-[var(--muted)]">Bank transfer · Revolut · PayPal · Wise</p>
     </div>
   );
 }

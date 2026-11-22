@@ -9,6 +9,11 @@ import type { Property, Guide, GuideNote, GuideTextField, DocumentsSetting } fro
 import { DEFAULT_DOCUMENTS_REQUEST, type DocumentsRequest } from "@/lib/documents";
 import { capSummary, rateSummary } from "@/lib/explain";
 import { COUNTRIES, DEFAULT_REGION_ID, findRegion } from "@/lib/taxRules";
+import { PlatformBadge, PlatformIcon } from "../BrandIcons";
+import { PLATFORMS } from "@/lib/platforms";
+
+/** Platforms shown as logos before any calendar is connected. */
+const SHOWCASE = ["airbnb", "booking", "vrbo", "misterbandb", "expedia", "agoda", "holidu", "tripadvisor"];
 import CustomTaxFields, { toForm, type CustomTaxForm } from "./CustomTaxFields";
 import DocumentsPicker from "./DocumentsPicker";
 import { GUIDE_NOTES } from "@/lib/guideLimits";
@@ -48,7 +53,8 @@ export default function PropertyForm({ property, template }: { property?: Proper
   const [documentsRequest, setDocumentsRequest] = useState<DocumentsRequest>(base?.documentsRequest ?? DEFAULT_DOCUMENTS_REQUEST);
   const [guide, setGuide] = useState<Guide>({ ...(base?.guide ?? {}) });
   // Calendar links are specific to one listing, so they are never copied from another apartment.
-  const [calendars, setCalendars] = useState({ airbnb: property?.calendars?.airbnb ?? "", booking: property?.calendars?.booking ?? "" });
+  // Calendar links are managed on the "Connect calendars" page (any number of platforms).
+  const connectedPlatforms = Object.entries(property?.calendars ?? {}).filter(([, v]) => v).map(([id]) => id);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // "Other destination": the host sets their own rate.
@@ -90,7 +96,6 @@ export default function PropertyForm({ property, template }: { property?: Proper
           documents,
           documentsRequest,
           guide,
-          calendars,
         }),
       });
       const data = await res.json();
@@ -119,6 +124,14 @@ export default function PropertyForm({ property, template }: { property?: Proper
               ))}
               <option value="__custom">🌍 {t("pf.other")}</option>
             </select>
+            {/* The manual option, visible without opening the list. */}
+            <button
+              type="button"
+              onClick={() => pickCountry(custom ? countryCode : "__custom")}
+              className="mt-2 text-start text-sm text-[var(--accent)] underline underline-offset-2 hover:brightness-125"
+            >
+              {custom ? t("pf.backToList") : t("pf.notListed")}
+            </button>
           </Field>
           {custom ? (
             <CustomTaxFields value={customForm} onChange={setCustomForm} />
@@ -154,6 +167,22 @@ export default function PropertyForm({ property, template }: { property?: Proper
           <div className="rounded-lg bg-[var(--bg)] p-3 text-sm sm:col-span-2">
             <div className="font-medium">{region.taxName}</div>
             <div>{rateSummary(region, acc, today, t)}</div>
+            {(() => {
+              // A rate change is scheduled (e.g. Malta 1 Jan 2027): show what this type will pay from then.
+              const next = acc.seasons
+                ?.map((x) => x.validFrom)
+                .filter((d): d is string => !!d && d > today)
+                .sort()[0];
+              if (!next) return null;
+              const cap = capSummary(region, acc, next, t);
+              return (
+                <div className="mt-1 text-amber-200">
+                  {t("pf.fromDate", { date: new Date(next + "T00:00:00").toLocaleDateString(t.locale, { day: "numeric", month: "long", year: "numeric" }) })}{" "}
+                  {rateSummary(region, acc, next, t)}
+                  {cap ? ` · ${t("pf.capped", { cap })}` : ""}
+                </div>
+              );
+            })()}
             <div className={capSummary(region, acc, today) ? "text-emerald-300" : "text-[var(--muted)]"}>
               {capSummary(region, acc, today, t) ? t("pf.capped", { cap: capSummary(region, acc, today, t)! }) : t("explain.noCap")}
             </div>
@@ -169,17 +198,21 @@ export default function PropertyForm({ property, template }: { property?: Proper
       </Card>
 
       <Card title={t("upcoming.connect")} subtitle={t("pf.calendarsSub")}>
-        <div className="space-y-4">
-          <Field label={t("connect.airbnbLink")} hint={t("pf.airbnbHint")}>
-            <input className="input font-mono text-sm" value={calendars.airbnb} onChange={(e) => setCalendars({ ...calendars, airbnb: e.target.value })} placeholder="https://www.airbnb.com/calendar/ical/12345678.ics?s=…" />
-          </Field>
-          <Field label={t("connect.bookingLink")} hint={t("pf.bookingHint")}>
-            <input className="input font-mono text-sm" value={calendars.booking} onChange={(e) => setCalendars({ ...calendars, booking: e.target.value })} placeholder="https://admin.booking.com/hotel/hoteladmin/ical.html?t=…" />
-          </Field>
-          <p className="text-xs text-[var(--muted)]">
-            {t("pf.calendarsNote")}
-          </p>
+        <div className="flex flex-wrap items-center gap-2">
+          {connectedPlatforms.length ? (
+            connectedPlatforms.map((id) => <PlatformBadge key={id} platform={id} />)
+          ) : (
+            // Nothing connected yet: show which platforms this means.
+            <span className="flex flex-wrap items-center gap-1.5" aria-label={t("connect.supported")}>
+              {SHOWCASE.map((id) => <PlatformIcon key={id} id={id} size={22} />)}
+              <span className="ms-1 text-xs text-[var(--muted)]">{t("connect.nMore", { count: PLATFORMS.length - SHOWCASE.length - 1 })}</span>
+            </span>
+          )}
+          <Link href="/host/connect" className="ms-auto rounded-lg border border-[var(--line)] px-3 py-2 text-sm font-medium hover:bg-[var(--soft)]">
+            {connectedPlatforms.length ? t("upcoming.manage") : t("upcoming.connect")} →
+          </Link>
         </div>
+        {!property && <p className="mt-3 text-xs text-[var(--muted)]">{t("pf.calendarsAfterSave")}</p>}
       </Card>
 
       <Card title={t("pf.docs")} subtitle={t("pf.docsSub")}>

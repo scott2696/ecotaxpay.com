@@ -15,6 +15,9 @@ export function pageMeta(path: string, title: string, description: string): Meta
   };
 }
 
+/** Hand-translated languages (also offered via ?lang=xx). */
+export const LANGUAGES = ["en", "es", "it", "fr", "de", "mt"];
+
 const ORG_ID = `${site.baseUrl}/#organization`;
 const SITE_ID = `${site.baseUrl}/#website`;
 
@@ -27,12 +30,22 @@ export function siteSchema() {
       name: site.company,
       brand: site.name,
       url: site.baseUrl,
-      logo: `${site.baseUrl}/icon4.png`,
+      logo: { "@type": "ImageObject", "@id": `${site.baseUrl}/#logo`, url: `${site.baseUrl}/logo.png`, width: 256, height: 256, caption: site.name },
+      image: { "@id": `${site.baseUrl}/#logo` },
+      description: "Software for holiday-rental hosts to calculate the local tourist or eco tax and collect it from guests before arrival.",
       email: site.supportEmail,
       ...(site.companyAddress ? { address: site.companyAddress } : {}),
-      contactPoint: [{ "@type": "ContactPoint", contactType: "customer support", email: site.supportEmail, availableLanguage: ["en", "es", "it", "fr", "de", "mt"] }],
+      contactPoint: [{ "@type": "ContactPoint", contactType: "customer support", email: site.supportEmail, availableLanguage: LANGUAGES }],
     },
-    { "@type": "WebSite", "@id": SITE_ID, name: site.name, url: site.baseUrl, publisher: { "@id": ORG_ID }, inLanguage: ["en", "es", "it", "fr", "de", "mt"] },
+    {
+      "@type": "WebSite",
+      "@id": SITE_ID,
+      name: site.name,
+      alternateName: site.domain,
+      url: site.baseUrl,
+      publisher: { "@id": ORG_ID },
+      inLanguage: LANGUAGES,
+    },
   ];
 }
 

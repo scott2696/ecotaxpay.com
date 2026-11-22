@@ -2,7 +2,7 @@ import { getI18n } from "@/i18n/server";
 import { requireHost } from "@/lib/auth";
 import Link from "next/link";
 import { listProperties } from "@/lib/store";
-import { AirbnbIcon, BookingIcon } from "../BrandIcons";
+import { PlatformIcon } from "../BrandIcons";
 import ConnectForm from "./ConnectForm";
 
 export const dynamic = "force-dynamic";
@@ -13,15 +13,15 @@ export default async function Connect() {
   const apartments = (await listProperties(host.id)).map((p) => ({
     id: p.id,
     name: p.name,
-    airbnb: p.calendars?.airbnb ?? "",
-    booking: p.calendars?.booking ?? "",
+    calendars: Object.fromEntries(Object.entries(p.calendars ?? {}).filter((e): e is [string, string] => !!e[1])),
   }));
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <Link href="/host" className="text-sm text-[var(--muted)] underline">← {t("nav.dashboard")}</Link>
       <div className="mb-6 mt-4 flex items-center gap-3">
-        <AirbnbIcon size={32} />
-        <BookingIcon size={32} />
+        <span className="flex items-center gap-1">
+          {["airbnb", "booking", "vrbo", "misterbandb"].map((id) => <PlatformIcon key={id} id={id} size={26} />)}
+        </span>
         <h1 className="text-2xl font-semibold">{t("upcoming.connect")}</h1>
       </div>
       <p className="mb-6 text-[var(--muted)]">

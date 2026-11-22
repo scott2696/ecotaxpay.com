@@ -1,3 +1,5 @@
+import { platformById, platformName } from "@/lib/platforms";
+
 // Platform marks for the calendar-connection UI.
 // Airbnb path: Simple Icons (CC0). Booking.com: its app mark (white "B." on brand blue).
 
@@ -19,12 +21,40 @@ export function BookingIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+/** Any platform's mark: Airbnb / Booking.com logos, the platform's logo on a white tile, or its initials. */
+export function PlatformIcon({ id, size = 20 }: { id: string; size?: number }) {
+  if (id === "airbnb") return <AirbnbIcon size={size} />;
+  if (id === "booking") return <BookingIcon size={size} />;
+  const p = platformById(id);
+  if (p?.logo)
+    return (
+      <span
+        className="inline-flex shrink-0 items-center justify-center overflow-hidden bg-white"
+        style={{ width: Math.round(size * (p.ratio ?? 1)), height: size, borderRadius: Math.max(3, size / 5), padding: Math.max(1, Math.round(size / 10)) }}
+        role="img"
+        aria-label={p.name}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- tiny static logo */}
+        <img src={p.logo} alt="" className="h-full w-full object-contain" />
+      </span>
+    );
+  const mark = p?.mark ?? "?";
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" role="img" aria-label={p?.name ?? id}>
+      <rect width="24" height="24" rx="5" fill={p?.color ?? "#6B7280"} />
+      <text x="12" y="16.2" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize={mark.length > 2 ? 7.5 : mark.length === 2 ? 10.5 : 13} fill="#fff">
+        {mark}
+      </text>
+    </svg>
+  );
+}
+
 /** Logo + name chip, e.g. on the dashboard and connect page. */
-export function PlatformBadge({ platform }: { platform: "airbnb" | "booking" }) {
+export function PlatformBadge({ platform }: { platform: string }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold">
-      {platform === "airbnb" ? <AirbnbIcon /> : <BookingIcon />}
-      <span style={{ color: platform === "airbnb" ? "#FF5A5F" : "#6ea8ff" }}>{platform === "airbnb" ? "Airbnb" : "Booking.com"}</span>
+      <PlatformIcon id={platform} />
+      <span>{platformName(platform)}</span>
     </span>
   );
 }

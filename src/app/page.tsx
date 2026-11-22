@@ -12,7 +12,9 @@ import { currentHost } from "@/lib/auth";
 import { demoCard } from "@/lib/demoQuote";
 import { visitorCountry } from "@/lib/geo";
 import { site } from "@/lib/config";
-import { graph, pageMeta, pageSchema, siteSchema } from "@/lib/seo";
+import { graph, LANGUAGES, pageMeta, pageSchema, siteSchema } from "@/lib/seo";
+import { PLATFORMS } from "@/lib/platforms";
+import { COUNTRIES } from "@/lib/taxRules";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -33,17 +35,37 @@ export default async function Home() {
   const schema = graph(siteSchema(), pageSchema("WebPage", "/", t("home.metaTitle", { brand: site.name }), t("home.metaDescription"), locale), [
     {
       "@type": "SoftwareApplication",
+      "@id": `${site.baseUrl}/#app`,
       name: site.name,
       applicationCategory: "BusinessApplication",
-      operatingSystem: "Web",
+      applicationSubCategory: "Tourist tax collection for holiday rentals",
+      operatingSystem: "Web browser (desktop and mobile)",
       description: t("home.metaDescription"),
       url: site.baseUrl,
       image: `${site.baseUrl}/media/og.jpg`,
+      screenshot: `${site.baseUrl}/media/og.jpg`,
+      inLanguage: LANGUAGES,
+      audience: { "@type": "BusinessAudience", audienceType: "Holiday-rental hosts, guest houses, B&Bs and small hotels" },
+      areaServed: [...COUNTRIES.map((c) => ({ "@type": "Country", name: c.name })), { "@type": "Place", name: "Worldwide (custom tax rates)" }],
+      featureList: [
+        `Automatic tourist / eco tax calculation for ${COUNTRIES.length} countries, or a custom rate anywhere`,
+        "Personal payment links for guests in their own language",
+        "Guests pay the host directly: Visa, Mastercard, Amex, Apple Pay, Google Pay (via the host's card link), bank transfer, Revolut, PayPal, Wise, Bizum, MB WAY, Satispay, TWINT, Wero",
+        `Calendar sync with ${PLATFORMS.length - 1}+ platforms: Airbnb, Booking.com, Vrbo, Misterb&b, Expedia, Agoda, channel managers and any iCal link`,
+        "Numbered PDF receipts by email and WhatsApp",
+        "Optional passport / ID collection",
+        "Private arrival guide after payment",
+        "Stays by period and CSV export for accountants",
+      ],
       offers: {
         "@type": "Offer",
+        url: `${site.baseUrl}/register`,
         price: "3.00",
         priceCurrency: "EUR",
-        priceSpecification: { "@type": "UnitPriceSpecification", price: "3.00", priceCurrency: "EUR", billingDuration: "P1M", unitText: "MONTH" },
+        availability: "https://schema.org/InStock",
+        category: "subscription",
+        priceSpecification: { "@type": "UnitPriceSpecification", price: "3.00", priceCurrency: "EUR", billingDuration: "P1M", unitText: "MONTH", referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: "MON" } },
+        seller: { "@id": `${site.baseUrl}/#organization` },
       },
       publisher: { "@id": `${site.baseUrl}/#organization` },
     },

@@ -90,6 +90,16 @@ html.lenis body {
     background: var(--surface);
     color: var(--muted);
   }
+  /* Text boxes: grow to fit what's written, scroll only when really long, and keep the
+     scroll inside the box (no page jump when you reach the end). */
+  textarea.input {
+    field-sizing: content;
+    min-height: 6rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    resize: vertical;
+  }
   select.input option {
     background: var(--surface-2);
     color: var(--ink);

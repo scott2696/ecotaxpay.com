@@ -71,7 +71,13 @@ export async function requireHost(): Promise<Host> {
   return host;
 }
 
-export const isSubscribed = (h: Host) => ["active", "trialing", "past_due"].includes(h.subscription.status);
+/** Platform admins (ADMIN_EMAILS, comma-separated) get full access without a subscription. */
+export function isAdmin(h: Pick<Host, "email">): boolean {
+  const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return admins.includes(h.email.toLowerCase());
+}
+
+export const isSubscribed = (h: Host) => isAdmin(h) || ["active", "trialing", "past_due"].includes(h.subscription.status);
 
 /** Simple in-memory brake on password guessing: 10 failed attempts per email per 15 minutes. */
 const failures = new Map<string, { count: number; until: number }>();

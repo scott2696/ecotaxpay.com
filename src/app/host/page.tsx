@@ -9,8 +9,10 @@ import { isDemoMode } from "@/lib/config";
 import { upcomingStays } from "@/lib/calendar";
 import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
 import { markPaidOffline } from "./actions";
+import { paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
 import CopyLink from "./CopyLink";
 import ApartmentFilter from "./ApartmentFilter";
+import StayRangeFilter from "./StayRangeFilter";
 import UpcomingGuests from "./UpcomingGuests";
 
 export const dynamic = "force-dynamic";
@@ -22,17 +24,53 @@ const badge: Record<PaymentStatus, string> = {
   refunded: "bg-white/10 text-zinc-300",
 };
 
-export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string }> }) {
-  const { apartment = "" } = await searchParams;
+const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+/** Last day of a YYYY-MM month as YYYY-MM-DD. */
+const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
+
+export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string; month?: string; from?: string; to?: string; view?: string; at?: string }> }) {
+  const sp = await searchParams;
+  const { apartment = "", month } = sp;
+  // Stay range for the accountant: guests whose check-in falls between these months (inclusive).
+  const from = sp.from && MONTH.test(sp.from) ? sp.from : "";
+  const to = sp.to && MONTH.test(sp.to) ? sp.to : "";
   const host = await requireHost();
   const [payments, properties] = await Promise.all([listPayments(host.id), listProperties(host.id)]);
   // Table filter: one apartment, or all of them.
   const selected = properties.find((p) => p.id === apartment);
-  const shown = selected ? payments.filter((p) => p.propertyId === selected.id) : payments;
-  const connected = properties.some((p) => p.calendars?.airbnb || p.calendars?.booking);
+  const stayDate = (p: (typeof payments)[number]) => p.quote.checkIn || p.createdAt.slice(0, 10); // quick links: date sent
+  const fromDate = from ? `${from}-01` : "";
+  const toDate = to ? monthEnd(to) : "";
+  const inRange = (p: (typeof payments)[number]) => (!fromDate || stayDate(p) >= fromDate) && (!toDate || stayDate(p) <= toDate);
+  const shown = payments.filter((p) => (!selected || p.propertyId === selected.id) && inRange(p));
+  const connected = properties.some((p) => Object.values(p.calendars ?? {}).some(Boolean));
   const calendar = connected ? await upcomingStays(properties) : { stays: [], errors: [] };
   const { t, locale } = await getI18n();
   const fm = (n: number, cur = "EUR") => formatMoney(n, cur, locale);
+
+  // Month choices for the range: every month from the first stay's year to next year.
+  const years = payments.map((p) => +stayDate(p).slice(0, 4));
+  const thisYear = new Date().getFullYear();
+  const firstYear = Math.min(thisYear - 1, ...years);
+  const lastYear = Math.max(thisYear + 1, ...years);
+  const rangeMonths: { value: string; label: string }[] = [];
+  for (let y = firstYear; y <= lastYear; y++)
+    for (let m = 1; m <= 12; m++) {
+      const value = `${y}-${String(m).padStart(2, "0")}`;
+      rangeMonths.push({ value, label: date(`${value}-01`, locale, { month: "long", year: "numeric" }) });
+    }
+  // Totals for the period shown (paid stays only for money; everything for the guest count).
+  const rangePaid = shown.filter((p) => p.status === "paid" || p.status === "paid_offline");
+  const rangeTax = (() => {
+    const m = new Map<string, number>();
+    for (const p of rangePaid) m.set(p.quote.currency, (m.get(p.quote.currency) ?? 0) + p.quote.taxCents);
+    return [...m].map(([cur, v]) => fm(v, cur)).join(" + ") || fm(0);
+  })();
+  const exportHref = `/api/host/export?${new URLSearchParams({
+    ...(fromDate ? { from: fromDate } : {}),
+    ...(toDate ? { to: toDate } : {}),
+    ...(selected ? { apartment: selected.id } : {}),
+  })}`;
   const paid = payments.filter((p) => p.status === "paid" || p.status === "paid_offline");
   // Totals per currency (destinations can use €, £, Kč…).
   const sumBy = (pick: (q: (typeof paid)[number]["quote"]) => number) => {
@@ -72,14 +110,23 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
       </div>
       {isDemoMode() && <p className="mb-6 rounded-lg bg-sky-400/10 p-3 text-sm text-sky-200">{t("dash.demo")}</p>}
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-4">
         <Stat label={t("dash.stat.paid")} value={String(paid.length)} />
         <Stat label={t("dash.stat.awaiting")} value={String(payments.length - paid.length)} />
         <Stat label={t("dash.stat.tax")} value={taxTotal} />
         <Stat label={t("dash.stat.fees")} value={feeTotal} />
       </div>
 
-      <UpcomingGuests calendar={calendar} payments={payments} connected={connected} />
+      <UpcomingGuests
+        calendar={calendar}
+        payments={payments}
+        connected={connected}
+        names={host.bookingNames ?? {}}
+        month={month}
+        view={sp.view}
+        at={sp.at}
+        keep={{ ...(apartment ? { apartment } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }}
+      />
 
       {byRegion.size > 0 && (
         <section className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
@@ -102,6 +149,27 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
           apartments={properties.map((p) => ({ id: p.id, name: p.name, count: payments.filter((x) => x.propertyId === p.id).length }))}
         />
       </div>
+      <div className="mb-3">
+        <StayRangeFilter months={rangeMonths} from={from} to={to} />
+      </div>
+      {(from || to) && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-4 py-3 text-sm">
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
+            <span className="font-medium">
+              {t("range.summary", {
+                from: from ? date(`${from}-01`, locale, { month: "long", year: "numeric" }) : t("range.start"),
+                to: to ? date(`${to}-01`, locale, { month: "long", year: "numeric" }) : t("range.end"),
+              })}
+            </span>
+            <span>{t.plural("range.stays", shown.length)}</span>
+            <span>{t.plural("line.nights", shown.reduce((s, p) => s + (p.quote.manual ? 0 : p.quote.nights), 0))}</span>
+            <span>{t.plural("range.taxable", shown.reduce((s, p) => s + (p.quote.manual ? 0 : p.quote.taxableGuests), 0))}</span>
+            <span>{t("range.paidTax", { amount: rangeTax, count: rangePaid.length })}</span>
+            {shown.length > rangePaid.length && <span className="text-amber-200">{t.plural("range.unpaid", shown.length - rangePaid.length)}</span>}
+          </div>
+          <a href={exportHref} className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)] hover:brightness-110">⬇ {t("range.export")}</a>
+        </div>
+      )}
       <section className="overflow-x-auto rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
         <table className="w-full min-w-[800px] text-sm">
           <thead className="border-b border-[var(--line)] text-start text-[var(--muted)]">
@@ -113,7 +181,7 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
           </thead>
           <tbody>
             {shown.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-[var(--muted)]">{selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-[var(--muted)]">{from || to ? t("range.none") : selected ? t("dash.noGuestsFor", { name: selected.name }) : t("dash.noLinks")}</td></tr>
             )}
             {shown.map((p) => (
               <tr key={p.id} className="border-b border-[var(--line)] last:border-0">
@@ -140,7 +208,14 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                 <td className="px-4 py-3">{p.quote.manual ? "—" : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</td>
                 <td className="px-4 py-3 tabular-nums font-medium">{fm(p.quote.totalCents, p.quote.currency)}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
+                  {p.status === "pending" && p.reportedPaidAt ? (
+                    <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-xs font-medium text-sky-200">
+                      {t(paysOnArrival(p.paidVia) ? "status.cashPromised" : "status.reported")}
+                    </span>
+                  ) : (
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
+                  )}
+                  {p.paidVia && <div className="mt-1 text-xs text-[var(--muted)]">{p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey)} · {paymentReference(p)}</div>}
                   {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
                 </td>
                 <td className="px-4 py-3 text-end whitespace-nowrap">
@@ -150,7 +225,9 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                     <div className="flex items-center justify-end gap-3">
                       <CopyLink path={`/p/${p.id}`} />
                       <form action={markPaidOffline.bind(null, p.id)}>
-                        <button className="text-[var(--muted)] underline">{t("dash.markCash")}</button>
+                        <button className={p.reportedPaidAt ? "rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)]" : "text-[var(--muted)] underline"}>
+                          {t(p.reportedPaidAt ? "dash.confirmReceived" : "dash.markCash")}
+                        </button>
                       </form>
                     </div>
                   )}
@@ -166,9 +243,9 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-      <div className="text-sm text-[var(--muted)]">{label}</div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums">{value}</div>
+    <div className="min-w-0 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3.5 py-3 sm:rounded-2xl sm:p-5">
+      <div className="truncate text-xs text-[var(--muted)] sm:text-sm">{label}</div>
+      <div className="mt-0.5 truncate text-lg font-semibold tabular-nums sm:mt-1 sm:text-2xl">{value}</div>
     </div>
   );
 }

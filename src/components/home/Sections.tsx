@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CancelGuide from "@/components/CancelGuide";
+import PayBadges from "@/components/PayBadges";
 import type { MessageKey } from "@/i18n/messages/en";
 import type { T } from "@/i18n/translate";
 import { AirbnbIcon, BookingIcon } from "@/app/host/BrandIcons";
@@ -162,13 +163,17 @@ export function Pricing({ t, href, cta, plan }: { t: T; href: string; cta: strin
           </ul>
           <Link href={href} className="btn-silver mt-10 h-14 w-full text-[15px]">{cta} <Arrow /></Link>
           <p className="mt-4 text-center text-sm text-[var(--muted)]">{t("home.noContract")}</p>
+          <div className="mt-6 flex flex-col items-center gap-2 border-t border-[var(--line)] pt-5">
+            <PayBadges />
+            <p className="text-center text-xs text-[var(--muted)]">{t("sub.methods")}</p>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-export const FAQ_IDS = ["cost", "quick", "who", "where", "cancel", "contract"] as const;
+export const FAQ_IDS = ["cost", "quick", "who", "pay", "where", "calendars", "cancel", "contract"] as const;
 
 export function Faq({ t }: { t: T }) {
   return (

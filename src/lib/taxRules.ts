@@ -61,11 +61,13 @@ export type Region = {
 
 export type Country = { code: string; name: string; flag: string; regions: Region[] };
 
-// Malta: Budget 2027 proposes €10/adult/night capped at €80 (short lets) and
-// €8/night capped at €64 (hotels and other collective accommodation) from 1 Jan 2027.
-// It is NOT law yet (Nov 2026). Once the legal notice is published, set this to its
-// start date (e.g. "2027-01-01"). The rate and cap in force at check-in apply to the whole stay.
-export const MALTA_NEW_RATES_FROM: string | null = null;
+// Malta Budget 2027: from 1 Jan 2027 holiday rentals (apartments, houses, rooms) pay
+// €10/adult/night capped at €80, and hotels and other collective accommodation pay
+// €8/adult/night capped at €64. Until then both pay €1.50 (cap €22.50).
+// Announced in the Budget; check the legal notice (legislation.mt / MTA) and adjust this
+// date if it starts later. Nights before this date keep the old rate.
+// Set to null to switch the new rates off again.
+export const MALTA_NEW_RATES_FROM: string | null = "2027-01-01";
 
 type RatePeriod = { rateCents: number; capPerPersonCents?: number };
 function rateChange(current: RatePeriod, next: RatePeriod, from: string | null): Season[] {
@@ -296,7 +298,7 @@ export const COUNTRIES: Country[] = [
         currency: "EUR",
         minTaxableAge: 18,
         accommodationTypes: [
-          // Short lets: €1.50 now → €10 (cap €80) under the Budget 2027 proposal.
+          // Short lets: €1.50 → €10 (cap €80) from MALTA_NEW_RATES_FROM.
           ...sameRate(
             { basis: "person_night", seasons: rateChange({ rateCents: 150, capPerPersonCents: 2250 }, { rateCents: 1000, capPerPersonCents: 8000 }, MALTA_NEW_RATES_FROM) },
             "holiday rentals (apartments, houses and rooms)",
@@ -308,7 +310,7 @@ export const COUNTRIES: Country[] = [
               ["other", "Other holiday rental"],
             ],
           ),
-          // Hotels & collective accommodation: €1.50 now → €8 (cap €64) under the proposal.
+          // Hotels & collective accommodation: €1.50 → €8 (cap €64) from MALTA_NEW_RATES_FROM.
           ...sameRate(
             { basis: "person_night", seasons: rateChange({ rateCents: 150, capPerPersonCents: 2250 }, { rateCents: 800, capPerPersonCents: 6400 }, MALTA_NEW_RATES_FROM) },
             "hotels, guest houses and hostels",

@@ -62,7 +62,15 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
       {register && (
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1 accent-[var(--accent)]" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} required />
-          <span>{t("auth.terms")}</span>
+          <span>
+            {t("auth.terms")}{" "}
+            <span className="text-[var(--muted)]">
+              {t("auth.readTerms")}{" "}
+              <Link href="/terms" target="_blank" className="underline">{t("legal.terms")}</Link>,{" "}
+              <Link href="/privacy" target="_blank" className="underline">{t("legal.privacy")}</Link>,{" "}
+              <Link href="/cookies" target="_blank" className="underline">{t("legal.cookies")}</Link>.
+            </span>
+          </span>
         </label>
       )}
       {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}

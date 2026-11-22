@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsLink } from "./CookieConsent";
 import { getI18n } from "@/i18n/server";
 import { site } from "@/lib/config";
 import { Leaf } from "./SiteHeader";
@@ -34,6 +35,11 @@ export default async function SiteFooter() {
                   )}
                 </li>
               ))}
+              {title === t("footer.legal") && (
+                <li>
+                  <CookieSettingsLink className="text-[var(--muted)] hover:text-[var(--ink)]" />
+                </li>
+              )}
             </ul>
           </nav>
         ))}

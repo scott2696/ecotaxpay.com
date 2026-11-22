@@ -1,3 +1,4 @@
+import { platformName } from "@/lib/platforms";
 import { guideCount } from "@/lib/guide";
 import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
@@ -60,8 +61,8 @@ export default async function Properties({ searchParams }: { searchParams: Promi
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className={`rounded-full px-2 py-0.5 ${p.calendars?.airbnb || p.calendars?.booking ? "bg-[var(--soft)]" : "bg-white/10 text-zinc-300"}`}>
-                    {t("props.calendars", { list: [p.calendars?.airbnb && "Airbnb", p.calendars?.booking && "Booking.com"].filter(Boolean).join(" + ") || t("props.none") })}
+                  <span className={`rounded-full px-2 py-0.5 ${Object.values(p.calendars ?? {}).some(Boolean) ? "bg-[var(--soft)]" : "bg-white/10 text-zinc-300"}`}>
+                    {t("props.calendars", { list: Object.entries(p.calendars ?? {}).filter(([, v]) => v).map(([id]) => platformName(id)).join(" + ") || t("props.none") })}
                   </span>
                   <span className="rounded-full bg-[var(--soft)] px-2 py-0.5">{t("props.docsBadge", { value: t(`props.docs.${p.documents}` as MessageKey) })}</span>
                   <span className={`rounded-full px-2 py-0.5 ${count ? "bg-[var(--soft)]" : "bg-amber-400/15 text-amber-200"}`}>

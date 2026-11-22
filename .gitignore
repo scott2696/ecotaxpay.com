@@ -42,3 +42,8 @@ yarn-error.log*
 next-env.d.ts
 data/*.json
 data/uploads/
+
+# local secrets generated at runtime (never commit)
+data/.session-secret
+data/uploads/
+data/i18n/

@@ -44,6 +44,19 @@ assert.equal(mt({ childAges: [17] }).taxCents, 2 * 5 * 150);
 assert.equal(mt({ nights: 20 }).taxCents, 2 * 2250);
 assert.equal(mt({ accommodationTypeId: "hotel" }).taxCents, 2 * 5 * 150);
 
+// Malta from 1 Jan 2027: holiday rentals €10 (cap €80 pp), hotels €8 (cap €64 pp)
+const mt27 = (o: object) => mt({ checkIn: "2027-02-01", ...o });
+assert.equal(mt27({ accommodationTypeId: "apartment" }).taxCents, 2 * 5 * 1000);
+assert.equal(mt27({ accommodationTypeId: "hotel" }).taxCents, 2 * 5 * 800);
+assert.equal(mt27({ accommodationTypeId: "apartment", nights: 12 }).taxCents, 2 * 8000);
+assert.equal(mt27({ accommodationTypeId: "hotel", nights: 12 }).taxCents, 2 * 6400);
+assert.equal(mt27({ accommodationTypeId: "hotel", childAges: [10] }).taxCents, 2 * 5 * 800);
+// Stay over New Year: nights before 1 Jan at €1.50, later nights at the new rate…
+assert.equal(mt({ checkIn: "2026-12-31", nights: 2, accommodationTypeId: "apartment" }).taxCents, 2 * (150 + 1000));
+assert.equal(mt({ checkIn: "2026-12-31", nights: 2, accommodationTypeId: "hotel" }).taxCents, 2 * (150 + 800));
+// …but the per-person cap is the one in force at check-in (€22.50 for check-ins in 2026)
+assert.equal(mt({ checkIn: "2026-12-30", nights: 5, accommodationTypeId: "apartment" }).taxCents, 2 * 2250);
+
 COUNTRIES.push({ code: "XC", name: "Cap", flag: "", regions: [{ id: "xx-cap", name: "C", taxName: "T", currency: "EUR", verifiedOn: "", sources: [],
   accommodationTypes: [{ id: "a", label: "A", basis: "person_night", seasons: [{ from: "01-01", to: "12-31", rateCents: 1000, capPerPersonCents: 8000 }] }] }] });
 // Per-person cap (money), and explanation text

@@ -4,18 +4,33 @@ import { date, money } from "@/i18n/translate";
 import type { CalendarResult } from "@/lib/calendar";
 import { calendarErrorText } from "@/lib/format";
 import type { PaymentRecord } from "@/lib/store";
-import { syncCalendars } from "./actions";
-import { AirbnbIcon, BookingIcon, PlatformBadge } from "./BrandIcons";
+import { saveBookingName, syncCalendars } from "./actions";
+import { AirbnbIcon, BookingIcon, PlatformBadge, PlatformIcon } from "./BrandIcons";
+import { platformName } from "@/lib/platforms";
 import CopyLink from "./CopyLink";
 
 
-const SOURCE = {
-  airbnb: { label: "Airbnb", cls: "bg-rose-400/15 text-rose-200" },
-  booking: { label: "Booking.com", cls: "bg-blue-400/15 text-blue-200" },
-};
 
 /** Upcoming stays from connected Airbnb / Booking.com calendars, matched to payment links already created. */
-export default async function UpcomingGuests({ calendar, payments, connected }: { calendar: CalendarResult; payments: PaymentRecord[]; connected: boolean }) {
+export default async function UpcomingGuests({
+  calendar,
+  payments,
+  connected,
+  names = {},
+  month,
+  view: viewParam,
+  at: atParam,
+  keep = {},
+}: {
+  calendar: CalendarResult;
+  payments: PaymentRecord[];
+  connected: boolean;
+  names?: Record<string, string>;
+  month?: string; // older links: ?month=YYYY-MM
+  view?: string; // all | month | week | day
+  at?: string; // YYYY-MM-DD inside the period shown
+  keep?: Record<string, string>; // other dashboard filters to carry along in links
+}) {
   const { t, locale } = await getI18n();
   const fmt = (iso: string) => date(iso, locale, { weekday: "short", day: "numeric", month: "short" });
   if (!connected)
@@ -28,8 +43,8 @@ export default async function UpcomingGuests({ calendar, payments, connected }: 
               {t("upcoming.connectIntro")}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <PlatformBadge platform="airbnb" />
-              <PlatformBadge platform="booking" />
+              {["airbnb", "booking", "vrbo", "misterbandb", "agoda", "expedia"].map((id) => <PlatformBadge key={id} platform={id} />)}
+              <span className="inline-flex items-center rounded-xl border border-dashed border-[var(--line)] px-3 py-2 text-sm text-[var(--muted)]">{t("connect.andMore")}</span>
             </div>
           </div>
           <Link
@@ -46,6 +61,36 @@ export default async function UpcomingGuests({ calendar, payments, connected }: 
       </section>
     );
 
+  // View: all bookings, or the arrivals (check-ins) of one month / week / day, with ‹ › to move.
+  const today = new Date().toISOString().slice(0, 10);
+  const isDay = (v?: string) => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const view: "all" | "month" | "week" | "day" =
+    viewParam === "all" || viewParam === "week" || viewParam === "day" || viewParam === "month" ? viewParam : month === "all" ? "all" : "month";
+  const at = isDay(atParam) ? atParam! : month && /^\d{4}-\d{2}$/.test(month) ? `${month}-01` : today;
+  const shift = (iso: string, days: number) => new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+  const addMonths = (iso: string, n: number) => {
+    const d = new Date(`${iso.slice(0, 7)}-01T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() + n);
+    return d.toISOString().slice(0, 10);
+  };
+  const weekStart = (iso: string) => shift(iso, -((new Date(`${iso}T00:00:00Z`).getUTCDay() + 6) % 7)); // Monday
+  const [start, end] =
+    view === "day" ? [at, at]
+    : view === "week" ? [weekStart(at), shift(weekStart(at), 6)]
+    : view === "month" ? [`${at.slice(0, 7)}-01`, shift(addMonths(at, 1), -1)]
+    : ["0000-00-00", "9999-99-99"];
+  const stays = calendar.stays.filter((s) => s.checkIn >= start && s.checkIn <= end);
+  const step = (dir: 1 | -1) => (view === "day" ? shift(at, dir) : view === "week" ? shift(at, 7 * dir) : addMonths(at, dir));
+  const href = (v: string, when?: string) =>
+    `/host?${new URLSearchParams({ ...keep, view: v, ...(when && v !== "all" ? { at: when } : {}) })}`;
+  const long = { day: "numeric", month: "long", year: "numeric" } as const;
+  const periodLabel =
+    view === "day" ? date(at, locale, { weekday: "long", ...long })
+    : view === "week" ? `${date(start, locale, { day: "numeric", month: "short" })} – ${date(end, locale, { day: "numeric", month: "short", year: "numeric" })}`
+    : view === "month" ? date(start, locale, { month: "long", year: "numeric" })
+    : "";
+  const bookingKey = (s: { source: string; uid: string }) => `${s.source}:${s.uid}`;
+
   // A booking "has a link" if a payment request exists for the same apartment and check-in date.
   const linkFor = (propertyId: string, checkIn: string) =>
     payments.find((p) => p.propertyId === propertyId && p.quote.checkIn === checkIn && p.status !== "refunded");
@@ -55,7 +100,7 @@ export default async function UpcomingGuests({ calendar, payments, connected }: 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--line)] px-5 py-4">
         <div className="flex items-center gap-3">
           <h2 className="font-semibold">{t("upcoming.title")}</h2>
-          <span className="flex items-center gap-1"><AirbnbIcon size={18} /><BookingIcon size={18} /></span>
+          <span className="flex items-center gap-1">{["airbnb", "booking", "vrbo"].map((id) => <PlatformIcon key={id} id={id} size={18} />)}</span>
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="hidden text-xs text-[var(--muted)] sm:inline">{t("upcoming.autoRefresh")}</span>
@@ -68,25 +113,59 @@ export default async function UpcomingGuests({ calendar, payments, connected }: 
 
       {calendar.errors.map((e) => (
         <p key={`${e.propertyName}${e.source}`} className="mx-5 mt-3 rounded-lg bg-red-500/10 p-2 text-sm text-red-300">
-          {t("upcoming.calError", { platform: SOURCE[e.source].label, name: e.propertyName })} {calendarErrorText(e.error, t)}
+          {t("upcoming.calError", { platform: platformName(e.source), name: e.propertyName })} {calendarErrorText(e.error, t)}
         </p>
       ))}
 
-      {calendar.stays.length === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-[var(--muted)]">{t("upcoming.none")}</p>
+      <nav className="flex flex-wrap items-center gap-3 border-b border-[var(--line)] px-5 py-3 text-sm" aria-label={t("upcoming.view")}>
+        <div className="inline-flex rounded-lg border border-[var(--line)] p-0.5">
+          {(["all", "month", "week", "day"] as const).map((v) => (
+            <Link
+              key={v}
+              href={href(v, at)}
+              scroll={false}
+              aria-current={v === view ? "page" : undefined}
+              className={`rounded-md px-3 py-1 ${v === view ? "bg-[var(--soft)] font-medium text-[var(--ink)]" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
+            >
+              {t(`upcoming.view.${v}`)}
+            </Link>
+          ))}
+        </div>
+        {view !== "all" && (
+          <div className="flex items-center gap-1">
+            <Link href={href(view, step(-1))} scroll={false} aria-label={t("upcoming.prev")} className="rounded-md px-2 py-1 text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]">‹</Link>
+            <span className="min-w-40 text-center font-medium">{periodLabel}</span>
+            <Link href={href(view, step(1))} scroll={false} aria-label={t("upcoming.next")} className="rounded-md px-2 py-1 text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]">›</Link>
+            <Link href={href(view, today)} scroll={false} className="ms-1 rounded-md border border-[var(--line)] px-2 py-0.5 text-xs text-[var(--muted)] hover:text-[var(--ink)]">{t("upcoming.today")}</Link>
+          </div>
+        )}
+        <span className="ms-auto text-xs text-[var(--muted)]">{t.plural("upcoming.arrivals", stays.length)}</span>
+      </nav>
+
+      {stays.length === 0 ? (
+        <p className="px-5 py-8 text-center text-sm text-[var(--muted)]">{view === "all" ? t("upcoming.none") : t("upcoming.noneInPeriod")}</p>
       ) : (
         <ul className="divide-y divide-[var(--line)]">
-          {calendar.stays.map((s) => {
+          {stays.map((s) => {
             const link = linkFor(s.propertyId, s.checkIn);
             const paid = link && (link.status === "paid" || link.status === "paid_offline");
-            const params = new URLSearchParams({ property: s.propertyId, checkin: s.checkIn, checkout: s.checkOut, ...(s.reservationCode ? { ref: s.reservationCode } : {}) });
+            const key = bookingKey(s);
+            const typed = names[key];
+            const params = new URLSearchParams({
+              property: s.propertyId,
+              checkin: s.checkIn,
+              checkout: s.checkOut,
+              ...(s.reservationCode ? { ref: s.reservationCode } : {}),
+              ...(typed ? { name: typed } : {}),
+            });
             return (
               <li key={`${s.source}${s.uid}`} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
                 <div className="min-w-0">
                   {/* Once a link exists we know who is coming; calendar feeds only share dates. */}
+                  {!link?.guestName && <GuestName t={t} bookingKey={key} booking={{ propertyId: s.propertyId, checkIn: s.checkIn }} name={typed} />}
                   {link && (
                     <div className="font-semibold">
-                      {link.guestName}{" "}
+                      {link.guestName}{link.guestName ? " " : ""}
                       <span className="font-normal text-[var(--muted)]">
                         · {t.plural("guest.adults", link.quote.adults)}
                         {link.quote.childAges.length > 0 && `, ${t.plural("guest.children", link.quote.childAges.length)}`} · {money(link.quote.totalCents, link.quote.currency, locale)}
@@ -97,9 +176,9 @@ export default async function UpcomingGuests({ calendar, payments, connected }: 
                     {fmt(s.checkIn)} → {fmt(s.checkOut)} <span className="font-normal text-[var(--muted)]">· {t.plural("line.nights", s.nights)}</span>
                   </div>
                   <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${SOURCE[s.source].cls}`}>
-                      {s.source === "airbnb" ? <AirbnbIcon size={12} /> : <BookingIcon size={12} />}
-                      {SOURCE[s.source].label}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.07] px-2 py-0.5 font-medium text-[var(--ink)]">
+                      <PlatformIcon id={s.source} size={12} />
+                      {platformName(s.source)}
                     </span>
                     <span>{s.propertyName}</span>
                     {s.reservationCode && <span>· {s.reservationCode}</span>}
@@ -134,3 +213,29 @@ export default async function UpcomingGuests({ calendar, payments, connected }: 
   );
 }
 
+/** The guest's name for a calendar booking: typed once by the host, then shown and used for the payment link. */
+function GuestName({ t, bookingKey, booking, name }: { t: Awaited<ReturnType<typeof getI18n>>["t"]; bookingKey: string; booking: { propertyId: string; checkIn: string }; name?: string }) {
+  const form = (
+    <form action={saveBookingName.bind(null, bookingKey, booking)} className="flex items-center gap-1.5">
+      <input
+        name="name"
+        defaultValue={name ?? ""}
+        placeholder={t("upcoming.guestNamePh")}
+        aria-label={t("form.guestName")}
+        maxLength={120}
+        className="input h-8 w-48 px-2 text-sm"
+      />
+      <button className="h-8 rounded-lg border border-[var(--line)] px-2.5 text-xs font-medium hover:bg-[var(--soft)]">{t("upcoming.saveName")}</button>
+    </form>
+  );
+  if (!name) return <div className="mb-1.5">{form}</div>;
+  return (
+    <details className="group mb-0.5">
+      <summary className="flex cursor-pointer list-none items-center gap-2 font-semibold">
+        {name}
+        <span className="text-xs font-normal text-[var(--muted)] underline group-open:hidden">{t("upcoming.editName")}</span>
+      </summary>
+      <div className="mt-1.5">{form}</div>
+    </details>
+  );
+}
