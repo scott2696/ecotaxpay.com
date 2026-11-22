@@ -11,7 +11,7 @@ export default async function SiteFooter() {
     [t("footer.product"), [["/#pricing", t("home.nav.pricing")], ["/#faq", t("home.nav.faq")], ["/register", t("auth.signup")], ["/login", t("auth.login")]]],
     [t("footer.company"), [["/about", t("nav.about")], ["/contact", t("nav.contact")]]],
     [t("footer.legal"), [["/terms", t("legal.terms")], ["/privacy", t("legal.privacy")], ["/cookies", t("legal.cookies")]]],
-    [t("footer.site"), [["/sitemap.xml", "Sitemap"], ["/robots.txt", "robots.txt"]]],
+    [t("footer.site"), [["/sitemap", "Sitemap"], ["/sitemap.xml", "XML sitemap"], ["/robots.txt", "robots.txt"]]],
   ];
   return (
     <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
