@@ -156,6 +156,8 @@ export const de: LocaleMessages = {
   "nav.apartments": "Wohnungen & Zimmer",
   "nav.rates": "Steuersätze",
   "nav.account": "Konto",
+  "upcoming.removedList": "Entfernte Buchungen ({count}): anzeigen und wiederherstellen",
+  "upcoming.restore": "Wiederherstellen",
   "dash.remove": "Entfernen",
   "dash.removeConfirmPending": "Diesen Zahlungslink entfernen? Er verschwindet aus Ihrer Liste und der Gast kann ihn nicht mehr nutzen.",
   "dash.removeConfirmPaid": "Diese Transaktion aus Liste, Summen und Exporten entfernen? Die Quittung des Gastes funktioniert weiter.",

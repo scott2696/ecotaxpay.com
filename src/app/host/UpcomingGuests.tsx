@@ -4,8 +4,8 @@ import { date, money } from "@/i18n/translate";
 import type { CalendarResult } from "@/lib/calendar";
 import { calendarErrorText } from "@/lib/format";
 import type { PaymentRecord } from "@/lib/store";
-import { hideStay, saveBookingName, syncCalendars } from "./actions";
-import { stayKey } from "@/lib/bookings";
+import { hideStay, restoreStay, saveBookingName, syncCalendars } from "./actions";
+import { stayKey, type ListedStay } from "@/lib/bookings";
 import { AirbnbIcon, BookingIcon, PlatformBadge, PlatformIcon } from "./BrandIcons";
 import { platformName } from "@/lib/platforms";
 import CopyLink from "./CopyLink";
@@ -24,6 +24,7 @@ export default async function UpcomingGuests({
   keep = {},
   apartments = [],
   only,
+  removed = [],
 }: {
   calendar: CalendarResult;
   payments: PaymentRecord[];
@@ -35,6 +36,7 @@ export default async function UpcomingGuests({
   keep?: Record<string, string>; // other dashboard filters to carry along in links
   apartments?: { id: string; name: string }[]; // apartments with a connected calendar
   only?: string; // show one apartment's bookings (?stays=<id>); otherwise all combined
+  removed?: ListedStay[]; // bookings the host removed (can be restored)
 }) {
   const { t, locale } = await getI18n();
   const fmt = (iso: string) => date(iso, locale, { weekday: "short", day: "numeric", month: "short" });
@@ -246,6 +248,24 @@ export default async function UpcomingGuests({
             );
           })}
         </ul>
+      )}
+      {removed.length > 0 && (
+        <details className="border-t border-[var(--line)] px-5 py-3 text-sm">
+          <summary className="cursor-pointer text-[var(--muted)] hover:text-[var(--ink)]">{t("upcoming.removedList", { count: removed.length })}</summary>
+          <ul className="mt-3 divide-y divide-[var(--line)] rounded-xl border border-[var(--line)]">
+            {removed.map((s) => (
+              <li key={s.key} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
+                <span>
+                  <span className="font-medium">{fmt(s.checkIn)} → {fmt(s.checkOut)}</span>
+                  <span className="text-[var(--muted)]"> · {platformName(s.source)} · {s.propertyName}</span>
+                </span>
+                <form action={restoreStay.bind(null, s.key)}>
+                  <button className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--soft)]">↺ {t("upcoming.restore")}</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
       {calendar.stays.some((s) => s.source === "booking") && (
         <p className="border-t border-[var(--line)] px-5 py-3 text-xs text-[var(--muted)]">

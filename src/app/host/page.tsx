@@ -7,7 +7,7 @@ import { formatMoney } from "@/lib/calc";
 import { capFirst, quoteTitle } from "@/lib/quick";
 import { isDemoMode } from "@/lib/config";
 import { upcomingStays } from "@/lib/calendar";
-import { rememberStays } from "@/lib/bookings";
+import { rememberStays, removedStays } from "@/lib/bookings";
 import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
 import { markPaidOffline, removePayment } from "./actions";
 import { activeMethods, methodTitle, paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
@@ -156,6 +156,7 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
       {connected && (
         <UpcomingGuests
           calendar={calendar}
+          removed={removedStays(host, properties)}
           payments={payments}
           connected={connected}
           names={host.bookingNames ?? {}}

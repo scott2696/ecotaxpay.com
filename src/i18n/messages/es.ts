@@ -156,6 +156,8 @@ export const es: LocaleMessages = {
   "nav.apartments": "Apartamentos y habitaciones",
   "nav.rates": "Tasas",
   "nav.account": "Cuenta",
+  "upcoming.removedList": "Reservas quitadas ({count}): ver y restaurar",
+  "upcoming.restore": "Restaurar",
   "dash.remove": "Quitar",
   "dash.removeConfirmPending": "¿Quitar este enlace de pago? Desaparece de tu lista y el huésped ya no puede usarlo.",
   "dash.removeConfirmPaid": "¿Quitar esta transacción de tu lista, totales y exportaciones? El recibo del huésped sigue funcionando.",

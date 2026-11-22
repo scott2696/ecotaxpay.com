@@ -56,14 +56,20 @@ export async function removePayment(id: string) {
   revalidatePath("/host");
 }
 
-/** Remove a synced booking from the dashboard list (it won't come back). */
+/** Remove a synced booking from the dashboard list (restorable from "Removed bookings"). */
 export async function hideStay(key: string) {
   const host = await requireHost();
   const hidden = new Set(host.hiddenStays ?? []);
   hidden.add(key);
-  const saved = { ...(host.savedStays ?? {}) };
-  delete saved[key];
-  await updateHost(host.id, { hiddenStays: [...hidden].slice(-2000), savedStays: saved });
+  // The booking itself is kept, so it can be restored from "Removed bookings".
+  await updateHost(host.id, { hiddenStays: [...hidden].slice(-2000) });
+  revalidatePath("/host");
+}
+
+/** Put a removed booking back in the list. */
+export async function restoreStay(key: string) {
+  const host = await requireHost();
+  await updateHost(host.id, { hiddenStays: (host.hiddenStays ?? []).filter((k) => k !== key) });
   revalidatePath("/host");
 }
 

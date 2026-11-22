@@ -171,6 +171,8 @@ export const mt: LocaleMessages = {
   "nav.apartments": "Appartamenti u kmamar",
   "nav.rates": "Rati",
   "nav.account": "Kont",
+  "upcoming.removedList": "Bookings imneħħija ({count}): uri u rrestawra",
+  "upcoming.restore": "Irrestawra",
   "dash.remove": "Neħħi",
   "dash.removeConfirmPending": "Tneħħi dan il-link tal-ħlas? Jisparixxi mil-lista tiegħek u l-mistieden ma jkunx jista' jużah aktar.",
   "dash.removeConfirmPaid": "Tneħħi din it-tranżazzjoni mil-lista, mit-totali u mill-esportazzjonijiet? Ir-riċevuta tal-mistieden tibqa' taħdem.",

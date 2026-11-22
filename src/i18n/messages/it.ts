@@ -156,6 +156,8 @@ export const it: LocaleMessages = {
   "nav.apartments": "Appartamenti e camere",
   "nav.rates": "Tariffe",
   "nav.account": "Account",
+  "upcoming.removedList": "Prenotazioni rimosse ({count}): mostra e ripristina",
+  "upcoming.restore": "Ripristina",
   "dash.remove": "Rimuovi",
   "dash.removeConfirmPending": "Rimuovere questo link di pagamento? Sparisce dal tuo elenco e l'ospite non può più usarlo.",
   "dash.removeConfirmPaid": "Rimuovere questa transazione dall'elenco, dai totali e dalle esportazioni? La ricevuta dell'ospite continua a funzionare.",

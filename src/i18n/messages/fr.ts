@@ -156,6 +156,8 @@ export const fr: LocaleMessages = {
   "nav.apartments": "Logements et chambres",
   "nav.rates": "Tarifs",
   "nav.account": "Compte",
+  "upcoming.removedList": "Réservations retirées ({count}) : afficher et restaurer",
+  "upcoming.restore": "Restaurer",
   "dash.remove": "Retirer",
   "dash.removeConfirmPending": "Retirer ce lien de paiement ? Il disparaît de votre liste et le voyageur ne peut plus l'utiliser.",
   "dash.removeConfirmPaid": "Retirer cette transaction de votre liste, des totaux et des exports ? Le reçu du voyageur reste valable.",

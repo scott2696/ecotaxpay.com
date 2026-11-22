@@ -154,6 +154,8 @@ export const en = {
   "nav.apartments": "Apartments & rooms",
   "nav.rates": "Rates",
   "nav.account": "Account",
+  "upcoming.removedList": "Removed bookings ({count}): show and restore",
+  "upcoming.restore": "Restore",
   "dash.remove": "Remove",
   "dash.removeConfirmPending": "Remove this payment link? It disappears from your list and the guest can no longer use it.",
   "dash.removeConfirmPaid": "Remove this transaction from your list, totals and exports? The guest's receipt keeps working.",

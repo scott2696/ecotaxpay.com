@@ -59,3 +59,15 @@ export async function syncNow(host: Host, today = new Date().toISOString().slice
   const latest = (await getHost(host.id)) ?? host;
   return rememberStays(latest, properties, live, today, true);
 }
+
+/** Bookings the host removed that are still upcoming: shown under "Removed bookings" to restore. */
+export function removedStays(host: Host, properties: Property[], today = new Date().toISOString().slice(0, 10)): ListedStay[] {
+  const byId = new Map(properties.map((p) => [p.id, p]));
+  return (host.hiddenStays ?? [])
+    .flatMap((key) => {
+      const s = host.savedStays?.[key];
+      const property = s && byId.get(s.propertyId);
+      return s && property && s.checkOut >= today ? [{ ...s, propertyName: property.name, key, missing: s.missing || undefined }] : [];
+    })
+    .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
+}
