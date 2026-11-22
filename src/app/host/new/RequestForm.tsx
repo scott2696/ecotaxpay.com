@@ -233,6 +233,12 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
             {guestsByGuest && <p className="text-sm text-[var(--muted)] sm:col-span-2">{t("form.guestsByGuestNote")}</p>}
             {!guestsByGuest && (
               <>
+                <p role="note" className="flex gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100 sm:col-span-2">
+                  <span aria-hidden>⚠️</span>
+                  <span>
+                    <strong className="font-semibold">{t("form.checkGuestsTitle")}</strong> {t("form.checkGuestsText")}
+                  </span>
+                </p>
                 <Field label={t("form.adults")}>
                   <Stepper value={adults} min={1} max={20} onChange={setAdults} />
                 </Field>

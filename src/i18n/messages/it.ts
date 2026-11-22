@@ -156,6 +156,8 @@ export const it: LocaleMessages = {
   "nav.apartments": "Appartamenti e camere",
   "nav.rates": "Tariffe",
   "nav.account": "Account",
+  "form.checkGuestsTitle": "Ricontrolla il numero di ospiti.",
+  "form.checkGuestsText": "Le piattaforme di prenotazione non sempre sincronizzano correttamente il numero di adulti e bambini. Confronta con la prenotazione e correggi i numeri se serve: la tassa si calcola da questi.",
   "methods.cardViaRevolut": "Funziona già: i tuoi ospiti possono pagare con carta o Apple Pay tramite il tuo link Revolut (senza conto Revolut). Aggiungi qui un tuo link per carte solo se preferisci un altro fornitore.",
   "pay.cardViaRevolut": "Carta o Apple Pay",
   "pay.cardViaRevolutHint": "Paga con carta o Apple Pay sulla pagina sicura di Revolut. Non serve un conto Revolut: scegli «Paga con carta», inserisci l'importo e aggiungi il riferimento.",

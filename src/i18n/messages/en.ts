@@ -154,6 +154,8 @@ export const en = {
   "nav.apartments": "Apartments & rooms",
   "nav.rates": "Rates",
   "nav.account": "Account",
+  "form.checkGuestsTitle": "Double-check the number of guests.",
+  "form.checkGuestsText": "Booking platforms don't always sync the number of adults and children correctly. Compare with the booking and amend the numbers below if needed: the tax is calculated from them.",
   "methods.cardViaRevolut": "Already working: your guests can pay by card or Apple Pay through your Revolut link (no Revolut account needed). Add your own card link here only if you prefer another provider.",
   "pay.cardViaRevolut": "Card or Apple Pay",
   "pay.cardViaRevolutHint": "Pay by card or Apple Pay on Revolut's secure page. No Revolut account needed: choose “Pay with card”, enter the amount and add the reference.",
