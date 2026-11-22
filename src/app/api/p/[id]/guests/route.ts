@@ -3,7 +3,7 @@ import type { MessageKey } from "@/i18n/messages/en";
 import { getI18n } from "@/i18n/server";
 import { calculate, LIMITS, QuoteError } from "@/lib/calc";
 import { resolveProperty } from "@/lib/resolve";
-import { getPayment, getProperty, updatePayment } from "@/lib/store";
+import { getPayment, getProperty, updatePayment, linkCancelled } from "@/lib/store";
 
 // The guest enters how many people are staying (the host didn't know: e.g. a calendar booking).
 // The tax is recalculated here, on the server, from the apartment's rules and the stay dates;
@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const { t } = await getI18n();
   const p = await getPayment(id);
-  if (!p) return NextResponse.json({ error: t("err.linkNotFound") }, { status: 404 });
+  if (!p || linkCancelled(p)) return NextResponse.json({ error: t("err.linkNotFound") }, { status: 404 });
   if (p.status !== "pending" || p.reportedPaidAt || !(p.guestsToConfirm || p.guestsConfirmedAt) || p.quote.manual)
     return NextResponse.json({ error: t("q.invalid") }, { status: 409 });
 

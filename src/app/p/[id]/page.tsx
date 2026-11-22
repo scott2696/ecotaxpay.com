@@ -11,7 +11,7 @@ import { guideItems, translateGuide } from "@/lib/guide";
 import { resolveProperty } from "@/lib/resolve";
 import { activeMethods, METHOD_ICONS, methodUrl, PHONE_APP_NAMES, PHONE_APPS, paymentReference, paysOnArrival, type PhoneApp } from "@/lib/payMethods";
 import type { MessageKey } from "@/i18n/messages/en";
-import { getHost, getPayment, getProperty, issuerFor, type Guide, type PaymentMethods, type PaymentRecord } from "@/lib/store";
+import { getHost, getPayment, getProperty, issuerFor, type Guide, type PaymentMethods, type PaymentRecord, linkCancelled } from "@/lib/store";
 import GuestCount from "./GuestCount";
 import PayDirect, { type MethodView } from "./PayDirect";
 import { capFirst, quoteTitle } from "@/lib/quick";
@@ -34,6 +34,15 @@ export default async function GuestPage({
   await searchParams;
   const p = await getPayment(id);
   if (!p || p.status === "refunded") notFound();
+  if (linkCancelled(p)) {
+    const { t } = await getI18n();
+    return (
+      <main className="mx-auto max-w-md px-4 py-20 text-center">
+        <h1 className="text-xl font-semibold">{t("guest.linkRemovedTitle")}</h1>
+        <p className="mt-2 text-sm text-[var(--muted)]">{t("guest.linkRemovedText")}</p>
+      </main>
+    );
+  }
   const property = p.propertyId ? await getProperty(p.propertyId) : null;
   const issuer = await issuerFor(p);
   const { t, locale } = await getI18n();

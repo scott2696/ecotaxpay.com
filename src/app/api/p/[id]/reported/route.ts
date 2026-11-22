@@ -3,7 +3,7 @@ import { isLocaleCode } from "@/i18n/config";
 import { getI18n } from "@/i18n/server";
 import { sendReportedEmail } from "@/lib/email";
 import { activeMethods } from "@/lib/payMethods";
-import { getHost, getPayment, getProperty, updatePayment, type PayMethodId } from "@/lib/store";
+import { getHost, getPayment, getProperty, updatePayment, type PayMethodId, linkCancelled } from "@/lib/store";
 import { normalizePhone } from "@/lib/whatsapp";
 
 // Guest taps "I've paid" (or "I'll pay in cash") on /p/{id}. Nothing is charged here: the guest pays
@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const body = await req.json().catch(() => ({}));
   const { t, locale } = await getI18n();
   const found = await getPayment(id);
-  if (!found) return NextResponse.json({ error: t("err.linkNotFound") }, { status: 404 });
+  if (!found || linkCancelled(found)) return NextResponse.json({ error: t("err.linkNotFound") }, { status: 404 });
   if (found.status !== "pending") return NextResponse.json({ ok: true });
 
   const host = found.hostId ? await getHost(found.hostId) : null;

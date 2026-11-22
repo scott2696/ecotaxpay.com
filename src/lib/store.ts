@@ -151,6 +151,8 @@ export type PaymentRecord = {
   locale?: string; // guest's language (receipt + emails)
   createdAt: string;
   status: PaymentStatus;
+  /** Removed by the host: hidden from the dashboard, totals and exports. An unpaid link stops working; a receipt keeps working. */
+  removedAt?: string;
   guestName: string;
   guestEmail: string;
   guestPhone?: string; // digits, international format (for WhatsApp)
@@ -227,9 +229,12 @@ export async function getPayment(id: string): Promise<PaymentRecord | null> {
 }
 
 /** A host's payment links (all of them when hostId is omitted: internal use only). */
+/** An unpaid link the host removed: the guest can no longer use it. */
+export const linkCancelled = (p: PaymentRecord) => !!p.removedAt && p.status === "pending";
+
 export async function listPayments(hostId?: string): Promise<PaymentRecord[]> {
   const db = await load();
-  return db.payments.filter((p) => !hostId || p.hostId === hostId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return db.payments.filter((p) => (!hostId || p.hostId === hostId) && !p.removedAt).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function updatePayment(id: string, patch: Partial<PaymentRecord>): Promise<PaymentRecord | null> {

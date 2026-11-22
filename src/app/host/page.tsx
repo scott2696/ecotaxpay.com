@@ -9,7 +9,7 @@ import { isDemoMode } from "@/lib/config";
 import { upcomingStays } from "@/lib/calendar";
 import { rememberStays } from "@/lib/bookings";
 import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
-import { markPaidOffline } from "./actions";
+import { markPaidOffline, removePayment } from "./actions";
 import { activeMethods, methodTitle, paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
 import { MethodLogo } from "@/components/PayBadges";
 import CopyLink from "./CopyLink";
@@ -292,18 +292,31 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                   {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
                 </td>
                 <td className="px-4 py-3 text-end whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-3">
                   {p.receiptNumber ? (
                     <a href={`/api/receipt/${p.id}`} target="_blank" className="text-[var(--accent)] underline">{t("dash.receipt")}</a>
                   ) : (
-                    <div className="flex items-center justify-end gap-3">
+                    <>
                       <CopyLink path={`/p/${p.id}`} />
                       <form action={markPaidOffline.bind(null, p.id)}>
                         <button className={p.reportedPaidAt ? "rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--on-accent)]" : "text-[var(--muted)] underline"}>
                           {t(p.reportedPaidAt ? "dash.confirmReceived" : "dash.markCash")}
                         </button>
                       </form>
-                    </div>
+                    </>
                   )}
+                  <details className="relative">
+                    <summary className="cursor-pointer list-none text-[var(--muted)] hover:text-red-300" aria-label={t("dash.remove")} title={t("dash.remove")}>
+                      ✕
+                    </summary>
+                    <div className="absolute end-0 z-20 mt-2 w-72 whitespace-normal rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-start text-sm shadow-xl">
+                      <p>{t(p.status === "pending" ? "dash.removeConfirmPending" : "dash.removeConfirmPaid")}</p>
+                      <form action={removePayment.bind(null, p.id)} className="mt-3">
+                        <button className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500">{t("dash.removeYes")}</button>
+                      </form>
+                    </div>
+                  </details>
+                  </div>
                 </td>
               </tr>
             ))}

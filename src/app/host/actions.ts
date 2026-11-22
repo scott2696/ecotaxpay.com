@@ -47,6 +47,15 @@ export async function removeProperty(id: string) {
   redirect("/host/properties?deleted=1");
 }
 
+/** Remove a payment link / transaction from the dashboard (an unpaid link stops working; receipts keep working). */
+export async function removePayment(id: string) {
+  const host = await requireHost();
+  const p = await getPayment(id);
+  if (!p || p.hostId !== host.id) return;
+  await updatePayment(id, { removedAt: new Date().toISOString() });
+  revalidatePath("/host");
+}
+
 /** Remove a synced booking from the dashboard list (it won't come back). */
 export async function hideStay(key: string) {
   const host = await requireHost();

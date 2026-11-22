@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getI18n } from "@/i18n/server";
 import path from "node:path";
-import { addDocument, getPayment, getProperty, newDocId, removeDocument } from "@/lib/store";
+import { addDocument, getPayment, getProperty, newDocId, removeDocument, linkCancelled } from "@/lib/store";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_DOCS = 12;
@@ -16,7 +16,7 @@ const TYPES: Record<string, string> = {
 
 async function allowed(id: string) {
   const p = await getPayment(id);
-  if (!p || p.status === "refunded") return null;
+  if (!p || p.status === "refunded" || linkCancelled(p)) return null;
   const prop = p.propertyId ? await getProperty(p.propertyId) : null;
   return prop && prop.documents !== "off" ? p : null;
 }
