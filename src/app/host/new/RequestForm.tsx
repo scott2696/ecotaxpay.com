@@ -53,7 +53,6 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
   }
   const [adults, setAdults] = useState(2);
   // Calendar bookings never include the party size: by default the guest enters it on their page.
-  const guestsByGuest = validDates;
   const [childAges, setChildAges] = useState<number[]>([]);
   const [nightlyPrice, setNightlyPrice] = useState("");
   const [guestName, setGuestName] = useState(prefill.guestName ?? "");
@@ -77,8 +76,8 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
   }, [properties, prefill.propertyId]);
 
   const stay = useMemo(
-    () => ({ propertyId, checkIn, nights, adults: guestsByGuest ? 1 : adults, childAges: guestsByGuest ? [] : childAges, nightlyPrice }),
-    [propertyId, checkIn, nights, adults, childAges, nightlyPrice, guestsByGuest],
+    () => ({ propertyId, checkIn, nights, adults, childAges, nightlyPrice }),
+    [propertyId, checkIn, nights, adults, childAges, nightlyPrice],
   );
 
   useEffect(() => {
@@ -122,7 +121,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
       const res = await apiFetch("/api/host/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...stay, propertyId, guestName, guestEmail, guestPhone, bookingRef, guestsByGuest }),
+        body: JSON.stringify({ ...stay, propertyId, guestName, guestEmail, guestPhone, bookingRef }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -230,25 +229,20 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                 </div>
               </Field>
             )}
-            {guestsByGuest && <p className="text-sm text-[var(--muted)] sm:col-span-2">{t("form.guestsByGuestNote")}</p>}
-            {!guestsByGuest && (
-              <>
-                <p role="note" className="flex gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100 sm:col-span-2">
-                  <span aria-hidden>⚠️</span>
-                  <span>
-                    <strong className="font-semibold">{t("form.checkGuestsTitle")}</strong> {t("form.checkGuestsText")}
-                  </span>
-                </p>
-                <Field label={t("form.adults")}>
-                  <Stepper value={adults} min={1} max={20} onChange={setAdults} />
-                </Field>
-                <Field label={t("form.children")}>
-                  <Stepper value={childAges.length} min={0} max={10} onChange={setChildCount} />
-                </Field>
-              </>
-            )}
+            <p role="note" className="flex gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100 sm:col-span-2">
+              <span aria-hidden>⚠️</span>
+              <span>
+                <strong className="font-semibold">{t("form.checkGuestsTitle")}</strong> {t("form.checkGuestsText")}
+              </span>
+            </p>
+            <Field label={t("form.adults")}>
+              <Stepper value={adults} min={1} max={20} onChange={setAdults} />
+            </Field>
+            <Field label={t("form.children")}>
+              <Stepper value={childAges.length} min={0} max={10} onChange={setChildCount} />
+            </Field>
           </div>
-          {!guestsByGuest && childAges.length > 0 && (
+          {childAges.length > 0 && (
             <div className="mt-4">
               <div className="mb-2 text-sm font-medium">{t("form.childAges")}</div>
               <div className="flex flex-wrap gap-2">
@@ -311,14 +305,10 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                 )}
               </ul>
               <div className="my-4 border-t border-[var(--line)]" />
-              {guestsByGuest ? (
-                <p className="rounded-lg bg-sky-400/10 p-3 text-sm text-sky-100">{t("form.guestsByGuestPreview", { amount: money(quote.totalCents, quote.currency) })}</p>
-              ) : (
-                <div className="flex items-baseline justify-between">
-                  <span className="font-semibold">{t("dash.col.total")}</span>
-                  <span className="text-3xl font-semibold tabular-nums">{money(quote.totalCents, quote.currency)}</span>
-                </div>
-              )}
+              <div className="flex items-baseline justify-between">
+                <span className="font-semibold">{t("dash.col.total")}</span>
+                <span className="text-3xl font-semibold tabular-nums">{money(quote.totalCents, quote.currency)}</span>
+              </div>
               {quote.hostNotes.length > 0 && (
                 <p className="mt-3 rounded-lg bg-amber-400/10 p-2 text-xs text-amber-200">{t("form.noteForYou")} {regionNote(quote.regionId, quote.hostNotes.join(" "), t)}</p>
               )}
