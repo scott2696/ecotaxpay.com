@@ -15,6 +15,8 @@ import CopyLink from "./CopyLink";
 import ApartmentFilter from "./ApartmentFilter";
 import StayRangeFilter from "./StayRangeFilter";
 import UpcomingGuests from "./UpcomingGuests";
+import ChooseFirst from "./connect/ChooseFirst";
+import ConnectForm from "./connect/ConnectForm";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +31,7 @@ const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 /** Last day of a YYYY-MM month as YYYY-MM-DD. */
 const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
 
-export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string; month?: string; from?: string; to?: string; view?: string; at?: string }> }) {
+export default async function Host({ searchParams }: { searchParams: Promise<{ apartment?: string; month?: string; from?: string; to?: string; view?: string; at?: string; apt?: string; platform?: string }> }) {
   const sp = await searchParams;
   const { apartment = "", month } = sp;
   // Stay range for the accountant: guests whose check-in falls between these months (inclusive).
@@ -146,16 +148,37 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
         )}
       </section>
 
-      <UpcomingGuests
-        calendar={calendar}
-        payments={payments}
-        connected={connected}
-        names={host.bookingNames ?? {}}
-        month={month}
-        view={sp.view}
-        at={sp.at}
-        keep={{ ...(apartment ? { apartment } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }}
-      />
+      {connected && (
+        <UpcomingGuests
+          calendar={calendar}
+          payments={payments}
+          connected={connected}
+          names={host.bookingNames ?? {}}
+          month={month}
+          view={sp.view}
+          at={sp.at}
+          keep={{ ...(apartment ? { apartment } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) }}
+        />
+      )}
+
+      {/* Connect calendars: choose a channel from the list, paste its iCal link, Save. Only here on the dashboard. */}
+      <section id="calendars" className="mb-8 scroll-mt-24 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+        <h2 className="font-semibold">{t("upcoming.connect")}</h2>
+        <p className="mb-4 mt-0.5 text-sm text-[var(--muted)]">{t("pf.calendarsSub")}</p>
+        {properties.length ? (
+          <ConnectForm
+            apartments={properties.map((p) => ({
+              id: p.id,
+              name: p.name,
+              calendars: Object.fromEntries(Object.entries(p.calendars ?? {}).filter((e): e is [string, string] => !!e[1])),
+            }))}
+            focus={sp.apt && sp.platform ? { apt: sp.apt, platform: sp.platform } : undefined}
+          />
+        ) : (
+          <ChooseFirst />
+        )}
+      </section>
+
 
       {byRegion.size > 0 && (
         <section className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">

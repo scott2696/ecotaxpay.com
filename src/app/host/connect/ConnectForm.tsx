@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
 import type { CalendarError } from "@/lib/calendar";
 import { calendarErrorText } from "@/lib/format";
-import { PLATFORMS, platformById } from "@/lib/platforms";
+import { platformById } from "@/lib/platforms";
 import { PlatformIcon } from "../BrandIcons";
 import PlatformPicker from "./PlatformPicker";
 
@@ -32,7 +31,6 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
   const [error, setError] = useState<string | null>(null);
 
   const update = (apt: string, rows: [string, string][]) => setLinks({ ...links, [apt]: rows });
-  const [picking, setPicking] = useState<string | null>(null);
 
   // Bring the chosen platform's link box into view, ready to paste into.
   useEffect(() => {
@@ -70,24 +68,11 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
   const allOk = Object.keys(results).length > 0 && Object.values(results).every((r) => Object.values(r).every((c) => c?.ok));
 
   return (
-    <form onSubmit={sync} className="space-y-6">
-      <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-        <div className="font-semibold">{t("connect.supported")}</div>
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("connect.howGeneric")}</p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {PLATFORMS.filter((p) => p.id !== "other").map((p) => (
-            <span key={p.id} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] px-2 py-1 text-xs">
-              <PlatformIcon id={p.id} size={14} /> {p.name}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <h2 className="pt-2 text-lg font-semibold">{t("nav.apartments")}</h2>
+    <form onSubmit={sync} className="space-y-4">
       {apartments.map((a) => {
         const used = new Set(links[a.id].map(([id]) => id));
         return (
-          <section key={a.id} className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
+          <section key={a.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4 sm:p-5">
             <h3 className="font-semibold">{a.name}</h3>
             <div className="mt-4 space-y-5">
               {links[a.id].map(([id, url], i) => {
@@ -122,27 +107,16 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
                   </div>
                 );
               })}
-              {picking === a.id ? (
-                <div className="rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4">
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium">{t("connect.whichChannel")}</p>
-                    <button type="button" onClick={() => setPicking(null)} className="text-xs text-[var(--muted)] underline">{t("common.cancel")}</button>
-                  </div>
-                  <PlatformPicker
-                    compact
-                    disabled={[...used]}
-                    onPick={(p) => {
-                      add(a.id, p.id);
-                      setPicking(null);
-                      setTimeout(() => document.getElementById(`link-${a.id}-${p.id}`)?.focus(), 50);
-                    }}
-                  />
-                </div>
-              ) : (
-                <button type="button" onClick={() => setPicking(a.id)} className="rounded-lg border border-dashed border-[var(--line-strong)] px-3 py-2 text-sm font-medium hover:bg-[var(--bg)]">
-                  + {t("connect.addPlatform")}
-                </button>
-              )}
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium">+ {t("connect.addPlatform")}</span>
+                <PlatformPicker
+                  disabled={[...used]}
+                  onPick={(p) => {
+                    add(a.id, p.id);
+                    setTimeout(() => document.getElementById(`link-${a.id}-${p.id}`)?.focus(), 50);
+                  }}
+                />
+              </label>
             </div>
           </section>
         );
@@ -154,9 +128,9 @@ export default function ConnectForm({ apartments, focus }: { apartments: Apt[]; 
           {busy ? t("connect.syncing") : t("connect.save")}
         </button>
         {allOk && (
-          <Link href="/host" className="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-6 py-3 font-medium">
+          <a href="/host" className="rounded-xl border border-[var(--line)] bg-[var(--surface)] px-6 py-3 font-medium">
             {t("connect.seeUpcoming")} →
-          </Link>
+          </a>
         )}
       </div>
     </form>

@@ -48,7 +48,7 @@ export default async function UpcomingGuests({
             </div>
           </div>
           <Link
-            href="/host/connect"
+            href="#calendars"
             className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--on-accent)] shadow-sm hover:brightness-110"
           >
             <span className="flex -space-x-1">
@@ -104,7 +104,7 @@ export default async function UpcomingGuests({
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="hidden text-xs text-[var(--muted)] sm:inline">{t("upcoming.autoRefresh")}</span>
-          <Link href="/host/connect" className="text-[var(--muted)] underline">{t("upcoming.manage")}</Link>
+          <Link href="#calendars" className="text-[var(--muted)] underline">{t("upcoming.manage")}</Link>
           <form action={syncCalendars}>
             <button className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 font-medium hover:bg-[var(--soft)]">↻ {t("upcoming.syncNow")}</button>
           </form>

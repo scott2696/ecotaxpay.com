@@ -17,7 +17,7 @@ export default function ChooseFirst() {
         <h2 className="font-semibold">{t("connect.whichChannel")}</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">{t("connect.whichChannelSub")}</p>
       </div>
-      <PlatformPicker selected={p?.id} onPick={setP} />
+      <PlatformPicker onPick={setP} />
       {p && (
         <div className="rounded-xl border border-[var(--line)] bg-[var(--bg)] p-4">
           <div className="flex items-center gap-2 font-medium">
