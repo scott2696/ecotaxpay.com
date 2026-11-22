@@ -112,7 +112,15 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         <p className="mt-1 text-sm text-[var(--muted)]">{t("methods.intro")}</p>
         <MethodsForm
           action={savePaymentMethods}
-          labels={{ save: t("methods.save"), saving: t("common.wait"), saved: t("methods.saved"), invalid: t("methods.invalid") }}
+          labels={{
+            save: t("methods.save"),
+            saving: t("common.wait"),
+            saved: t("methods.saved"),
+            invalid: t("methods.invalid"),
+            failed: t("methods.failed"),
+            reloadKeep: t("methods.reloadKeep"),
+            restored: t("methods.restored"),
+          }}
         >
           <Method saveLabel={t("upcoming.saveName")} name="cardOn" logo="card" on={!!pm.card} title={t("method.card")} badges>
             <p className="text-sm text-[var(--muted)] sm:col-span-2">{t("methods.cardHint")}</p>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useT } from "@/i18n/client";
+import { publicHref } from "@/lib/urls";
 
 /** Sign-up and log-in form (same layout, different fields and endpoint). */
 export default function AuthForm({ mode, next }: { mode: "register" | "login"; next?: string }) {
@@ -73,9 +74,9 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
             {t("auth.terms")}{" "}
             <span className="text-[var(--muted)]">
               {t("auth.readTerms")}{" "}
-              <Link href="/terms" target="_blank" className="underline">{t("legal.terms")}</Link>,{" "}
-              <Link href="/privacy" target="_blank" className="underline">{t("legal.privacy")}</Link>,{" "}
-              <Link href="/cookies" target="_blank" className="underline">{t("legal.cookies")}</Link>.
+              <Link href={publicHref("/terms")} target="_blank" className="underline">{t("legal.terms")}</Link>,{" "}
+              <Link href={publicHref("/privacy")} target="_blank" className="underline">{t("legal.privacy")}</Link>,{" "}
+              <Link href={publicHref("/cookies")} target="_blank" className="underline">{t("legal.cookies")}</Link>.
             </span>
           </span>
         </label>

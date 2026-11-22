@@ -17,7 +17,14 @@ export default function ChangePasswordForm({ action }: { action: (form: FormData
     const data = new FormData(e.currentTarget);
     if (data.get("password") !== data.get("confirm")) return setMsg({ ok: false, text: t("reset.mismatch") });
     start(async () => {
-      const res = await action(data);
+      let res: PasswordResult;
+      try {
+        res = await action(data);
+      } catch {
+        // The site was probably updated while this page was open: reload and try again.
+        setMsg({ ok: false, text: t("common.reloadRetry") });
+        return;
+      }
       if (res.ok) {
         form.current?.reset();
         setMsg({ ok: true, text: t("account.notice.passwordChanged") });

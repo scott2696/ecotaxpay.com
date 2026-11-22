@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
+import { publicHref } from "@/lib/urls";
 
 /**
  * Cookie consent. Essential cookies (login, language, time zone) need no consent; the tawk.to live
@@ -60,7 +61,7 @@ export default function CookieConsent() {
       <p className="text-sm font-semibold">{t("cookies.title")}</p>
       <p className="mt-1 text-sm text-[var(--muted)]">
         {t("cookies.text")}{" "}
-        <Link href="/cookies" className="underline">{t("legal.cookies")}</Link>
+        <Link href={publicHref("/cookies")} className="underline">{t("legal.cookies")}</Link>
       </p>
       <div className="mt-3 flex flex-wrap justify-end gap-2">
         <button onClick={() => choose("essential")} className="rounded-xl border border-[var(--line)] px-4 py-2 text-sm font-medium hover:bg-[var(--soft)]">

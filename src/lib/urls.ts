@@ -11,6 +11,9 @@ const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
 /** On the app domain: the public site's address (app visitors to public pages are sent there). */
 export const MARKETING_URL = (process.env.NEXT_PUBLIC_MARKETING_URL ?? "").replace(/\/$/, "");
 
+/** Link to a public page (home, terms…): on the app domain, straight to the public site (no redirect). */
+export const publicHref = (path: string) => (MARKETING_URL ? `${MARKETING_URL}${path}` : path);
+
 /** Link into the app: login, sign-up, dashboard, rates, APIs. */
 export const appHref = (path: string) => (APP_URL ? `${APP_URL}${path}` : path);
 

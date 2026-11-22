@@ -71,6 +71,15 @@ export async function savePaymentMethods(form: FormData): Promise<SaveResult> {
   const linkUrl = pick(on("linkOn"), text("linkUrl", 300), "linkUrl", (v) => normalizeUrl(v));
   const cardUrl = pick(on("cardOn"), text("cardUrl", 300), "cardUrl", (v) => normalizeUrl(v));
   const brands = (prefix: string): CardBrandId[] => CARD_BRANDS.filter((b) => on(`${prefix}_${b}`));
+  // Every field is checked before anything is saved (a wrong entry must never be dropped silently).
+  const revolut = pick(on("revolutOn"), text("revolut", 60), "revolut", normalizeRevtag);
+  const paypal = pick(on("paypalOn"), text("paypal", 80), "paypal", normalizePaypal);
+  const wise = pick(on("wiseOn"), text("wise", 200), "wise", isWiseUrl);
+  const bizum = pick(on("bizumOn"), text("bizum", 30), "bizum", normalizeIntlPhone);
+  const mbway = pick(on("mbwayOn"), text("mbway", 30), "mbway", normalizeIntlPhone);
+  const satispay = pick(on("satispayOn"), text("satispay", 30), "satispay", normalizeIntlPhone);
+  const twint = pick(on("twintOn"), text("twint", 30), "twint", normalizeIntlPhone);
+  const wero = pick(on("weroOn"), text("wero", 120), "wero", normalizeWero);
 
   if (bad.length) return { ok: false, bad }; // nothing is saved, and the form keeps what was typed
   await updateHost(host.id, {
@@ -79,14 +88,14 @@ export async function savePaymentMethods(form: FormData): Promise<SaveResult> {
       bank: bankOn
         ? { holder, holderAddress, accountType: bankType, iban, sortCode, routingNumber, accountNumber, bic, bankName, bankAddress }
         : undefined,
-      revolut: pick(on("revolutOn"), text("revolut", 60), "revolut", normalizeRevtag),
-      paypal: pick(on("paypalOn"), text("paypal", 80), "paypal", normalizePaypal),
-      wise: pick(on("wiseOn"), text("wise", 200), "wise", isWiseUrl),
-      bizum: pick(on("bizumOn"), text("bizum", 30), "bizum", normalizeIntlPhone),
-      mbway: pick(on("mbwayOn"), text("mbway", 30), "mbway", normalizeIntlPhone),
-      satispay: pick(on("satispayOn"), text("satispay", 30), "satispay", normalizeIntlPhone),
-      twint: pick(on("twintOn"), text("twint", 30), "twint", normalizeIntlPhone),
-      wero: pick(on("weroOn"), text("wero", 120), "wero", normalizeWero),
+      revolut,
+      paypal,
+      wise,
+      bizum,
+      mbway,
+      satispay,
+      twint,
+      wero,
       link: linkUrl ? { url: linkUrl, label: text("linkLabel", 40) || undefined } : undefined,
       note: text("note", 500) || undefined,
     },
