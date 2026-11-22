@@ -1,4 +1,5 @@
 import CancelGuide from "@/components/CancelGuide";
+import CardWalletTip from "./CardWalletTip";
 import { getI18n } from "@/i18n/server";
 import { date, type T } from "@/i18n/translate";
 import { isAdmin, isSubscribed, requireHost } from "@/lib/auth";
@@ -128,6 +129,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         >
           <Method saveLabel={t("upcoming.saveName")} name="cardOn" logo="card" on={!!pm.card} title={t("method.card")} badges>
             <p className="text-sm text-[var(--muted)] sm:col-span-2">{t("methods.cardHint")}</p>
+            <CardWalletTip hasLink={!!pm.card?.url} />
             <Input name="cardProvider" label={t("methods.cardProvider")} value={pm.card?.provider} placeholder="SumUp, Square, Viva Wallet, myPOS, Stripe…" />
             <Input name="cardUrl" label={t("methods.linkUrl")} value={pm.card?.url} bad={badFields.has("cardUrl")} placeholder="https://pay.sumup.com/…" />
             <Brands prefix="card" selected={pm.card?.brands} legend={t("methods.brands")} />
