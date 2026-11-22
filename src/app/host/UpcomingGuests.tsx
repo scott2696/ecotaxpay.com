@@ -167,8 +167,14 @@ export default async function UpcomingGuests({
                     <div className="font-semibold">
                       {link.guestName}{link.guestName ? " " : ""}
                       <span className="font-normal text-[var(--muted)]">
-                        · {t.plural("guest.adults", link.quote.adults)}
-                        {link.quote.childAges.length > 0 && `, ${t.plural("guest.children", link.quote.childAges.length)}`} · {money(link.quote.totalCents, link.quote.currency, locale)}
+                        {link.guestsToConfirm ? (
+                          <>· {t("dash.guestsToConfirm")}</>
+                        ) : (
+                          <>
+                            · {t.plural("guest.adults", link.quote.adults)}
+                            {link.quote.childAges.length > 0 && `, ${t.plural("guest.children", link.quote.childAges.length)}`} · {money(link.quote.totalCents, link.quote.currency, locale)}
+                          </>
+                        )}
                       </span>
                     </div>
                   )}

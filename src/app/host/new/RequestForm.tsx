@@ -52,6 +52,8 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
     setCheckIn(v);
   }
   const [adults, setAdults] = useState(2);
+  // Calendar bookings never include the party size: by default the guest enters it on their page.
+  const [guestsByGuest, setGuestsByGuest] = useState(validDates);
   const [childAges, setChildAges] = useState<number[]>([]);
   const [nightlyPrice, setNightlyPrice] = useState("");
   const [guestName, setGuestName] = useState(prefill.guestName ?? "");
@@ -75,8 +77,8 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
   }, [properties, prefill.propertyId]);
 
   const stay = useMemo(
-    () => ({ propertyId, checkIn, nights, adults, childAges, nightlyPrice }),
-    [propertyId, checkIn, nights, adults, childAges, nightlyPrice],
+    () => ({ propertyId, checkIn, nights, adults: guestsByGuest ? 1 : adults, childAges: guestsByGuest ? [] : childAges, nightlyPrice }),
+    [propertyId, checkIn, nights, adults, childAges, nightlyPrice, guestsByGuest],
   );
 
   useEffect(() => {
@@ -120,7 +122,7 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
       const res = await apiFetch("/api/host/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...stay, propertyId, guestName, guestEmail, guestPhone, bookingRef }),
+        body: JSON.stringify({ ...stay, propertyId, guestName, guestEmail, guestPhone, bookingRef, guestsByGuest }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -232,14 +234,25 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                 </div>
               </Field>
             )}
-            <Field label={t("form.adults")}>
-              <Stepper value={adults} min={1} max={20} onChange={setAdults} />
-            </Field>
-            <Field label={t("form.children")}>
-              <Stepper value={childAges.length} min={0} max={10} onChange={setChildCount} />
-            </Field>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--line)] p-3 text-sm sm:col-span-2 has-[:checked]:border-[var(--accent)]">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[var(--accent)]" checked={guestsByGuest} onChange={(e) => setGuestsByGuest(e.target.checked)} />
+              <span>
+                <span className="font-medium">{t("form.guestsByGuest")}</span>
+                <span className="mt-0.5 block text-xs text-[var(--muted)]">{t("form.guestsByGuestHint")}</span>
+              </span>
+            </label>
+            {!guestsByGuest && (
+              <>
+                <Field label={t("form.adults")}>
+                  <Stepper value={adults} min={1} max={20} onChange={setAdults} />
+                </Field>
+                <Field label={t("form.children")}>
+                  <Stepper value={childAges.length} min={0} max={10} onChange={setChildCount} />
+                </Field>
+              </>
+            )}
           </div>
-          {childAges.length > 0 && (
+          {!guestsByGuest && childAges.length > 0 && (
             <div className="mt-4">
               <div className="mb-2 text-sm font-medium">{t("form.childAges")}</div>
               <div className="flex flex-wrap gap-2">
@@ -266,8 +279,8 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
 
         <Card step={3} title={t("receipt.guest")}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={t("form.guestName")}>
-              <input className="input" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
+            <Field label={`${t("form.guestName")} ${t("common.optional")}`} hint={t("form.guestNameHint")}>
+              <input className="input" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
             </Field>
             <Field label={t("form.bookingRef")} hint={t("form.bookingRefHint")}>
               <input className="input" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
@@ -302,10 +315,14 @@ export default function RequestForm({ properties, prefill = {}, templates }: { p
                 )}
               </ul>
               <div className="my-4 border-t border-[var(--line)]" />
-              <div className="flex items-baseline justify-between">
-                <span className="font-semibold">{t("dash.col.total")}</span>
-                <span className="text-3xl font-semibold tabular-nums">{money(quote.totalCents, quote.currency)}</span>
-              </div>
+              {guestsByGuest ? (
+                <p className="rounded-lg bg-sky-400/10 p-3 text-sm text-sky-100">{t("form.guestsByGuestPreview", { amount: money(quote.totalCents, quote.currency) })}</p>
+              ) : (
+                <div className="flex items-baseline justify-between">
+                  <span className="font-semibold">{t("dash.col.total")}</span>
+                  <span className="text-3xl font-semibold tabular-nums">{money(quote.totalCents, quote.currency)}</span>
+                </div>
+              )}
               {quote.hostNotes.length > 0 && (
                 <p className="mt-3 rounded-lg bg-amber-400/10 p-2 text-xs text-amber-200">{t("form.noteForYou")} {regionNote(quote.regionId, quote.hostNotes.join(" "), t)}</p>
               )}

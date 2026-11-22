@@ -50,18 +50,21 @@ export async function POST(req: Request) {
   const found = await getProperty(String(body.propertyId ?? ""));
   const property = found?.hostId === host.id ? found : null;
   if (!property) return NextResponse.json({ error: t("err.chooseApartment") }, { status: 400 });
-  if (!guestName) return NextResponse.json({ error: t("err.guestName") }, { status: 400 });
+  // Guest name is optional (calendar bookings don't include it; the guest can add it when paying).
+  // Party size unknown: the guest enters it on the payment page and the tax is recalculated then.
+  const guestsByGuest = body.guestsByGuest === true;
+  const stay = parseStay({ ...body, ...(guestsByGuest ? { adults: 1, childAges: [] } : {}) });
 
   let quote;
   try {
     // Destination + accommodation type always come from the saved property.
     const rules = resolveProperty(property);
     if (!rules) return NextResponse.json({ error: t("err.destinationGone") }, { status: 400 });
-    quote = calculate(parseStay({ ...body, regionId: rules.region.id, accommodationTypeId: rules.acc.id }), undefined, rules);
+    quote = calculate({ ...stay, regionId: rules.region.id, accommodationTypeId: rules.acc.id }, undefined, rules);
   } catch (e) {
     return NextResponse.json({ error: e instanceof QuoteError ? t(e.key as MessageKey) : t("q.invalid") }, { status: 400 });
   }
-  if (quote.totalCents < 50) return NextResponse.json({ error: t("form.noTax") }, { status: 400 });
+  if (!guestsByGuest && quote.totalCents < 50) return NextResponse.json({ error: t("form.noTax") }, { status: 400 });
 
   const rec = await createPayment({
     hostId: host.id,
@@ -72,6 +75,8 @@ export async function POST(req: Request) {
     propertyId: property.id,
     propertyName: property.name,
     quote,
+    guestsToConfirm: guestsByGuest || undefined,
+    nightlyPriceCents: stay.nightlyPriceCents,
   });
   return NextResponse.json({ id: rec.id, path: `/p/${rec.id}` });
 }

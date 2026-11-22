@@ -268,7 +268,7 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                     ? t("quick.created", { date: date(p.createdAt, locale, { day: "numeric", month: "short", year: "numeric" }) })
                     : `${date(p.quote.checkIn, locale, { day: "numeric", month: "short", year: "numeric" })} · ${t.plural("line.nights", p.quote.nights)}`}
                 </td>
-                <td className="px-4 py-3">{p.quote.manual ? "—" : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</td>
+                <td className="px-4 py-3">{p.quote.manual ? "—" : p.guestsToConfirm ? <span className="text-sky-200">{t("dash.guestsToConfirm")}</span> : t("dash.guestsTaxable", { total: p.quote.adults + p.quote.childAges.length, taxable: p.quote.taxableGuests })}</td>
                 <td className="px-4 py-3 tabular-nums font-medium">{fm(p.quote.totalCents, p.quote.currency)}</td>
                 <td className="px-4 py-3">
                   {p.status === "pending" && p.reportedPaidAt ? (

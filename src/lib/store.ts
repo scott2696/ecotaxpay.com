@@ -144,6 +144,12 @@ export type PaymentRecord = {
   paidAt?: string;
   /** How the guest paid the host directly (set when the guest reports it, or the host confirms). */
   paidVia?: PayMethodId;
+  /** The host didn't know the party size (e.g. a calendar booking): the guest enters it, and the tax is recalculated. */
+  guestsToConfirm?: boolean;
+  /** When the guest entered the number of guests. */
+  guestsConfirmedAt?: string;
+  /** Nightly price (for percentage-based taxes), kept so the tax can be recalculated. */
+  nightlyPriceCents?: number;
   /** The guest said they paid; waiting for the host to confirm the money arrived. */
   reportedPaidAt?: string;
   receiptNumber?: string;
@@ -184,7 +190,7 @@ async function save(db: DB) {
 }
 
 export async function createPayment(
-  data: Pick<PaymentRecord, "hostId" | "guestName" | "guestEmail" | "guestPhone" | "bookingRef" | "propertyId" | "propertyName" | "quote">,
+  data: Pick<PaymentRecord, "hostId" | "guestName" | "guestEmail" | "guestPhone" | "bookingRef" | "propertyId" | "propertyName" | "quote" | "guestsToConfirm" | "nightlyPriceCents">,
 ): Promise<PaymentRecord> {
   return withLock(async () => {
     const db = await load();

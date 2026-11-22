@@ -12,6 +12,7 @@ import { resolveProperty } from "@/lib/resolve";
 import { activeMethods, METHOD_ICONS, methodUrl, PHONE_APP_NAMES, PHONE_APPS, paymentReference, paysOnArrival, type PhoneApp } from "@/lib/payMethods";
 import type { MessageKey } from "@/i18n/messages/en";
 import { getHost, getPayment, getProperty, issuerFor, type Guide, type PaymentMethods, type PaymentRecord } from "@/lib/store";
+import GuestCount from "./GuestCount";
 import PayDirect, { type MethodView } from "./PayDirect";
 import { capFirst, quoteTitle } from "@/lib/quick";
 
@@ -44,6 +45,9 @@ export default async function GuestPage({
   const m = (n: number) => money(n, q.currency, locale);
   const fmtDate = (iso: string) => date(iso, locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
   const paid = p.status === "paid" || p.status === "paid_offline";
+  // The host left the party size to the guest: ask for it before showing the amount.
+  const askGuests = !paid && !p.reportedPaidAt && !!p.guestsToConfirm && !p.quote.manual;
+  const canChangeGuests = !paid && !p.reportedPaidAt && !!p.guestsConfirmedAt && !p.quote.manual;
   const first = p.guestName.split(/\s+/)[0];
   const title = quoteTitle(q, t);
   const tax = title.replace(/\s*\(.*\)\s*$/, "");
@@ -77,7 +81,7 @@ export default async function GuestPage({
         </h1>
         {!q.manual && (
           <p className="mt-1 text-sm text-[var(--muted)]">
-            {fmtDate(q.checkIn)} → {fmtDate(q.checkOut)} · {t.plural("line.nights", q.nights)} · {who}
+            {fmtDate(q.checkIn)} → {fmtDate(q.checkOut)} · {t.plural("line.nights", q.nights)}{askGuests ? "" : ` · ${who}`}
           </p>
         )}
       </header>
@@ -88,7 +92,9 @@ export default async function GuestPage({
         </p>
       )}
 
-      {paid ? (
+      {askGuests ? (
+        <GuestCount id={p.id} minTaxableAge={q.minTaxableAge} />
+      ) : paid ? (
         <PaidCard t={t} id={p.id} amount={m(q.totalCents)} receiptNumber={p.receiptNumber} guestPhone={p.guestPhone} whatsappSent={!!p.whatsappSentAt} taxName={tax} hasGuide={!!property} />
       ) : (
         <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 text-center shadow-sm">
@@ -118,7 +124,9 @@ export default async function GuestPage({
         </section>
       )}
 
-      {!paid && !p.reportedPaidAt && pm && activeMethods(pm).length > 0 && (
+      {canChangeGuests && <GuestCount id={p.id} editing initial={{ adults: q.adults, childAges: q.childAges }} minTaxableAge={q.minTaxableAge} />}
+
+      {!askGuests && !paid && !p.reportedPaidAt && pm && activeMethods(pm).length > 0 && (
         <PayDirect
           id={p.id}
           amount={m(q.totalCents)}
@@ -132,7 +140,7 @@ export default async function GuestPage({
         />
       )}
 
-      {!paid && !p.reportedPaidAt && !(pm && activeMethods(pm).length) && (
+      {!askGuests && !paid && !p.reportedPaidAt && !(pm && activeMethods(pm).length) && (
         <p className="rounded-lg bg-amber-400/10 p-3 text-sm text-amber-200">{t("guest.noMethods", { name: issuer.name })}</p>
       )}
 
