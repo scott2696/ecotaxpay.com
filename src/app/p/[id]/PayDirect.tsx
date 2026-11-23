@@ -43,7 +43,7 @@ export default function PayDirect({
   /** The link was sent without a name (e.g. from a Booking.com / Airbnb booking): ask the guest. */
   askName?: boolean;
   initialPhone: string;
-  documents: { setting: "optional" | "required"; ask: DocumentAsk; uploaded: DocItem[] } | null;
+  documents: { setting: "optional" | "required"; ask: DocumentAsk; uploaded: DocItem[]; retentionDays: number } | null;
 }) {
   const t = useT();
   const [method, setMethod] = useState(methods.length === 1 ? methods[0].id : "");
@@ -139,6 +139,7 @@ export default function PayDirect({
             ask={documents.ask}
             initial={documents.uploaded}
             canDelete
+            retentionDays={documents.retentionDays}
             onChange={(d) => setDocCount(d.length)}
           />
         </div>

@@ -2,7 +2,7 @@ import PageShell, { Prose } from "./PageShell";
 import { getI18n } from "@/i18n/server";
 import { graph, pageSchema, siteSchema } from "@/lib/seo";
 
-export const LEGAL_UPDATED = "2026-11-22";
+export const LEGAL_UPDATED = "2026-11-23";
 
 /** Legal pages: written in English (the binding version); other languages see a short notice. */
 export default async function LegalPage({ path, titleKey, description, children }: { path: string; titleKey: "legal.terms" | "legal.privacy" | "legal.cookies"; description: string; children: React.ReactNode }) {

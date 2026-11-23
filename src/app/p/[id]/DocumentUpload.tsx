@@ -17,6 +17,7 @@ export default function DocumentUpload({
   ask,
   initial,
   canDelete,
+  retentionDays = 30,
   onChange,
 }: {
   paymentId: string;
@@ -24,6 +25,7 @@ export default function DocumentUpload({
   ask: DocumentAsk;
   initial: DocItem[];
   canDelete: boolean;
+  retentionDays?: number;
   onChange?: (docs: DocItem[]) => void;
 }) {
   const t = useT();
@@ -78,7 +80,7 @@ export default function DocumentUpload({
           {ask.items.map((i) => <li key={i}>{i}</li>)}
         </ul>
       )}
-      <p className="mt-2 text-xs text-[var(--muted)]">{t("docs.privacy")}</p>
+      <p className="mt-2 text-xs text-[var(--muted)]">{t("docs.privacy", { days: retentionDays })}</p>
 
       {docs.length > 0 && (
         <ul className="mt-3 space-y-2">

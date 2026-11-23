@@ -48,7 +48,7 @@ export const it: LocaleMessages = {
   "pay.secure": "Paghi direttamente il tuo host. Questo sito non gestisce mai il tuo denaro.",
 
   "docs.title": "Documenti",
-  "docs.privacy": "Foto o PDF. Visibili solo al tuo host.",
+  "docs.privacy": "Foto o PDF. Visibili solo al tuo host, conservati nell'UE ed eliminati automaticamente {days} giorni dopo il soggiorno.",
   "docs.uploading": "Caricamento…",
   "docs.addAnother": "+ Aggiungi un altro documento",
   "docs.choose": "📷 Scatta una foto o scegli un file",

@@ -48,7 +48,7 @@ export const de: LocaleMessages = {
   "pay.secure": "Sie bezahlen Ihren Gastgeber direkt. Diese Website verwaltet nie Ihr Geld.",
 
   "docs.title": "Dokumente",
-  "docs.privacy": "Fotos oder PDF. Nur Ihr Gastgeber kann sie einsehen.",
+  "docs.privacy": "Fotos oder PDF. Nur Ihr Gastgeber kann sie einsehen; gespeichert in der EU und {days} Tage nach Ihrem Aufenthalt automatisch gelöscht.",
   "docs.uploading": "Wird hochgeladen…",
   "docs.addAnother": "+ Weiteres Dokument hinzufügen",
   "docs.choose": "📷 Foto aufnehmen oder Datei auswählen",

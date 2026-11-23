@@ -48,7 +48,7 @@ export const es: LocaleMessages = {
   "pay.secure": "Pagas directamente a tu anfitrión. Este sitio nunca gestiona tu dinero.",
 
   "docs.title": "Documentos",
-  "docs.privacy": "Fotos o PDF. Solo los verá tu anfitrión.",
+  "docs.privacy": "Fotos o PDF. Solo los verá tu anfitrión; se guardan en la UE y se borran automáticamente {days} días después de tu estancia.",
   "docs.uploading": "Subiendo…",
   "docs.addAnother": "+ Añadir otro documento",
   "docs.choose": "📷 Haz una foto o elige un archivo",

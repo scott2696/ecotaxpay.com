@@ -42,7 +42,7 @@ export const en = {
   "pay.secure": "You pay your host directly. This site never handles your money.",
 
   "docs.title": "Documents",
-  "docs.privacy": "Photos or PDFs. Visible only to your host.",
+  "docs.privacy": "Photos or PDFs. Visible only to your host, stored in the EU and deleted automatically {days} days after your stay.",
   "docs.uploading": "Uploading…",
   "docs.addAnother": "+ Add another document",
   "docs.choose": "📷 Take a photo or choose a file",

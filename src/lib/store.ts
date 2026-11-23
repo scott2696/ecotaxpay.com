@@ -160,6 +160,7 @@ export type PaymentRecord = {
   propertyId?: string;
   propertyName?: string;
   documents?: GuestDocument[];
+  documentsPurgedAt?: string; // ID documents deleted automatically after the retention period
   quote: Quote; // immutable snapshot of the calculation used
   stripeSessionId?: string;
   stripePaymentIntentId?: string;
@@ -356,6 +357,32 @@ export async function removeDocument(paymentId: string, docId: string) {
 }
 
 export const newDocId = () => newId();
+
+/** Days after check-out that guest ID documents are kept before automatic deletion (data minimisation). */
+export const DOCUMENT_RETENTION_DAYS = Math.max(1, Number(process.env.DOCUMENT_RETENTION_DAYS) || 30);
+
+/**
+ * Delete guest ID documents older than the retention period (counted from check-out; quick links from
+ * the day they were created). Returns how many files were deleted.
+ */
+export async function purgeExpiredDocuments(now = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - DOCUMENT_RETENTION_DAYS * 86400000).toISOString().slice(0, 10);
+  return withLock(async () => {
+    const db = await load();
+    let deleted = 0;
+    for (const rec of db.payments) {
+      if (!rec.documents?.length) continue;
+      const end = (rec.quote.manual ? rec.createdAt : rec.quote.checkOut || rec.createdAt).slice(0, 10);
+      if (end >= cutoff) continue;
+      await fs.rm(path.join(UPLOAD_DIR, rec.id), { recursive: true, force: true });
+      deleted += rec.documents.length;
+      rec.documents = [];
+      rec.documentsPurgedAt = now.toISOString();
+    }
+    if (deleted) await save(db);
+    return deleted;
+  });
+}
 
 // ---------- Hosts (accounts) ----------
 

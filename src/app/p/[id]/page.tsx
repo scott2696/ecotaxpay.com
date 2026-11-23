@@ -11,7 +11,7 @@ import { guideItems, translateGuide } from "@/lib/guide";
 import { resolveProperty } from "@/lib/resolve";
 import { activeMethods, METHOD_ICONS, methodUrl, PHONE_APP_NAMES, PHONE_APPS, paymentReference, paysOnArrival, type PhoneApp } from "@/lib/payMethods";
 import type { MessageKey } from "@/i18n/messages/en";
-import { getHost, getPayment, getProperty, issuerFor, type Guide, type PaymentMethods, type PaymentRecord, linkCancelled } from "@/lib/store";
+import { getHost, getPayment, getProperty, issuerFor, type Guide, type PaymentMethods, type PaymentRecord, linkCancelled, DOCUMENT_RETENTION_DAYS } from "@/lib/store";
 import GuestCount from "./GuestCount";
 import PayDirect, { type MethodView } from "./PayDirect";
 import { capFirst, quoteTitle } from "@/lib/quick";
@@ -145,7 +145,7 @@ export default async function GuestPage({
           initialEmail={p.guestEmail ?? ""}
           askName={!p.guestName}
           initialPhone={p.guestPhone ? `+${p.guestPhone}` : ""}
-          documents={docs && docAsk ? { setting: docs.documents as "optional" | "required", ask: docAsk, uploaded } : null}
+          documents={docs && docAsk ? { setting: docs.documents as "optional" | "required", ask: docAsk, uploaded, retentionDays: DOCUMENT_RETENTION_DAYS } : null}
         />
       )}
 

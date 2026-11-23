@@ -54,7 +54,7 @@ export const mt: LocaleMessages = {
   "pay.secure": "Tħallas lill-host tiegħek direttament. Dan is-sit qatt ma jmiss il-flus tiegħek.",
 
   "docs.title": "Dokumenti",
-  "docs.privacy": "Ritratti jew PDF. Jarahom il-host tiegħek biss.",
+  "docs.privacy": "Ritratti jew PDF. Jarahom il-host tiegħek biss, maħżuna fl-UE u jitħassru awtomatikament {days} jum wara s-soġġorn tiegħek.",
   "docs.uploading": "Qed jittella'…",
   "docs.addAnother": "+ Żid dokument ieħor",
   "docs.choose": "📷 Ħu ritratt jew agħżel fajl",
