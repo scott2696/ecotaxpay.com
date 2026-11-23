@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   const stayDate = (p: { quote: { checkIn: string }; createdAt: string }) => p.quote.checkIn || p.createdAt.slice(0, 10);
   const rows = (await listPayments(host.id)).filter(
     (p) =>
-      (p.status === "paid" || p.status === "paid_offline") &&
+      (p.status === "paid" || p.status === "paid_offline" || p.status === "refunded") &&
       stayDate(p) >= from &&
       stayDate(p) <= to &&
       (!apartment || p.propertyId === apartment),
@@ -22,6 +22,7 @@ export async function GET(req: Request) {
     "receipt_number", "paid_at", "status", "guest_name", "guest_email", "booking_ref", "property",
     "country", "region", "tax_name", "accommodation", "check_in", "check_out", "nights",
     "adults", "children", "taxable_guests", "currency", "tax", "service_fee", "total", "stripe_payment_intent",
+    "paid_via", "credit_note_number", "refunded_at", "refund_reason",
   ];
   const cell = (v: unknown) => {
     const s = String(v ?? "");
@@ -34,7 +35,8 @@ export async function GET(req: Request) {
     return [
       p.receiptNumber, p.paidAt, p.status, p.guestName, p.guestEmail, p.bookingRef, p.propertyName,
       q.countryName, q.regionName, q.taxName || (q.manual ? "Tourist tax" : ""), q.accommodationLabel, q.checkIn, q.checkOut, q.nights,
-      q.adults, q.childAges.length, q.taxableGuests, q.currency, amt(q.taxCents), amt(q.feeCents), amt(q.totalCents), p.stripePaymentIntentId,
+      q.adults, q.childAges.length, q.taxableGuests, q.currency, amt(q.taxCents), amt(q.feeCents), amt(q.totalCents), p.stripePaymentIntentId ?? p.stripeSessionId,
+      p.paidVia, p.creditNoteNumber, p.refundedAt, p.refundReason,
     ].map(cell).join(",");
   });
 

@@ -34,7 +34,21 @@ export default async function GuestPage({
   const { id } = await params;
   await searchParams;
   const p = await getPayment(id);
-  if (!p || p.status === "refunded") notFound();
+  if (!p) notFound();
+  if (p.status === "refunded") {
+    const { t } = await getI18n();
+    const issuer = await issuerFor(p);
+    return (
+      <main className="mx-auto max-w-md px-4 py-20 text-center">
+        <h1 className="text-xl font-semibold">{t("guest.refundedTitle")}</h1>
+        <p className="mt-2 text-sm text-[var(--muted)]">{t("guest.refundedText", { name: issuer.name })}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {p.creditNoteNumber && <a href={`/api/credit-note/${p.id}`} target="_blank" className="btn btn-primary">{t("dash.creditNote")}</a>}
+          {p.receiptNumber && <a href={`/api/receipt/${p.id}`} target="_blank" className="btn btn-secondary">{t("dash.receipt")}</a>}
+        </div>
+      </main>
+    );
+  }
   if (linkCancelled(p)) {
     const { t } = await getI18n();
     return (

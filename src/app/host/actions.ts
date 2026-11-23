@@ -6,7 +6,7 @@ import { requireHost } from "@/lib/auth";
 import { CALENDAR_CACHE_TAG } from "@/lib/calendar";
 import { syncNow } from "@/lib/bookings";
 import { notifyPaid } from "@/lib/notify";
-import { deleteProperty, getPayment, listPayments, markPaid, updateHost, updatePayment } from "@/lib/store";
+import { deleteProperty, refundPayment, getPayment, listPayments, markPaid, updateHost, updatePayment } from "@/lib/store";
 
 /** Host confirms the guest's direct payment arrived (or cash was handed over): issue the receipt. */
 export async function markPaidOffline(id: string) {
@@ -45,6 +45,15 @@ export async function removeProperty(id: string) {
   revalidatePath("/host/properties");
   revalidatePath("/host");
   redirect("/host/properties?deleted=1");
+}
+
+/** Refund / cancel a paid payment: issues a numbered credit note (the money is refunded by the host directly). */
+export async function refundPaid(id: string, form: FormData) {
+  const host = await requireHost();
+  const p = await getPayment(id);
+  if (!p || p.hostId !== host.id) return;
+  await refundPayment(id, String(form.get("reason") ?? "").trim().slice(0, 200));
+  revalidatePath("/host");
 }
 
 /** Remove a payment link / transaction from the dashboard (an unpaid link stops working; receipts keep working). */

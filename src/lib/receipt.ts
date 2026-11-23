@@ -12,7 +12,8 @@ import { capFirst, quoteTitle } from "./quick";
 const FONT_DIR = path.join(process.cwd(), "assets", "fonts");
 const PDF_SCRIPTS = /^(en|es|it|fr|de|mt|pt|nl|ca|da|sv|no|nb|fi|et|lv|lt|pl|cs|sk|sl|hr|bs|sr|hu|ro|sq|tr|el|ru|uk|bg|vi|id|ms|af|ga|cy)(-|$)/;
 
-export async function renderReceipt(p: PaymentRecord, requestedLocale?: string): Promise<Uint8Array> {
+export async function renderReceipt(p: PaymentRecord, requestedLocale?: string, kind: "receipt" | "credit" = "receipt"): Promise<Uint8Array> {
+  const credit = kind === "credit";
   const wanted = p.locale ?? requestedLocale ?? "en";
   const { t, locale } = await getI18n(PDF_SCRIPTS.test(wanted) ? wanted : "en");
   const q = p.quote;
@@ -20,7 +21,8 @@ export async function renderReceipt(p: PaymentRecord, requestedLocale?: string):
   // A currency symbol the font can't draw (e.g. ฿) would print as an empty box: use the code then ("THB 300.00").
   const glyphs = fontkit.create(readFileSync(path.join(FONT_DIR, "NotoSans-Regular.ttf"))) as unknown as { hasGlyphForCodePoint(cp: number): boolean };
   const printable = (s: string) => [...s].every((ch) => /\s/.test(ch) || glyphs.hasGlyphForCodePoint(ch.codePointAt(0)!));
-  const m = (n: number) => {
+  const m = (n0: number) => {
+    const n = credit ? -n0 : n0;
     const s = money(n, q.currency, locale);
     if (printable(s)) return s;
     return new Intl.NumberFormat(locale, { style: "currency", currency: q.currency, currencyDisplay: "code" }).format(n / 100);
@@ -58,11 +60,15 @@ export async function renderReceipt(p: PaymentRecord, requestedLocale?: string):
 
   const title = capFirst(quoteTitle(q, t));
   text(title.replace(/\s*\(.*\)\s*$/, ""), 50, 11, bold, accent);
-  right(t("receipt.title"), 545, 20, bold);
+  right(credit ? t("credit.title") : t("receipt.title"), 545, 20, bold);
   y -= 22;
-  right(t("receipt.no", { number: p.receiptNumber ?? "-" }), 545, 10, font, muted);
+  right(t("receipt.no", { number: (credit ? p.creditNoteNumber : p.receiptNumber) ?? "-" }), 545, 10, font, muted);
   y -= 14;
-  right(t("receipt.paid", { date: d(p.paidAt ?? p.createdAt) }), 545, 10, font, muted);
+  right(credit ? t("credit.date", { date: d(p.refundedAt ?? p.createdAt) }) : t("receipt.paid", { date: d(p.paidAt ?? p.createdAt) }), 545, 10, font, muted);
+  if (credit) {
+    y -= 14;
+    right(t("credit.refersTo", { number: p.receiptNumber ?? "-" }), 545, 10, font, muted);
+  }
 
   y -= 40;
   text(t("receipt.issuedBy"), 50, 9, bold, muted);
@@ -123,13 +129,17 @@ export async function renderReceipt(p: PaymentRecord, requestedLocale?: string):
   y -= 12;
   rule();
   y -= 22;
-  text(t("receipt.total"), 50, 12, bold);
+  text(credit ? t("credit.total") : t("receipt.total"), 50, 12, bold);
   right(m(q.totalCents), 545, 12, bold);
   if (q.feeCents > 0) {
     y -= 16;
     text(t("receipt.ofWhichTax", { amount: m(q.taxCents) }), 50, 9, font, muted);
   }
 
+  if (credit && p.refundReason) {
+    y -= 24;
+    text(t("credit.reason", { reason: p.refundReason }), 50, 9, font, muted);
+  }
   y -= 40;
   for (const n of guestNotes(q, t)) {
     text(`* ${n}`, 50, 8, font, muted);

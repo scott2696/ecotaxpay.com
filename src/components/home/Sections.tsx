@@ -143,6 +143,7 @@ export function Pricing({ t, href, cta, plan }: { t: T; href: string; cta: strin
             <span className="text-silver">{t("price.title1")}</span> <span className="font-serif-italic text-silver-soft">{t("price.title2")}</span>
           </h2>
           <p data-reveal className="mt-6 max-w-md text-lg text-[var(--muted)]">{t("home.pricingNote")}</p>
+          <p data-reveal className="mt-4 max-w-md text-[var(--muted)]">{t("price.useCase")}</p>
         </div>
         <div data-reveal className="lit rounded-[32px] p-10 sm:p-12">
           <div className="flex flex-wrap items-start gap-2" aria-label={`${plan.label} / ${t("home.month")}`}>
@@ -152,6 +153,11 @@ export function Pricing({ t, href, cta, plan }: { t: T; href: string; cta: strin
             <span className="mt-auto pb-3 text-lg text-[var(--muted)]" aria-hidden>/ {t("home.month")}</span>
           </div>
           {plan.currency !== "EUR" && <p className="mt-4 text-sm text-[var(--muted)]">{t("price.equiv")}</p>}
+          <ul className="mt-6 flex flex-wrap gap-2 text-xs">
+            {(["noFees", "cancel", "direct"] as const).map((k2) => (
+              <li key={k2} className="rounded-full border border-[var(--line-strong)] px-3 py-1.5 text-[var(--ink)]">✓ {t(`price.assure.${k2}`)}</li>
+            ))}
+          </ul>
           <div className="hairline my-8" />
           <ul className="space-y-3">
             {INCLUDED.map((f) => (

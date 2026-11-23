@@ -181,6 +181,9 @@ export type PaymentRecord = {
   /** The guest said they paid; waiting for the host to confirm the money arrived. */
   reportedPaidAt?: string;
   receiptNumber?: string;
+  refundedAt?: string; // the host refunded / cancelled a paid payment
+  refundReason?: string;
+  creditNoteNumber?: string; // CN-YYYY-NNNNNN, cancels the receipt
   emailSentAt?: string;
   whatsappSentAt?: string;
 };
@@ -280,6 +283,25 @@ export async function markPaid(
     });
     await save(db);
     return { record: rec, justPaid: true };
+  });
+}
+
+/**
+ * Refund / cancel a paid payment: status "refunded", with a credit note numbered in its own gapless
+ * sequence per host and year (CN-2026-000001). The original receipt stays valid as a record.
+ */
+export async function refundPayment(id: string, reason: string): Promise<PaymentRecord | null> {
+  return withLock(async () => {
+    const db = await load();
+    const rec = db.payments.find((p) => p.id === id);
+    if (!rec || (rec.status !== "paid" && rec.status !== "paid_offline")) return null;
+    const year = new Date().getUTCFullYear().toString();
+    const key = `${rec.hostId ?? "_"}:CN:${year}`;
+    const next = (db.receiptCounter[key] ?? 0) + 1;
+    db.receiptCounter[key] = next;
+    Object.assign(rec, { status: "refunded", refundedAt: new Date().toISOString(), refundReason: reason || undefined, creditNoteNumber: `CN-${year}-${String(next).padStart(6, "0")}` });
+    await save(db);
+    return rec;
   });
 }
 

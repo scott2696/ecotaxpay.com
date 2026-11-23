@@ -9,10 +9,13 @@ import { isDemoMode } from "@/lib/config";
 import { upcomingStays } from "@/lib/calendar";
 import { rememberStays, removedStays } from "@/lib/bookings";
 import { listPayments, listProperties, type PaymentStatus } from "@/lib/store";
-import { markPaidOffline, removePayment } from "./actions";
+import { markPaidOffline, refundPaid, removePayment } from "./actions";
 import { activeMethods, methodTitle, paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "@/lib/payMethods";
 import { MethodLogo } from "@/components/PayBadges";
 import CopyLink from "./CopyLink";
+import RemindButton from "./RemindButton";
+import { loadMessages } from "@/i18n/server";
+import { makeT } from "@/i18n/translate";
 import ApartmentFilter from "./ApartmentFilter";
 import StayRangeFilter from "./StayRangeFilter";
 import UpcomingGuests from "./UpcomingGuests";
@@ -70,6 +73,10 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
     }
   })();
   const methods = activeMethods(host.paymentMethods);
+  // Reminder text in each guest's own language (the language they opened their link in).
+  const guestLangs = [...new Set(payments.filter((p) => p.status === "pending").map((p) => p.locale ?? locale))];
+  const guestT = new Map(await Promise.all(guestLangs.map(async (l) => { const m = await loadMessages(l); return [l, makeT(m.locale, m.messages)] as const; })));
+  const tg = (l?: string) => guestT.get(l ?? locale) ?? t;
   const fm = (n: number, cur = "EUR") => formatMoney(n, cur, locale);
 
   // Month choices for the range: every month from the first stay's year to next year.
@@ -152,7 +159,7 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                     <span className={`pill ${badge[p.status]}`}>{t(`status.${p.status}` as MessageKey)}</span>
                   )}
                   {p.paidVia && <div className="mt-1 text-xs text-[var(--muted)]">{p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey)} · {paymentReference(p)}</div>}
-                  {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
+                  {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}{p.creditNoteNumber ? ` · ${p.creditNoteNumber}` : ""}</div>}
                   {p.amountMismatch && p.status === "pending" && (
                     <div className="mt-1 text-xs text-amber-200">{t("hook.mismatch", { amount: fm(minorToCents(p.amountMismatch.paidMinor, p.amountMismatch.currency), p.amountMismatch.currency) })}</div>
                   )}
@@ -161,11 +168,37 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
     actions: (
                   <div className="flex items-center justify-end gap-1.5 max-md:flex-wrap max-md:justify-start">
                   {p.receiptNumber ? (
-                    <a href={`/api/receipt/${p.id}`} target="_blank" className="btn btn-secondary btn-sm">
-                      <Icon name="receipt" size={14} /> {t("dash.receipt")}
-                    </a>
+                    <>
+                      <a href={`/api/receipt/${p.id}`} target="_blank" className="btn btn-secondary btn-sm">
+                        <Icon name="receipt" size={14} /> {t("dash.receipt")}
+                      </a>
+                      {p.creditNoteNumber && (
+                        <a href={`/api/credit-note/${p.id}`} target="_blank" className="btn btn-secondary btn-sm">
+                          <Icon name="file" size={14} /> {t("dash.creditNote")}
+                        </a>
+                      )}
+                      {!p.creditNoteNumber && (
+                        <details className="group open:w-full">
+                          <summary className="btn btn-quiet btn-sm btn-icon ms-auto list-none group-open:bg-white/[0.06] [&::-webkit-details-marker]:hidden" aria-label={t("dash.refund")} title={t("dash.refund")}>
+                            <Icon name="refresh" size={14} />
+                          </summary>
+                          <form action={refundPaid.bind(null, p.id)} className="note ms-auto mt-2 w-72 max-w-full flex-col whitespace-normal text-start">
+                            <p className="font-medium">{t("dash.refund")}</p>
+                            <p className="text-xs text-[var(--muted)]">{t("dash.refundText")}</p>
+                            <input name="reason" className="input h-9 text-sm" placeholder={t("dash.refundReasonPh")} maxLength={200} />
+                            <button className="btn btn-secondary btn-sm">{t("dash.refundYes")}</button>
+                          </form>
+                        </details>
+                      )}
+                    </>
                   ) : (
                     <>
+                      <RemindButton
+                        path={`/p/${p.id}`}
+                        phone={p.guestPhone}
+                        email={p.guestEmail || undefined}
+                        text={tg(p.locale)("remind.text", { name: p.guestName ? ` ${p.guestName}` : "", amount: fm(p.quote.totalCents, p.quote.currency) })}
+                      />
                       <span className="md:hidden"><CopyLink path={`/p/${p.id}`} /></span>
                       <span className="max-md:hidden"><CopyLink path={`/p/${p.id}`} compact /></span>
                       <form action={markPaidOffline.bind(null, p.id)}>
