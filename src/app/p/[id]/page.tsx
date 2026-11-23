@@ -1,3 +1,4 @@
+import Icon from "@/components/Icon";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import LanguagePicker from "@/components/LanguagePicker";
@@ -133,6 +134,8 @@ export default async function GuestPage({
         </section>
       )}
 
+      {!paid && <HostCard t={t} name={issuer.name} contact={host?.guestContact || host?.email} policy={host?.guestPolicy} />}
+
       {canChangeGuests && <GuestCount id={p.id} editing initial={{ adults: q.adults, childAges: q.childAges }} minTaxableAge={q.minTaxableAge} />}
 
       {!askGuests && !paid && !p.reportedPaidAt && pm && activeMethods(pm).length > 0 && (
@@ -159,6 +162,41 @@ export default async function GuestPage({
         {paid ? (property ? `${t("guest.bookmark")} ` : "") : `${t("guest.detailsWrong")} `}{t("guest.collectedBy", { name: issuer.name })}
       </p>
     </main>
+  );
+}
+
+/** Who the guest is paying, how to reach them, their cancellation & refund policy, and why this page is safe. */
+function HostCard({ t, name, contact, policy }: { t: T; name: string; contact?: string; policy?: string }) {
+  const initials = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const isEmail = !!contact && contact.includes("@");
+  const tel = contact && !isEmail ? contact.replace(/[^\d+]/g, "") : "";
+  return (
+    <section className="panel panel-pad">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[image:var(--silver-soft)] text-sm font-semibold text-[var(--on-accent)]">{initials}</span>
+        <div className="min-w-0 flex-1">
+          <div className="eyebrow">{t("guest.youPay")}</div>
+          <div className="truncate font-semibold">{name}</div>
+        </div>
+        {contact && (
+          <a href={isEmail ? `mailto:${contact}` : `tel:${tel}`} className="btn btn-secondary btn-sm shrink-0">
+            {t("guest.contactHost")}
+          </a>
+        )}
+      </div>
+      <p className="mt-4 flex gap-2 text-xs leading-relaxed text-[var(--muted)]">
+        <Icon name="lock" size={13} className="mt-px" />
+        {t("guest.trust", { name })}
+      </p>
+      {policy && (
+        <details className="group mt-3 border-t border-[var(--line)] pt-3 text-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between font-medium [&::-webkit-details-marker]:hidden">
+            {t("guest.policy")} <Icon name="chevronDown" size={15} className="text-[var(--muted)] transition-transform group-open:rotate-180" />
+          </summary>
+          <p className="mt-2 whitespace-pre-line text-[var(--muted)]">{policy}</p>
+        </details>
+      )}
+    </section>
   );
 }
 

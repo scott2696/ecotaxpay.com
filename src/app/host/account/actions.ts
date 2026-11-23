@@ -114,6 +114,8 @@ export async function saveProfile(form: FormData) {
     name: text("name") || host.name,
     businessName: text("businessName") || undefined,
     taxId: text("taxId", 40) || undefined,
+    guestContact: text("guestContact", 120) || undefined,
+    guestPolicy: text("guestPolicy", 1500) || undefined,
   });
   revalidatePath("/host/account");
   redirect("/host/account?saved=1");

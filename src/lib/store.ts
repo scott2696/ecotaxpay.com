@@ -40,6 +40,8 @@ export type Host = {
   locale?: string; // host's interface language (used for their notification emails)
   businessName?: string; // shown as "Issued by" on receipts
   taxId?: string;
+  guestContact?: string; // phone or email guests can use to reach the host (shown on the payment page)
+  guestPolicy?: string; // cancellation & refund policy shown to guests
   createdAt: string;
   subscription: {
     status: SubscriptionStatus;

@@ -243,6 +243,16 @@ export default async function Account({ searchParams }: { searchParams: Promise<
             <span className="label">{t("account.taxId")}</span>
             <input name="taxId" className="input" defaultValue={host.taxId ?? ""} />
           </label>
+          <label className="block">
+            <span className="label">{t("account.guestContact")}</span>
+            <input name="guestContact" className="input" defaultValue={host.guestContact ?? ""} placeholder={host.email} />
+            <span className="help block">{t("account.guestContactHint")}</span>
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="label">{t("account.guestPolicy")}</span>
+            <textarea name="guestPolicy" className="input" defaultValue={host.guestPolicy ?? ""} placeholder={t("account.guestPolicyPh")} maxLength={1500} />
+            <span className="help block">{t("account.guestPolicyHint")}</span>
+          </label>
           <div className="sm:col-span-2">
             <button className="btn btn-primary">{t("account.save")}</button>
           </div>
