@@ -10,6 +10,7 @@ import HeaderChrome from "./HeaderChrome";
 export default async function SiteHeader() {
   const [{ t }, host, languages] = await Promise.all([getI18n(), currentHost(), languageOptions()]);
   const links = [
+    { href: "/destinations", label: t("nav.destinations") },
     { href: "/about", label: t("nav.about") },
     { href: "/#how", label: t("home.how") },
     { href: "/#pricing", label: t("home.nav.pricing") },

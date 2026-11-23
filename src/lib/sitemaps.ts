@@ -2,7 +2,8 @@
 // Host area, guest payment links and APIs are private (see robots.ts).
 import { LEGAL_UPDATED } from "@/components/LegalPage";
 import { absolute } from "./seo";
-import { PUBLIC_PATHS, STATIC_LANGS, STATIC_SITE } from "./urls";
+import { isPublicPath, STATIC_LANGS, STATIC_SITE } from "./urls";
+import { DESTINATIONS, destinationPath } from "./destinations";
 
 type Freq = "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
 export type SitemapPage = { path: string; priority: number; changefreq: Freq; updated: string };
@@ -16,6 +17,10 @@ export const SITEMAPS: Record<string, SitemapPage[]> = {
     { path: "/contact", priority: 0.6, changefreq: "monthly", updated: "2026-11-20" },
     { path: "/login", priority: 0.3, changefreq: "yearly", updated: "2026-11-20" },
     { path: "/sitemap", priority: 0.2, changefreq: "monthly", updated: "2026-11-22" },
+  ],
+  destination: [
+    { path: "/destinations", priority: 0.8, changefreq: "monthly", updated: DESTINATIONS.map((d) => d.region.verifiedOn).sort().at(-1)! },
+    ...DESTINATIONS.map((d) => ({ path: destinationPath(d), priority: 0.7, changefreq: "monthly" as const, updated: d.region.verifiedOn })),
   ],
   legal: [
     { path: "/terms", priority: 0.3, changefreq: "yearly", updated: LEGAL_UPDATED },
@@ -56,7 +61,7 @@ export function sitemapFor(name: keyof typeof SITEMAPS) {
     return absolute(STATIC_SITE && !p.endsWith("/") ? `${p}/` : p);
   };
   const items = SITEMAPS[name]
-    .filter((p) => !STATIC_SITE || PUBLIC_PATHS.includes(p.path))
+    .filter((p) => !STATIC_SITE || isPublicPath(p.path))
     .flatMap((p) =>
       langs.map((lang) => {
         const alternates = STATIC_SITE

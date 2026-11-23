@@ -4,6 +4,7 @@
 // Pages: every public page in every language (English at /, others at /es/, /it/, …),
 // plus sitemaps, robots.txt, 404, assets, CNAME and .nojekyll. GitHub Pages serves main:/docs.
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -13,8 +14,10 @@ const OUT = "docs";
 const DIST = ".next-static";
 const PORT = 3999;
 const LANGS = ["en", "es", "it", "fr", "de", "mt"];
-const PAGES = ["/", "/about", "/contact", "/terms", "/privacy", "/cookies", "/sitemap"];
-const XML = ["/sitemap.xml", "/page-sitemap.xml", "/legal-sitemap.xml", "/robots.txt"];
+// Destination pages: one per built-in destination (slugs from src/lib/destinations.ts).
+const DESTINATION_SLUGS = [...readFileSync("src/lib/destinations.ts", "utf8").matchAll(/"[a-z]{2}-[a-z-]+": "([a-z-]+)"/g)].map((m) => m[1]);
+const PAGES = ["/", "/about", "/contact", "/terms", "/privacy", "/cookies", "/sitemap", "/destinations", ...DESTINATION_SLUGS.map((s) => `/destinations/${s}`)];
+const XML = ["/sitemap.xml", "/page-sitemap.xml", "/destination-sitemap.xml", "/legal-sitemap.xml", "/robots.txt"];
 
 const env = {
   ...process.env,

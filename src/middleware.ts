@@ -42,7 +42,7 @@ function route(req: NextRequest): NextResponse {
   if (APP_HOST && host && host !== APP_HOST && /\.onrender\.com$/i.test(host) && pathname !== "/api/health")
     return NextResponse.redirect(`https://${APP_HOST}${pathname}${req.nextUrl.search}`, 308);
 
-  if (MARKETING_URL && PUBLIC_PAGES.has(pathname)) return NextResponse.redirect(`${MARKETING_URL}${pathname}${req.nextUrl.search}`, 308);
+  if (MARKETING_URL && (PUBLIC_PAGES.has(pathname) || pathname === "/destination-sitemap.xml" || pathname === "/destinations" || pathname.startsWith("/destinations/"))) return NextResponse.redirect(`${MARKETING_URL}${pathname}${req.nextUrl.search}`, 308);
 
   // ?lang=xx (e.g. in a link the host sends) → remember the language, then show the clean URL.
   const lang = searchParams.get("lang");

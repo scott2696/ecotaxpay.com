@@ -18,7 +18,9 @@ export const publicHref = (path: string) => (MARKETING_URL ? `${MARKETING_URL}${
 export const appHref = (path: string) => (APP_URL ? `${APP_URL}${path}` : path);
 
 /** The public pages, also served as static files on the public domain. */
-export const PUBLIC_PATHS = ["/", "/about", "/contact", "/terms", "/privacy", "/cookies", "/sitemap"];
+export const PUBLIC_PATHS = ["/", "/about", "/contact", "/terms", "/privacy", "/cookies", "/sitemap", "/destinations"];
+/** Destination pages (/destinations/<slug>) are public too. */
+export const isPublicPath = (p: string) => PUBLIC_PATHS.includes(p) || p.startsWith("/destinations/");
 
 /** Languages with their own static copy (/es/, /it/, …); English is at the root. */
 export const STATIC_LANGS = ["en", "es", "it", "fr", "de", "mt"];

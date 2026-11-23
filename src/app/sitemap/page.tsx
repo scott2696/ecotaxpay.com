@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/lib/config";
 import { absolute } from "@/lib/seo";
-import { SITEMAPS } from "@/lib/sitemaps";
+import { SITEMAPS as ALL_SITEMAPS } from "@/lib/sitemaps";
+import { isPublicPath, STATIC_SITE } from "@/lib/urls";
+
+// On the static public site, sign-up and login live on the app domain: list only pages that exist here.
+const SITEMAPS = Object.fromEntries(Object.entries(ALL_SITEMAPS).map(([g, pages]) => [g, pages.filter((p) => !STATIC_SITE || isPublicPath(p.path))]));
 import SitemapFilter from "./SitemapFilter";
 
 // Human-readable sitemap, styled like /sitemap.xml (which browsers are dropping XSLT support for).
@@ -12,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: absolute("/sitemap") },
 };
 
-const GROUP_NAMES: Record<string, string> = { page: "Pages", legal: "Legal" };
+const GROUP_NAMES: Record<string, string> = { page: "Pages", destination: "Destinations", legal: "Legal" };
 
 export default function SitemapPage() {
   const total = Object.values(SITEMAPS).reduce((n, g) => n + g.length, 0);
