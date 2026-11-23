@@ -39,3 +39,12 @@ export function currencyDecimals(code: string): number {
 
 /** Currencies PayPal.Me accepts an amount in (others: the guest types the amount on PayPal). */
 export const PAYPAL_CURRENCIES = new Set(["AUD", "BRL", "CAD", "CNY", "CZK", "DKK", "EUR", "HKD", "HUF", "ILS", "JPY", "MYR", "MXN", "TWD", "NZD", "NOK", "PHP", "PLN", "GBP", "SGD", "SEK", "CHF", "THB", "USD"]);
+
+/** Convert an amount in a payment provider's minor units (JPY 0 decimals, EUR 2, KWD 3) to our ×100 storage. */
+export function minorToCents(minor: number, currency: string): number {
+  let decimals = 2;
+  try {
+    decimals = new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
+  } catch {}
+  return Math.round((minor * 100) / 10 ** decimals);
+}

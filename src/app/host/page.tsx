@@ -23,6 +23,7 @@ import ConnectForm from "./connect/ConnectForm";
 import Icon, { type IconName } from "@/components/Icon";
 import PageHeader, { PageBody } from "@/components/PageHeader";
 import { cookies } from "next/headers";
+import { minorToCents } from "@/lib/currencies";
 import { TZ_COOKIE } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
@@ -152,6 +153,9 @@ export default async function Host({ searchParams }: { searchParams: Promise<{ a
                   )}
                   {p.paidVia && <div className="mt-1 text-xs text-[var(--muted)]">{p.paidVia in PHONE_APP_NAMES ? PHONE_APP_NAMES[p.paidVia as PhoneApp] : t(`method.${p.paidVia}` as MessageKey)} · {paymentReference(p)}</div>}
                   {p.receiptNumber && <div className="mt-1 text-xs text-[var(--muted)]">#{p.receiptNumber}</div>}
+                  {p.amountMismatch && p.status === "pending" && (
+                    <div className="mt-1 text-xs text-amber-200">{t("hook.mismatch", { amount: fm(minorToCents(p.amountMismatch.paidMinor, p.amountMismatch.currency), p.amountMismatch.currency) })}</div>
+                  )}
       </>
     ),
     actions: (

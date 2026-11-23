@@ -42,6 +42,8 @@ export type Host = {
   taxId?: string;
   guestContact?: string; // phone or email guests can use to reach the host (shown on the payment page)
   guestPolicy?: string; // cancellation & refund policy shown to guests
+  /** Automatic confirmation: the host's own Stripe account notifies us when a guest pays their Payment Link. */
+  stripeHook?: { id: string; secret?: string /* encrypted */; connectedAt?: string; lastEventAt?: string; lastResult?: string };
   createdAt: string;
   subscription: {
     status: SubscriptionStatus;
@@ -163,6 +165,7 @@ export type PaymentRecord = {
   propertyName?: string;
   documents?: GuestDocument[];
   documentsPurgedAt?: string; // ID documents deleted automatically after the retention period
+  amountMismatch?: { paidMinor: number; currency: string }; // guest paid a different amount on Stripe
   quote: Quote; // immutable snapshot of the calculation used
   stripeSessionId?: string;
   stripePaymentIntentId?: string;

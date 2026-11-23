@@ -1,5 +1,6 @@
 "use server";
 
+import { sealSecret } from "@/lib/stripeHook";
 import { revalidatePath } from "next/cache";
 import type { SaveResult } from "./MethodsForm";
 import { redirect } from "next/navigation";
@@ -138,4 +139,21 @@ export async function changePassword(form: FormData): Promise<PasswordResult> {
 export async function logout() {
   await endSession();
   redirect("/");
+}
+
+/** Automatic confirmation: save the signing secret of the host's Stripe webhook (stored encrypted). */
+export async function saveStripeHook(form: FormData) {
+  const host = await requireHost();
+  const secret = String(form.get("whsec") ?? "").trim();
+  if (!host.stripeHook || !/^whsec_[A-Za-z0-9+/=_-]{10,}$/.test(secret)) redirect("/host/account?hookError=1#auto-confirm");
+  await updateHost(host.id, { stripeHook: { ...host.stripeHook!, secret: sealSecret(secret), connectedAt: new Date().toISOString(), lastEventAt: undefined, lastResult: undefined } });
+  revalidatePath("/host/account");
+  redirect("/host/account?hookSaved=1#auto-confirm");
+}
+
+export async function disconnectStripeHook() {
+  const host = await requireHost();
+  if (host.stripeHook) await updateHost(host.id, { stripeHook: { id: host.stripeHook.id } });
+  revalidatePath("/host/account");
+  redirect("/host/account#auto-confirm");
 }

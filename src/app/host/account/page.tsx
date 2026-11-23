@@ -6,12 +6,14 @@ import { getI18n } from "@/i18n/server";
 import { date, type T } from "@/i18n/translate";
 import { isAdmin, isSubscribed, requireHost } from "@/lib/auth";
 import { confirmSubscriptionCheckout, settleDemoSubscription } from "@/lib/billing";
-import { isDemoMode } from "@/lib/config";
 import { activeMethods, METHOD_ORDER, methodTitle, PHONE_APP_NAMES, PHONE_APPS } from "@/lib/payMethods";
 import PayBadges, { BRAND_NAMES, CARD_BRANDS, MethodLogo } from "@/components/PayBadges";
 import type { CardBrandId } from "@/lib/store";
 import { formatPlan } from "@/lib/pricing";
-import { cancel, changePassword, openBillingPortal, resume, saveProfile, savePaymentMethods, subscribe } from "./actions";
+import { cancel, changePassword, disconnectStripeHook, openBillingPortal, resume, saveProfile, savePaymentMethods, saveStripeHook, subscribe } from "./actions";
+import { newHookId } from "@/lib/stripeHook";
+import { updateHost } from "@/lib/store";
+import { isDemoMode, site } from "@/lib/config";
 import ChangePasswordForm from "./ChangePasswordForm";
 import MethodsForm from "./MethodsForm";
 
@@ -48,6 +50,13 @@ export default async function Account({ searchParams }: { searchParams: Promise<
     sp.methodsSaved ? t("methods.saved") :
     sp.passwordChanged ? t("account.notice.passwordChanged") : null;
   const badFields = new Set((sp.methodsError ?? "").split(",").filter(Boolean));
+  // Automatic confirmation: each host gets a private webhook address for their own Stripe account.
+  let hook = host.stripeHook;
+  if (!hook) {
+    hook = { id: newHookId() };
+    await updateHost(host.id, { stripeHook: hook });
+  }
+  const hookUrl = `${site.baseUrl}/api/hooks/stripe/${hook.id}`;
 
   return (
     <PageBody>
@@ -59,6 +68,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
           {([
             ["#subscription", "account.subscription", "card"],
             ["#methods", "methods.title", "wallet"],
+            ["#auto-confirm", "hook.title", "zap"],
             ["#cancel", "account.howToCancel", "info"],
             ["#details", "account.details", "user"],
             ["#password", "account.password", "lock"],
@@ -215,6 +225,44 @@ export default async function Account({ searchParams }: { searchParams: Promise<
           </label>
         </MethodsForm>
         <p className="mt-4 flex gap-2 text-xs text-[var(--muted)]"><Icon name="info" size={13} className="mt-px" /> {t("methods.howItWorks")}</p>
+      </section>
+
+      <section id="auto-confirm" className="panel panel-pad scroll-mt-8">
+        <SectionHead
+          icon="zap"
+          title={t("hook.title")}
+          sub={t("hook.sub")}
+          aside={<span className={`pill ${hook?.secret ? "pill-success" : "pill-neutral"}`}>{hook?.secret ? t("hook.on") : t("hook.off")}</span>}
+        />
+        {sp.hookSaved && <p className="note note-success mt-4">{t("hook.saved")}</p>}
+        {sp.hookError && <p className="note note-danger mt-4">{t("hook.invalid")}</p>}
+        {hook?.secret ? (
+          <div className="mt-4 space-y-3 text-sm">
+            <p className="text-[var(--muted)]">
+              {hook.lastEventAt ? t("hook.lastEvent", { date: fmt(hook.lastEventAt), result: hook.lastResult ?? "" }) : t("hook.waiting")}
+            </p>
+            <form action={disconnectStripeHook}>
+              <button className="btn btn-quiet btn-sm">{t("hook.disconnect")}</button>
+            </form>
+          </div>
+        ) : (
+          <ol className="mt-5 list-decimal space-y-3 ps-5 text-sm">
+            <li>{t("hook.step1")}</li>
+            <li>
+              {t("hook.step2")}
+              <code className="mt-2 block break-all rounded-[var(--r-sm)] border border-[var(--line)] bg-white/[0.03] px-3 py-2 font-mono text-xs">{hookUrl}</code>
+            </li>
+            <li>{t("hook.step3")}</li>
+            <li>
+              {t("hook.step4")}
+              <form action={saveStripeHook} className="mt-2 flex flex-wrap gap-2">
+                <input name="whsec" className="input max-w-sm flex-1 font-mono text-sm" placeholder="whsec_…" autoComplete="off" required />
+                <button className="btn btn-primary">{t("hook.connect")}</button>
+              </form>
+            </li>
+          </ol>
+        )}
+        <p className="mt-4 flex gap-2 text-xs text-[var(--muted)]"><Icon name="shield" size={13} className="mt-px" /> {t("hook.safety")}</p>
       </section>
 
       <section id="cancel" className="panel panel-pad scroll-mt-8">

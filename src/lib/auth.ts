@@ -11,6 +11,9 @@ export { SESSION_COOKIE };
 // Hosts stay logged in: SESSION_DAYS (180), renewed every day they use the site (middleware).
 
 /** SESSION_SECRET in production; in development a random secret is generated once and kept in data/. */
+export function appSecret(): string {
+  return secret();
+}
 function secret(): string {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
   if (process.env.NODE_ENV === "production") throw new Error("SESSION_SECRET must be set in production");
