@@ -395,7 +395,7 @@ function ScreenGuest() {
   );
 }
 
-/* 06: after payment, receipt + arrival guide */
+/* 06: after payment, receipt + the complete arrival guide */
 function ScreenGuide() {
   const t = useT();
   const d = useDemo();
@@ -412,16 +412,28 @@ function ScreenGuide() {
         <span className="rounded-lg bg-white/90 px-2 py-1.5 text-center font-medium text-black">{t("guest.downloadReceipt")}</span>
         <span className="rounded-lg border border-white/15 px-2 py-1.5 text-center">{t("guest.saveWhatsapp")}</span>
       </div>
-      <p className="mt-5 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">{t("guest.guideTitle")}</p>
-      <div className="mt-2 space-y-2.5 text-[11px]">
-        <div><p className="font-medium">📍 {t("guide.address")}</p><p className="text-[var(--muted)]">{d.local.address}</p></div>
-        <div><p className="font-medium">🕒 {t("guide.times")}</p><p className="text-[var(--muted)]">15:00 · 10:00</p></div>
-        <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2.5">
+      {/* The full arrival guide, exactly as the guest sees it once the tax is paid */}
+      <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">{t("guest.guideTitle")}</p>
+      <div className="mt-2 space-y-2 text-[10.5px] leading-snug">
+        <div className="flex items-start justify-between gap-2">
+          <div><p className="font-medium">📍 {t("guide.address")}</p><p className="text-[var(--muted)]">{d.local.address}</p></div>
+          <span className="shrink-0 rounded-md border border-white/15 px-1.5 py-0.5 text-[9px]">{t("guide.directions")} ↗</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div><p className="font-medium">🕒 {t("guide.checkInFrom", { time: "15:00" })}</p></div>
+          <div><p className="font-medium">🕙 {t("guide.checkOutBy", { time: "10:00" })}</p></div>
+        </div>
+        <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2">
           <p className="font-medium">🔑 {t("guide.access")}</p>
           <p className="text-[var(--muted)]">Key box · <span className="font-mono text-[var(--ink)]">4821</span></p>
         </div>
-        <div><p className="font-medium">📶 {t("guide.wifi")}</p><p className="text-[var(--muted)]">{d.local.wifi} · <span className="font-mono">welcome-2026</span></p></div>
+        <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2">
+          <p className="font-medium">📶 {t("guide.wifi")}</p>
+          <p className="text-[var(--muted)]">{t("guide.wifiNetwork", { name: d.local.wifi })} · <span className="font-mono text-[var(--ink)]">welcome-2026</span></p>
+        </div>
+        <div><p className="font-medium">📋 {t("guide.houseRules")}</p><p className="text-[var(--muted)]">No smoking · Quiet after 23:00</p></div>
         <div><p className="font-medium">📝 {t("gf.sugg.parking")}</p><p className="text-[var(--muted)]">{d.local.parking}</p></div>
+        <div><p className="font-medium">📝 {t("gf.sugg.rubbish")}</p><p className="text-[var(--muted)]">{d.local.rubbish}</p></div>
       </div>
     </div>
   );

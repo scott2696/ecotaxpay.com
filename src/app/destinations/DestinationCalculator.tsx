@@ -10,8 +10,16 @@ import { describeLine } from "@/lib/format";
 export default function DestinationCalculator({ regionId, types, currency }: { regionId: string; types: { id: string; label: string; percent: boolean }[]; currency: string }) {
   const t = useT();
   const [type, setType] = useState(types[0]?.id ?? "");
+  const addDays = (iso: string, n: number) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
   const [checkIn, setCheckIn] = useState(() => new Date().toISOString().slice(0, 10));
-  const [nights, setNights] = useState(3);
+  const [checkOut, setCheckOut] = useState(() => addDays(new Date().toISOString().slice(0, 10), 3));
+  const nights = Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86400000);
+  // Moving check-in keeps the same length of stay; check-out can never be on or before check-in.
+  const changeCheckIn = (v: string) => {
+    if (!v) return;
+    setCheckOut(addDays(v, nights >= 1 ? nights : 1));
+    setCheckIn(v);
+  };
   const [adults, setAdults] = useState(2);
   const [childAges, setChildAges] = useState<number[]>([]);
   const [price, setPrice] = useState("150");
@@ -45,10 +53,17 @@ export default function DestinationCalculator({ regionId, types, currency }: { r
             </select>
           </label>
         )}
-        <label className="block">
-          <span className="label">{t("form.checkIn")}</span>
-          <input type="date" className="input" value={checkIn} onChange={(e) => e.target.value && setCheckIn(e.target.value)} />
-        </label>
+        <div className="grid grid-cols-2 gap-4">
+          <label className="block">
+            <span className="label">{t("form.checkIn")}</span>
+            <input type="date" className="input" value={checkIn} onChange={(e) => changeCheckIn(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className="label">{t("form.checkOut")}</span>
+            <input type="date" className="input" value={checkOut} min={addDays(checkIn, 1)} max={addDays(checkIn, LIMITS.maxNights)} onChange={(e) => e.target.value && setCheckOut(e.target.value)} />
+          </label>
+        </div>
+        <p className="-mt-1 text-sm text-[var(--muted)]">{nights >= 1 ? t.plural("line.nights", nights) : t("q.invalid")}</p>
         {percent && (
           <label className="block">
             <span className="label">{t("dest.nightlyPrice", { currency })}</span>
@@ -56,10 +71,8 @@ export default function DestinationCalculator({ regionId, types, currency }: { r
           </label>
         )}
         <div className="grid grid-cols-2 gap-4">
-          <div><span className="label">{t("dest.nights")}</span><Stepper value={nights} set={setNights} min={1} max={LIMITS.maxNights} /></div>
           <div><span className="label">{t("form.adults")}</span><Stepper value={adults} set={setAdults} min={1} max={LIMITS.maxAdults} /></div>
-        </div>
-        <div>
+          <div>
           <span className="label">{t("form.children")}</span>
           <Stepper value={childAges.length} set={(n) => setChildAges((a) => (n > a.length ? [...a, 8] : a.slice(0, n)))} min={0} max={LIMITS.maxChildren} />
           {childAges.length > 0 && (
@@ -71,6 +84,7 @@ export default function DestinationCalculator({ regionId, types, currency }: { r
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
       <div className="flex flex-col rounded-[var(--r-lg)] border border-[var(--line)] bg-white/[0.02] p-5">
