@@ -9,7 +9,8 @@ import { confirmSubscriptionCheckout, settleDemoSubscription } from "@/lib/billi
 import { activeMethods, METHOD_ORDER, methodTitle, PHONE_APP_NAMES, PHONE_APPS } from "@/lib/payMethods";
 import PayBadges, { BRAND_NAMES, CARD_BRANDS, MethodLogo } from "@/components/PayBadges";
 import type { CardBrandId } from "@/lib/store";
-import { formatPlan } from "@/lib/pricing";
+import { formatPlan, visitorPlans } from "@/lib/pricing";
+import PlanPicker from "@/components/PlanPicker";
 import { cancel, changePassword, disconnectStripeHook, openBillingPortal, resume, saveProfile, savePaymentMethods, saveStripeHook, subscribe } from "./actions";
 import { newHookId } from "@/lib/stripeHook";
 import { updateHost } from "@/lib/store";
@@ -38,6 +39,9 @@ export default async function Account({ searchParams }: { searchParams: Promise<
   const active = isSubscribed(host);
   // Subscribers see the price they signed up at; everyone else today's price in their currency.
   const price = sub.price && active ? formatPlan(sub.price.currency, sub.price.amount, locale) : plan.label;
+  const months = sub.price?.months ?? 1;
+  const periodLabel = t(months === 12 ? "plan.per.year" : months > 1 ? "plan.per.months" : "plan.per.month", { count: months });
+  const plans = (await visitorPlans(locale)).map(({ id, months: m, label, perMonthLabel, savePct }) => ({ id, months: m, label, perMonthLabel, savePct }));
   const fmt = (iso?: string) => (iso ? date(iso, locale, { day: "numeric", month: "long", year: "numeric" }) : "-");
 
   const notice =
@@ -95,7 +99,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         <>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="flex items-baseline gap-1.5"><span className="amount-hero text-[2rem]">{price}</span><span className="text-sm text-[var(--muted)]">/ {t("home.month")}</span></div>
+            <div className="flex items-baseline gap-1.5"><span className="amount-hero text-[2rem]">{price}</span><span className="text-sm text-[var(--muted)]">/ {active ? periodLabel : t("home.month")}</span></div>
             <div className="mt-1 text-sm">
               {t("account.status")} <StatusBadge t={t} status={sub.status} cancelling={!!sub.cancelAtPeriodEnd} />
             </div>
@@ -104,11 +108,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
             {sub.status === "past_due" && <div className="mt-1 text-sm text-red-300">{t("account.paymentFailed")}</div>}
           </div>
           <div className="flex flex-wrap gap-2">
-            {!active && (
-              <form action={subscribe}>
-                <button className="btn btn-primary btn-lg">{t("account.subscribeFor")}</button>
-              </form>
-            )}
+
             {active && sub.cancelAtPeriodEnd && (
               <form action={resume}>
                 <button className="btn btn-primary btn-lg">{t("account.keep")}</button>
@@ -122,6 +122,12 @@ export default async function Account({ searchParams }: { searchParams: Promise<
             )}
           </div>
         </div>
+        {!active && (
+          <form action={subscribe} className="mt-5 max-w-md space-y-4">
+            <PlanPicker plans={plans} />
+            <button className="btn btn-primary btn-lg w-full">{t("account.subscribeFor")}</button>
+          </form>
+        )}
         {!active && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <PayBadges />

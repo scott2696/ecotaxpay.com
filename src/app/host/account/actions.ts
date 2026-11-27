@@ -8,14 +8,16 @@ import { endSession, requireHost, setPassword, startSession, verifyPassword } fr
 import { getI18n } from "@/i18n/server";
 import type { PasswordResult } from "./ChangePasswordForm";
 import { billingPortalUrl, cancelSubscription, resumeSubscription, startSubscription } from "@/lib/billing";
+import { isPlanId } from "@/lib/pricing";
 import { activeMethods, isWiseUrl, normalizeAccountNumber, normalizeBic, normalizeRouting, normalizeSortCode, normalizeIban, normalizeIntlPhone, normalizePaypal, normalizeRevtag, normalizeUrl, normalizeWero } from "@/lib/payMethods";
 import { CARD_BRANDS } from "@/components/PayBadges";
 import type { CardBrandId } from "@/lib/store";
 import { getHost, updateHost } from "@/lib/store";
 
-export async function subscribe() {
+export async function subscribe(form: FormData) {
   const host = await requireHost();
-  redirect(await startSubscription(host));
+  const plan = form.get("plan");
+  redirect(await startSubscription(host, isPlanId(plan) ? plan : "monthly"));
 }
 
 export async function cancel() {

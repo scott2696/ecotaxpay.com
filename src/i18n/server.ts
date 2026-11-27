@@ -4,7 +4,7 @@ import { CURATED, DEFAULT_LOCALE, LANG_COOKIE, dirOf, isCurated, isLocaleCode, m
 import { machineLanguages, machineMessages } from "./machine";
 import type { LocaleMessages } from "./messages/en";
 import { makeT, type T, type Vars } from "./translate";
-import { visitorPlan, type Plan } from "@/lib/pricing";
+import { visitorPlans, type Plan } from "@/lib/pricing";
 
 const LOADERS: Record<string, () => Promise<LocaleMessages>> = {
   en: async () => (await import("./messages/en")).en,
@@ -44,8 +44,9 @@ export const getI18n = cache(
   async (forced?: string): Promise<{ t: T; locale: string; dir: "ltr" | "rtl"; messages: LocaleMessages; plan: Plan; vars: Vars }> => {
     const { locale, messages } = await loadMessages(forced ?? (await getLocale()));
     // The subscription price in the visitor's currency fills {price} in every message.
-    const plan = await visitorPlan(locale);
-    const vars = { price: plan.label };
+    const plans = await visitorPlans(locale);
+    const plan = plans[0]; // monthly
+    const vars = { price: plan.label, price3: plans[1].label, price6: plans[2].label, price12: plans[3].label };
     return { t: makeT(locale, messages, vars), locale, dir: dirOf(locale) as "ltr" | "rtl", messages, plan, vars };
   },
 );

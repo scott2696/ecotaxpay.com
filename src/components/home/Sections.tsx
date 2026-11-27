@@ -126,7 +126,7 @@ export function Global({ t }: { t: T }) {
 
 const INCLUDED = ["apartments", "links", "calendars", "receipts", "export"] as const;
 
-export function Pricing({ t, href, cta, plan }: { t: T; href: string; cta: string; plan: Plan }) {
+export function Pricing({ t, href, cta, plan, plans = [] }: { t: T; href: string; cta: string; plan: Plan; plans?: Plan[] }) {
   // Split "$3.30" / "3,30 €" into symbol and number, so the number can be set large.
   const parts = new Intl.NumberFormat(t.locale === "en" ? "en-GB" : t.locale, {
     style: "currency",
@@ -149,6 +149,7 @@ export function Pricing({ t, href, cta, plan }: { t: T; href: string; cta: strin
           </h2>
           <p data-reveal className="mt-6 max-w-md text-lg text-[var(--muted)]">{t("home.pricingNote")}</p>
           <p data-reveal className="mt-4 max-w-md text-[var(--muted)]">{t("price.useCase")}</p>
+          {plans.length > 1 && <p data-reveal className="mt-4 max-w-md text-[var(--muted)]">{t("price.plansNote")}</p>}
         </div>
         <div data-reveal className="lit rounded-[32px] p-10 sm:p-12">
           <div className="flex flex-wrap items-start gap-2" aria-label={`${plan.label} / ${t("home.month")}`}>
@@ -158,6 +159,29 @@ export function Pricing({ t, href, cta, plan }: { t: T; href: string; cta: strin
             <span className="mt-auto pb-3 text-lg text-[var(--muted)]" aria-hidden>/ {t("home.month")}</span>
           </div>
           {plan.currency !== "EUR" && <p className="mt-4 text-sm text-[var(--muted)]">{t("price.equiv")}</p>}
+          {plans.length > 1 && (
+            <ul className="mt-8 grid grid-cols-2 gap-2.5" aria-label={t("plan.choose")}>
+              {plans.map((p) => {
+                const best = p.savePct === Math.max(...plans.map((x) => x.savePct)) && p.savePct > 0;
+                return (
+                  <li key={p.id}>
+                    <Link
+                      href={`${href}${href.includes("?") ? "&" : "?"}plan=${p.id}`}
+                      className={`relative flex h-full flex-col rounded-2xl border px-4 py-3.5 transition-colors hover:border-[var(--line-strong)] hover:bg-white/[0.04] ${best ? "border-[var(--line-strong)] bg-white/[0.04]" : "border-[var(--line)]"}`}
+                    >
+                      <span className="flex items-center justify-between gap-2 text-xs text-[var(--muted)]">
+                        {k(t, `plan.name.${p.id}`)}
+                        {p.savePct > 0 && <span className="rounded-full border border-emerald-400/30 px-1.5 py-0.5 text-[10px] text-emerald-300">{t("plan.save", { pct: p.savePct })}</span>}
+                      </span>
+                      <span className="mt-1 text-xl font-semibold tabular-nums tracking-tight text-[var(--ink)]">{p.label}</span>
+                      <span className="text-xs text-[var(--muted)]">{p.months > 1 ? t("plan.perMonth", { amount: p.perMonthLabel }) : t("plan.every.monthly")}</span>
+                      {best && <span className="absolute -top-2.5 end-3 rounded-full bg-[image:var(--silver-soft)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[var(--on-accent)]">{t("plan.best")}</span>}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           <ul className="mt-6 flex flex-wrap gap-2 text-xs">
             {(["noFees", "cancel", "direct"] as const).map((k2) => (
               <li key={k2} className="rounded-full border border-[var(--line-strong)] px-3 py-1.5 text-[var(--ink)]">✓ {t(`price.assure.${k2}`)}</li>

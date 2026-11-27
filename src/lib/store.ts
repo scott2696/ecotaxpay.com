@@ -52,8 +52,8 @@ export type Host = {
     currentPeriodEnd?: string; // ISO date: next charge, or end of access after cancelling
     cancelAtPeriodEnd?: boolean;
     demo?: boolean; // simulated (no Stripe key configured)
-    /** What this host pays each month, fixed when they subscribed (€3 or the local equivalent). */
-    price?: { currency: string; amount: number };
+    /** What this host pays per period, fixed when they subscribed (e.g. €8 every 3 months). Missing months = monthly. */
+    price?: { currency: string; amount: number; months?: number };
   };
   /** How guests pay this host directly (shown on the guest's payment page). Never via the platform. */
   paymentMethods?: PaymentMethods;

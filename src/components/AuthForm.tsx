@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import PlanPicker, { type PlanOption } from "./PlanPicker";
+import type { MessageKey } from "@/i18n/messages/en";
 import { useT } from "@/i18n/client";
 import { publicHref } from "@/lib/urls";
 import { apiFetch, errorText } from "@/lib/api";
 
 /** Sign-up and log-in form (same layout, different fields and endpoint). */
-export default function AuthForm({ mode, next }: { mode: "register" | "login"; next?: string }) {
+export default function AuthForm({ mode, next, plans = [], initialPlan }: { mode: "register" | "login"; next?: string; plans?: PlanOption[]; initialPlan?: string }) {
   const t = useT();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [plan, setPlan] = useState(plans.some((p) => p.id === initialPlan) ? initialPlan! : plans[0]?.id ?? "monthly");
+  const chosen = plans.find((p) => p.id === plan);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const register = mode === "register";
@@ -25,7 +29,7 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
       const res = await apiFetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, acceptTerms, next }),
+        body: JSON.stringify({ name, email, password, acceptTerms, next, ...(register ? { plan } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -68,11 +72,12 @@ export default function AuthForm({ mode, next }: { mode: "register" | "login"; n
           </Link>
         </p>
       )}
+      {register && plans.length > 0 && <PlanPicker plans={plans} value={plan} onChange={setPlan} />}
       {register && (
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1 accent-[var(--accent)]" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} required />
           <span>
-            {t("auth.terms")}{" "}
+            {chosen ? t("auth.termsPlan", { amount: chosen.label, period: t(`plan.every.${chosen.id}` as MessageKey) }) : t("auth.terms")}{" "}
             <span className="text-[var(--muted)]">
               {t("auth.readTerms")}{" "}
               <Link href={publicHref("/terms")} target="_blank" className="underline">{t("legal.terms")}</Link>,{" "}

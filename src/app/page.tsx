@@ -16,6 +16,7 @@ import { graph, LANGUAGES, pageMeta, pageSchema, siteSchema } from "@/lib/seo";
 import { PLATFORMS } from "@/lib/platforms";
 import { COUNTRIES } from "@/lib/taxRules";
 import { appHref } from "@/lib/urls";
+import { visitorPlans } from "@/lib/pricing";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -92,7 +93,7 @@ export default async function Home() {
         <Statement eyebrow={t("statement.eyebrow")} text={t("statement.text")} />
         <Features t={t} demo={card} />
         <Global t={t} />
-        <Pricing t={t} href={primary.href} cta={primary.label} plan={plan} />
+        <Pricing t={t} href={primary.href} cta={primary.label} plan={plan} plans={await visitorPlans(locale)} />
         <Faq t={t} />
         <FinalCta t={t} href={primary.href} cta={primary.label} />
       </main>

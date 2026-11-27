@@ -2,15 +2,13 @@
 // Without a Stripe key (demo mode) it is simulated.
 import type Stripe from "stripe";
 import { isDemoMode, site, stripe } from "./config";
-import { visitorPlan } from "./pricing";
+import { visitorPlan, type Plan, type PlanId } from "./pricing";
 import { getHostBy, updateHost, type Host, type SubscriptionStatus } from "./store";
 import { trackEvent } from "./tracker";
 
-export const PLAN = { interval: "month" as const };
-
-const addMonth = (d = new Date()) => {
+const addMonths = (months: number, d = new Date()) => {
   const n = new Date(d);
-  n.setUTCMonth(n.getUTCMonth() + 1);
+  n.setUTCMonth(n.getUTCMonth() + months);
   return n.toISOString();
 };
 
@@ -19,11 +17,12 @@ const PRODUCT_ID = "ecotaxpay_host_subscription";
 const priceCache = new Map<string, string>();
 
 /**
- * The monthly price for this currency and amount, created in Stripe the first time it's needed and
+ * The Stripe price for a plan in this currency and amount, created the first time it's needed and
  * found again by its lookup key after that (no new price per sign-up, so reports stay clean).
  */
-async function monthlyPrice(s: Stripe, currency: string, unitAmount: number): Promise<string> {
-  const key = `etp_host_monthly_${currency.toLowerCase()}_${unitAmount}`;
+async function planPrice(s: Stripe, plan: Plan): Promise<string> {
+  const { currency, stripeUnitAmount: unitAmount, months, id } = plan;
+  const key = `etp_host_${id}_${currency.toLowerCase()}_${unitAmount}`; // monthly keeps its original key
   const cached = priceCache.get(key);
   if (cached) return cached;
   const found = (await s.prices.list({ lookup_keys: [key], active: true, limit: 1 })).data[0];
@@ -37,28 +36,31 @@ async function monthlyPrice(s: Stripe, currency: string, unitAmount: number): Pr
     await s.products.create({
       id: PRODUCT_ID,
       name: `${site.name} host subscription`,
-      description: "Unlimited properties and tourist-tax payment links. Billed monthly, cancel any time.",
+      description: "Unlimited properties and tourist-tax payment links. Billed per period, cancel any time.",
     });
   }
   const price = await s.prices.create({
     product: PRODUCT_ID,
     currency: currency.toLowerCase(),
     unit_amount: unitAmount,
-    recurring: { interval: PLAN.interval },
+    recurring: months === 12 ? { interval: "year" } : { interval: "month", interval_count: months },
     lookup_key: key,
-    nickname: `Monthly (${currency.toUpperCase()})`,
+    nickname: `${PERIOD_EN[id]} (${currency.toUpperCase()})`,
   });
   priceCache.set(key, price.id);
   return price.id;
 }
 
+const PERIOD_EN: Record<PlanId, string> = { monthly: "Monthly", quarterly: "Every 3 months", semiannual: "Every 6 months", yearly: "Yearly" };
+const RENEWS_EN: Record<PlanId, string> = { monthly: "per month, renewing monthly", quarterly: "every 3 months, renewing every 3 months", semiannual: "every 6 months, renewing every 6 months", yearly: "per year, renewing yearly" };
+
 /** Start a subscription. Returns the URL to send the host to (Stripe Checkout, or straight back in demo mode). */
-export async function startSubscription(host: Host): Promise<string> {
+export async function startSubscription(host: Host, planId: PlanId = "monthly"): Promise<string> {
   // Priced in the host's local currency at today's ECB rate; Stripe keeps that amount for the subscription.
-  const plan = await visitorPlan("en");
-  const price = { currency: plan.currency, amount: plan.amount };
+  const plan = await visitorPlan("en", planId);
+  const price = { currency: plan.currency, amount: plan.amount, months: plan.months };
   if (isDemoMode()) {
-    await updateHost(host.id, { subscription: { status: "active", demo: true, currentPeriodEnd: addMonth(), cancelAtPeriodEnd: false, price } });
+    await updateHost(host.id, { subscription: { status: "active", demo: true, currentPeriodEnd: addMonths(plan.months), cancelAtPeriodEnd: false, price } });
     return "/host/account?subscribed=1";
   }
   const s = stripe()!;
@@ -73,8 +75,8 @@ export async function startSubscription(host: Host): Promise<string> {
     mode: "subscription",
     customer: customerId,
     client_reference_id: host.id,
-    line_items: [{ quantity: 1, price: await monthlyPrice(s, plan.currency, plan.stripeUnitAmount) }],
-    subscription_data: { metadata: { hostId: host.id } },
+    line_items: [{ quantity: 1, price: await planPrice(s, plan) }],
+    subscription_data: { metadata: { hostId: host.id, plan: plan.id } },
     // Proper invoices for business hosts: billing address and (optional) VAT number, saved on the customer.
     billing_address_collection: "auto",
     tax_id_collection: { enabled: true },
@@ -83,7 +85,7 @@ export async function startSubscription(host: Host): Promise<string> {
     // Shown just above Stripe's Pay button.
     custom_text: {
       submit: {
-        message: `By subscribing you agree to the ${site.name} Terms & Conditions (${site.baseUrl}/terms) and Privacy Policy (${site.baseUrl}/privacy). €3 per month (or the local equivalent shown), renewing monthly until you cancel from your Account page.`,
+        message: `By subscribing you agree to the ${site.name} Terms & Conditions (${site.baseUrl}/terms) and Privacy Policy (${site.baseUrl}/privacy). ${plan.label} ${RENEWS_EN[plan.id]} until you cancel from your Account page.`,
       },
     },
     locale: "auto",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getI18n } from "@/i18n/server";
 import { hashPassword, isAdmin, startSession } from "@/lib/auth";
 import { startSubscription } from "@/lib/billing";
+import { isPlanId } from "@/lib/pricing";
 import { createHost } from "@/lib/store";
 import { trackEvent } from "@/lib/tracker";
 
@@ -25,7 +26,8 @@ export async function POST(req: Request) {
   // never asked for again at login. Admins have free access and skip it.
   if (isAdmin(host)) return NextResponse.json({ next: "/host/account?welcome=1" });
   try {
-    return NextResponse.json({ next: await startSubscription(host) }); // Stripe Checkout (or straight back in demo mode)
+    // Stripe Checkout for the plan they picked (or straight back in demo mode)
+    return NextResponse.json({ next: await startSubscription(host, isPlanId(body.plan) ? body.plan : "monthly") });
   } catch (err) {
     console.error("[register] could not start the subscription checkout", err);
     return NextResponse.json({ next: "/host/account?welcome=1" });
