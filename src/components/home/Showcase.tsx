@@ -163,7 +163,7 @@ function ScreenProperty() {
         <Field label={t("pf.country")} value={`${d.flag} ${d.place}`} />
         <Field label={t("pf.city")} value={d.regionName} />
       </div>
-      <Field label={t("pf.accType")} value="Apartment" />
+      <Field label={t("pf.accType")} value={t.raw("a:Apartment")} />
       <div className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[11px] leading-snug text-emerald-200">
         <span className="font-semibold">{d.taxName}</span>: {d.rate}
         {d.cap && ` · ${d.cap}`}
@@ -264,12 +264,12 @@ function ScreenGuideEdit() {
         <Field label={t("gf.checkInTime")} value="15:00" />
         <Field label={t("gf.checkOutTime")} value="10:00" />
       </div>
-      <Field label={t("gf.access")} value="Key box · code 4821" />
+      <Field label={t("gf.access")} value={t("demo.keybox", { code: "4821" })} />
       <div className="grid grid-cols-2 gap-2">
         <Field label={t("gf.wifiName")} value={d.local.wifi} />
         <Field label={t("gf.wifiPassword")} value="••••••••" mono />
       </div>
-      <Field label={t("gf.houseRules")} value="No smoking · Quiet after 23:00" />
+      <Field label={t("gf.houseRules")} value={t("demo.rules")} />
 
       <div className="mt-1 border-t border-white/[0.08] pt-2">
         <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -305,7 +305,7 @@ function ScreenSend() {
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6a7f8a] text-[11px] font-semibold text-white">{d.guest.split(" ").map((w) => w[0]).join("")}</span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[12.5px] font-medium leading-tight">{d.guest}</p>
-          <p className="text-[9.5px] text-[#8696a0]">online</p>
+          <p className="text-[9.5px] text-[#8696a0]">{t("demo.online")}</p>
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aebac1" strokeWidth="2" aria-hidden><path d="M15 10l5-3v10l-5-3z" /><rect x="3" y="6" width="12" height="12" rx="2" /></svg>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aebac1" strokeWidth="2" aria-hidden className="ms-2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z" /></svg>
@@ -321,7 +321,7 @@ function ScreenSend() {
         {/* Incoming */}
         <div className="relative me-10 self-start rounded-lg rounded-tl-none bg-[#202c33] px-2.5 pb-1.5 pt-1.5 text-[11px] leading-snug">
           <span className="absolute -start-1.5 top-0 h-0 w-0 border-e-[6px] border-t-[6px] border-e-[#202c33] border-t-transparent rtl:border-e-transparent" aria-hidden />
-          Hi! We just booked {d.fromShort} – {d.toShort}. Looking forward to it 😊
+          {t("demo.chatHi", { from: d.fromShort, to: d.toShort })}
           <span className="ms-2 inline-block translate-y-0.5 text-[8.5px] text-[#8696a0]">10:38</span>
         </div>
 
@@ -355,7 +355,7 @@ function ScreenSend() {
       {/* Composer */}
       <div className="flex items-center gap-2 bg-[#0b141a] px-2 pb-4 pt-1.5">
         <div className="flex h-8 flex-1 items-center gap-2 rounded-full bg-[#202c33] px-3 text-[11px] text-[#8696a0]">
-          <span aria-hidden>☺</span> Message
+          <span aria-hidden>☺</span> {t("demo.message")}
         </div>
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00a884]" aria-hidden>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="#0b141a"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-2.1A7 7 0 0 0 19 12Z" /></svg>
@@ -390,7 +390,7 @@ function ScreenGuest() {
         ))}
       </div>
       <div className="btn-silver mt-auto h-12 w-full text-[13px]">{d.pay}</div>
-      <p className="mt-2 text-[10px] text-[var(--muted)]">Bank transfer · Revolut · PayPal · Wise</p>
+      <p className="mt-2 text-[10px] text-[var(--muted)]">{t("method.bank")} · Revolut · PayPal · Wise</p>
     </div>
   );
 }
@@ -425,13 +425,13 @@ function ScreenGuide() {
         </div>
         <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2">
           <p className="font-medium">🔑 {t("guide.access")}</p>
-          <p className="text-[var(--muted)]">Key box · <span className="font-mono text-[var(--ink)]">4821</span></p>
+          <p className="text-[var(--muted)]">{t("demo.keybox", { code: "" })}<span className="font-mono text-[var(--ink)]">4821</span></p>
         </div>
         <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2">
           <p className="font-medium">📶 {t("guide.wifi")}</p>
           <p className="text-[var(--muted)]">{t("guide.wifiNetwork", { name: d.local.wifi })} · <span className="font-mono text-[var(--ink)]">welcome-2026</span></p>
         </div>
-        <div><p className="font-medium">📋 {t("guide.houseRules")}</p><p className="text-[var(--muted)]">No smoking · Quiet after 23:00</p></div>
+        <div><p className="font-medium">📋 {t("guide.houseRules")}</p><p className="text-[var(--muted)]">{t("demo.rules")}</p></div>
         <div><p className="font-medium">📝 {t("gf.sugg.parking")}</p><p className="text-[var(--muted)]">{d.local.parking}</p></div>
         <div><p className="font-medium">📝 {t("gf.sugg.rubbish")}</p><p className="text-[var(--muted)]">{d.local.rubbish}</p></div>
       </div>

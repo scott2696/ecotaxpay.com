@@ -8,6 +8,7 @@ import { date } from "@/i18n/translate";
 import { DESTINATIONS, destinationBySlug, destinationPath, placeName } from "@/lib/destinations";
 import { capSummary, explainRules, rateSummary } from "@/lib/explain";
 import { regionNote } from "@/lib/format";
+import { localCountryName, localizeRegion } from "@/i18n/places";
 import { graph, pageMeta, pageSchema, pageUrl, siteSchema } from "@/lib/seo";
 import { appHref } from "@/lib/urls";
 import type { AccommodationType } from "@/lib/taxRules";
@@ -21,9 +22,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const d = destinationBySlug((await params).slug);
   if (!d) return {};
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const year = new Date().getFullYear();
-  const vars = { place: placeName(d.region), tax: d.region.taxName, year };
+  const region = localizeRegion(d.region, locale);
+  const vars = { place: placeName(region), tax: region.taxName, year };
   return pageMeta(destinationPath(d), t("dest.metaTitle", vars), t("dest.metaDescription", vars));
 }
 
@@ -31,7 +33,8 @@ export default async function Destination({ params }: { params: Promise<{ slug: 
   const d = destinationBySlug((await params).slug);
   if (!d) notFound();
   const { t, locale } = await getI18n();
-  const { region: r, country: c } = d;
+  const { country: c } = d;
+  const r = localizeRegion(d.region, locale);
   const today = new Date().toISOString().slice(0, 10);
   const year = new Date().getFullYear();
   const place = placeName(r);
@@ -81,7 +84,7 @@ export default async function Destination({ params }: { params: Promise<{ slug: 
   if (firstCrumb >= 0) nodes.splice(firstCrumb, 1);
 
   return (
-    <PageShell title={t("dest.title", { place, year })} lead={t("dest.lead", { tax: r.taxName, place, country: c.name })} schema={schema}>
+    <PageShell title={t("dest.title", { place, year })} lead={t("dest.lead", { tax: r.taxName, place, country: localCountryName(c.code, c.name, locale) })} schema={schema}>
       <div className="space-y-12">
         <nav aria-label="Breadcrumb" className="-mt-6 flex flex-wrap items-center justify-center gap-1.5 text-sm text-[var(--muted)]">
           <Link href="/destinations" className="hover:text-[var(--ink)]">{t("dest.index.title")}</Link>
@@ -156,7 +159,7 @@ export default async function Destination({ params }: { params: Promise<{ slug: 
           <h2 className="text-base font-semibold">{t("dest.others")}</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {DESTINATIONS.filter((o) => o.slug !== d.slug).map((o) => (
-              <Link key={o.slug} href={destinationPath(o)} className="btn btn-secondary btn-sm">{o.country.flag} {placeName(o.region)}</Link>
+              <Link key={o.slug} href={destinationPath(o)} className="btn btn-secondary btn-sm">{o.country.flag} {placeName(localizeRegion(o.region, locale))}</Link>
             ))}
           </div>
         </section>

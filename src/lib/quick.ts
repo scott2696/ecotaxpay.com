@@ -1,5 +1,6 @@
 // Quick payment links: the host types the amount, with no apartment, calendar or stay details.
 import type { T } from "@/i18n/translate";
+import { localTaxName } from "@/i18n/places";
 import type { Quote } from "./calc";
 
 import { ALL_CURRENCIES } from "./currencies";
@@ -38,7 +39,9 @@ export function manualQuote(amountCents: number, currency: string, description: 
 }
 
 /** What the guest is paying for: the host's description, or "tourist tax" in the reader's language (for use mid-sentence). */
-export const quoteTitle = (q: Quote, t: T) => (q.manual && !q.taxName ? t("quick.defaultTax") : q.taxName);
+/** The tax's name for the reader: the host's own text for quick links, otherwise the destination's tax in the reader's language. */
+export const quoteTitle = (q: Quote, t: T) =>
+  q.manual ? q.taxName || t("quick.defaultTax") : localTaxName(q.regionId, q.taxName, t.locale);
 
 /** First letter in capitals, for a title on its own ("Tasa turística"). */
 export const capFirst = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1);

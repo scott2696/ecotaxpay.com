@@ -5,6 +5,7 @@ import Icon from "@/components/Icon";
 import { getI18n } from "@/i18n/server";
 import { DESTINATIONS, destinationPath, placeName } from "@/lib/destinations";
 import { rateSummary } from "@/lib/explain";
+import { localizeRegion } from "@/i18n/places";
 import { graph, pageMeta, pageSchema, siteSchema } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,7 +25,7 @@ export default async function Destinations() {
       schema={graph(siteSchema(), pageSchema("WebPage", "/destinations", t("dest.index.title"), t("dest.index.metaDescription", { count: DESTINATIONS.length }), locale))}
     >
       <ul className="stagger grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {DESTINATIONS.map((d) => (
+        {DESTINATIONS.map((d0) => ({ ...d0, region: localizeRegion(d0.region, locale) })).map((d) => (
           <li key={d.slug}>
             <Link href={destinationPath(d)} className="panel group flex h-full items-start gap-4 p-5 transition-colors hover:border-[var(--line-strong)]">
               <span className="text-2xl leading-none" aria-hidden>{d.country.flag}</span>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import CancelGuide from "@/components/CancelGuide";
 import PayBadges from "@/components/PayBadges";
 import type { MessageKey } from "@/i18n/messages/en";
+import { money } from "@/i18n/translate";
+import { localCountryName, localPlaceName } from "@/i18n/places";
 import type { T } from "@/i18n/translate";
 import { AirbnbIcon, BookingIcon } from "@/app/host/BrandIcons";
 import { Arrow } from "./Hero";
@@ -19,14 +21,17 @@ const Eyebrow = ({ children }: { children: React.ReactNode }) => (
 /** Features: an asymmetric, lit grid instead of identical cards. */
 export function Features({ t, demo }: { t: T; demo: DemoCard }) {
   // Visitors outside the eurozone see their own destination first, and only percentage rates, never euro amounts.
+  const eur = (cents: number) => money(cents, "EUR", t.locale);
+  const pct = (n: number) => `${n.toLocaleString(t.locale)}%`;
+  const noCap = t("explain.noCap").split(":")[0];
   const tiles: string[][] =
     demo.currency === "EUR"
       ? [
-          ["Malta", "€1.50", t("cap.amount", { amount: "€22.50" })],
-          ["Lisbon", "€4.00", t("cap.nights.other", { count: 7 })],
-          ["Amsterdam", "12.5%", t("explain.noCap").split(":")[0]],
+          [localCountryName("MT", "Malta", t.locale), eur(150), t("cap.amount", { amount: eur(2250) })],
+          [localPlaceName("pt-lisbon", "Lisbon", t.locale), eur(400), t("cap.nights.other", { count: 7 })],
+          [localPlaceName("nl-amsterdam", "Amsterdam", t.locale), pct(12.5), noCap],
         ]
-      : [demo.tile, ["Amsterdam", "12.5%", t("explain.noCap").split(":")[0]], ["Berlin", "7.5%", t("explain.noCap").split(":")[0]]];
+      : [demo.tile, [localPlaceName("nl-amsterdam", "Amsterdam", t.locale), pct(12.5), noCap], [localPlaceName("de-berlin", "Berlin", t.locale), pct(7.5), noCap]];
   const tile = "lit overflow-hidden rounded-[28px] p-8";
   return (
     <section className="mx-auto max-w-7xl px-5 py-28 sm:px-8 lg:py-40" aria-labelledby="features-title">
@@ -72,7 +77,7 @@ export function Features({ t, demo }: { t: T; demo: DemoCard }) {
         </article>
         <article data-reveal className={`${tile} md:col-span-3`} style={{ ["--delay" as string]: "0.08s" }}>
           <div className="flex h-11 items-center gap-2 font-mono text-xs text-[var(--muted)]">
-            <span className="rounded-md border border-[var(--line)] px-2 py-1">RECEIPT</span>
+            <span className="rounded-md border border-[var(--line)] px-2 py-1">{t("receipt.title")}</span>
             <span>No. 2026-000142</span>
           </div>
           <h3 className="mt-6 text-xl font-medium tracking-tight">{t("home.feature.receipts.title")}</h3>
@@ -271,7 +276,7 @@ export function AfterPayment({ t, demo: d }: { t: T; demo: DemoCard }) {
                 <p className="text-[13px] font-bold tracking-tight">{d.taxName}</p>
                 <p className="text-[#6b6e75]">{t("receipt.title")} · {t("receipt.no", { number: d.receiptNo })}</p>
               </div>
-              <span className="rounded border border-emerald-700/30 bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-800">PAID</span>
+              <span className="rounded border border-emerald-700/30 bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-800">{t("demo.paid")}</span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 border-y border-black/10 py-2 text-[10px]">
               <div><p className="text-[#6b6e75]">{t("receipt.guest")}</p><p className="font-medium">{d.guest}</p></div>
@@ -292,10 +297,10 @@ export function AfterPayment({ t, demo: d }: { t: T; demo: DemoCard }) {
             <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">{t("guest.guideTitle")}</p>
             <div className="flex justify-between gap-3">
               <div><p className="font-medium">📍 {t("guide.address")}</p><p className="text-[var(--muted)]">{d.local.address}</p></div>
-              <span className="self-start whitespace-nowrap rounded-full border border-[var(--line-strong)] px-2 py-0.5 text-[10px]">Maps ↗</span>
+              <span className="self-start whitespace-nowrap rounded-full border border-[var(--line-strong)] px-2 py-0.5 text-[10px]">{t("demo.maps")} ↗</span>
             </div>
             <div><p className="font-medium">🚕 {t("guide.directions")}</p><p className="text-[var(--muted)]">{d.local.directions}</p></div>
-            <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2.5"><p className="font-medium">🔑 {t("guide.access")}</p><p className="text-[var(--muted)]">Key box · <span className="font-mono text-[var(--ink)]">4821</span></p></div>
+            <div className="rounded-xl border border-white/[0.1] bg-white/[0.05] p-2.5"><p className="font-medium">🔑 {t("guide.access")}</p><p className="text-[var(--muted)]">{t("demo.keybox", { code: "" })}<span className="font-mono text-[var(--ink)]">4821</span></p></div>
             <div><p className="font-medium">📶 {t("guide.wifi")}</p><p className="text-[var(--muted)]">{d.local.wifi}</p></div>
             <div><p className="font-medium">📞 {t("guide.contact")}</p><p className="text-[var(--muted)]">{d.local.phone}</p></div>
             <div><p className="font-medium">📝 {t("gf.sugg.parking")}</p><p className="text-[var(--muted)]">{d.local.parking}</p></div>

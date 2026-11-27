@@ -1,4 +1,5 @@
 import type { T } from "@/i18n/translate";
+import { localizeRegion } from "@/i18n/places";
 import { date, money } from "@/i18n/translate";
 import { calculate } from "./calc";
 import { capSummary, explainRules, rateSummary, seasonsInForce } from "./explain";
@@ -89,9 +90,11 @@ const addDays = (iso: string, n: number) => new Date(Date.parse(iso) + n * 864e5
  * (2 adults, 6 nights in an apartment, starting two weeks from today). Falls back to Malta.
  */
 export function demoCard(country: string | null, t: T): DemoCard {
-  const sample = (country && SAMPLES[country]) || SAMPLES.MT;
+  const picked = (country && SAMPLES[country]) || SAMPLES.MT;
+  // The Malta sample (what ecotaxpay.com shows) has its host notes translated; others are shown as written.
+  const sample = picked === SAMPLES.MT ? { ...picked, parking: t("demo.mt.parking"), rubbish: t("demo.mt.rubbish"), directions: t("demo.mt.directions") } : picked;
   const found = findRegion(sample.regionId) ?? findRegion(DEFAULT_REGION_ID)!;
-  const { region } = found;
+  const region = localizeRegion(found.region, t.locale); // names in the visitor's language
   const acc = region.accommodationTypes.find((a) => a.id === "apartment") ?? region.accommodationTypes[0];
 
   const checkIn = addDays(new Date().toISOString().slice(0, 10), 14);

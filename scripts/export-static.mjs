@@ -97,7 +97,7 @@ async function main() {
 
     for (const lang of LANGS)
       for (const p of PAGES) {
-        const res = await fetch(`${LOCAL}${p}`, { headers: { cookie: `lang=${lang}; tz=Europe/Malta` }, redirect: "manual" });
+        const res = await fetch(`${LOCAL}${p === "/" ? "/" : `${p}/`}`, { headers: { cookie: `lang=${lang}; tz=Europe/Malta` }, redirect: "manual" });
         if (!res.ok) throw new Error(`${p} (${lang}) → ${res.status}`);
         let html = (await res.text()).replaceAll(LOCAL, SITE);
         html = headLinks(localizeLinks(html, lang), lang, p);

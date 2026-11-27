@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { STATIC_LANGS } from "@/lib/urls";
 import { useEffect, useState } from "react";
 import { useT } from "@/i18n/client";
 
@@ -20,7 +21,9 @@ export default function HeaderChrome({
   mobileActions: React.ReactNode;
 }) {
   const t = useT();
-  const pathname = usePathname();
+  // On the static site pages live under /es/, /it/…: compare paths without the language prefix
+  // (and trailing slash), so the browser renders exactly what the server rendered.
+  const pathname = (usePathname() ?? "/").replace(new RegExp(`^/(${STATIC_LANGS.filter((l) => l !== "en").join("|")})(?=/|$)`), "").replace(/(.)\/$/, "$1") || "/";
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
