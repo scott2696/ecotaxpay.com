@@ -3,6 +3,7 @@
 // Off until RESEND_API_KEY and EMAIL_FROM are set. Never throws: an alert must not break sign-up or billing.
 import { site } from "./config";
 import { countSubscribers, type Host } from "./store";
+import { button, para, renderEmail } from "./emailLayout";
 
 const PERIOD: Record<number, string> = { 1: "Monthly", 3: "3 months", 6: "6 months", 12: "Yearly" };
 
@@ -45,15 +46,12 @@ export async function alertOwner({ subject, host, lines = [] }: Alert): Promise<
   try {
     const subscribers = await countSubscribers();
     const rows = [
-      `<strong>${esc(host.name)}</strong> &lt;${esc(host.email)}&gt;`,
+      `<strong style="color:#f1f2f4">${esc(host.name)}</strong> &lt;${esc(host.email)}&gt;`,
       host.businessName && `Business: ${esc(host.businessName)}`,
       ...lines.filter((l): l is string => !!l).map(esc),
       `Signed up: ${new Date(host.createdAt).toUTCString().slice(5, 16)}`,
-      `Paying subscribers now: <strong>${subscribers}</strong>`,
+      `Paying subscribers now: <strong style="color:#f1f2f4">${subscribers}</strong>`,
     ].filter(Boolean);
-    const stripeLink = host.subscription.stripeCustomerId
-      ? `<p><a href="https://dashboard.stripe.com/customers/${encodeURIComponent(host.subscription.stripeCustomerId)}">Open in Stripe</a></p>`
-      : "";
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
@@ -62,7 +60,12 @@ export async function alertOwner({ subject, host, lines = [] }: Alert): Promise<
         to,
         reply_to: host.email,
         subject: `[${site.name}] ${subject}`,
-        html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#16201b">${rows.map((r) => `<div>${r}</div>`).join("")}${stripeLink}</div>`,
+        html: renderEmail({
+          eyebrow: "Owner alert",
+          title: subject,
+          preheader: `${host.name} · ${host.email}`,
+          body: `${para(rows.join("<br>"))}${host.subscription.stripeCustomerId ? button("Open in Stripe", `https://dashboard.stripe.com/customers/${encodeURIComponent(host.subscription.stripeCustomerId)}`) : ""}`,
+        }),
       }),
       signal: AbortSignal.timeout(15_000),
     });

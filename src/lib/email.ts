@@ -8,19 +8,7 @@ import { date, money } from "@/i18n/translate";
 import { guideItems, translateGuide } from "./guide";
 import { paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "./payMethods";
 import { getProperty, issuerFor, updatePayment, type PaymentRecord } from "./store";
-
-/** Company signature at the foot of every email to hosts and guests. */
-function signature(note?: string) {
-  const addr = site.companyAddress.split("\n").map(escape).join(", ");
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:32px;border-top:1px solid #e3e8e5;padding-top:16px;font-family:system-ui,sans-serif;font-size:12px;line-height:1.5;color:#5f6b65">
-    <tr><td style="padding-top:16px;vertical-align:top;padding-right:12px"><img src="https://ecotaxpay.com/logo.png" width="36" height="36" alt="${escape(site.name)}" style="display:block;border-radius:8px"></td>
-    <td style="padding-top:16px;vertical-align:top">
-      ${note ? `<div style="margin-bottom:4px">${escape(note)}</div>` : ""}
-      <strong style="color:#16201b">${escape(site.company)}</strong><br>
-      ${addr}<br>
-      <a href="mailto:${site.supportEmail}" style="color:#5f6b65">${site.supportEmail}</a> · <a href="https://ecotaxpay.com" style="color:#5f6b65">ecotaxpay.com</a>
-    </td></tr></table>`;
-}
+import { bigAmount, button, esc as escape, link as textLink, panel, para, renderEmail, small, steps } from "./emailLayout";
 
 async function send(body: Record<string, unknown>) {
   const res = await fetch("https://api.resend.com/emails", {
@@ -53,15 +41,10 @@ export async function sendPaidEmails(p: PaymentRecord) {
   const d = (iso: string, l: string) => date(iso, l, { day: "numeric", month: "long", year: "numeric" });
   const nl2br = (s: string) => escape(s).replace(/\n/g, "<br>");
   const guideHtml = items.length
-    ? `<h2 style="font-size:18px;margin:28px 0 4px">${escape(t("guest.guideTitle"))}</h2>
-       <p style="color:#5f6b65;margin:0 0 12px">${escape(property!.name)}</p>
-       ${items
-         .map(
-           (i) => `<div style="margin:0 0 14px;${i.highlight ? "background:#e9f3ee;padding:12px;border-radius:8px;" : ""}">
-             <strong>${i.icon} ${escape(i.title)}</strong><br><span style="color:#3b4540">${nl2br(i.body)}</span></div>`,
-         )
-         .join("")}
-       ${guide!.mapsUrl ? `<p><a href="${escape(guide!.mapsUrl)}">${escape(t("guest.openMaps"))}</a></p>` : ""}`
+    ? `<h2 style="margin:28px 0 4px;font-size:18px;font-weight:700;color:#f1f2f4">${escape(t("guest.guideTitle"))}</h2>
+       <p style="margin:0 0 14px;font-size:14px;color:#7f838b">${escape(property!.name)}</p>
+       ${items.map((i) => panel(`${i.icon} ${escape(i.title)}`, nl2br(i.body), i.highlight)).join("")}
+       ${guide!.mapsUrl ? para(textLink(t("guest.openMaps"), guide!.mapsUrl)) : ""}`
     : "";
   try {
     if (p.guestEmail) await send({
@@ -70,13 +53,19 @@ export async function sendPaidEmails(p: PaymentRecord) {
       subject: items.length
         ? t("email.subjectGuide", { property: p.propertyName ?? q.taxName })
         : t("email.subjectReceipt", { number: p.receiptNumber ?? "", tax: capFirst(quoteTitle(q, t)) }),
-      html: `<div dir="${dirOf(locale)}" style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:560px">
-        <p>${escape(first ? t("email.hi", { name: first }) : t("email.hiAnon"))}</p>
-        <p>${escape(q.manual ? t("email.thanksQuick", { amount: total, tax: quoteTitle(q, t) }) : t("email.thanks", { amount: total, tax: q.taxName, from: d(q.checkIn, locale), to: d(q.checkOut, locale) }))}</p>
-        ${guideHtml}
-        <p style="margin-top:24px"><a href="${site.baseUrl}/p/${p.id}?lang=${locale}">${escape(t("email.viewOnline"))}</a></p>
-        <p>${escape(t("email.seeYou"))}<br>${escape(issuer.name)}</p>
-        ${signature(t("email.sentOnBehalf", { company: site.company, host: issuer.name }))}</div>`,
+      html: renderEmail({
+        lang: locale,
+        dir: dirOf(locale) as "ltr" | "rtl",
+        preheader: q.manual ? t("email.thanksQuick", { amount: total, tax: quoteTitle(q, t) }) : t("email.thanks", { amount: total, tax: q.taxName, from: d(q.checkIn, locale), to: d(q.checkOut, locale) }),
+        eyebrow: t("email.eyebrowReceipt", { number: p.receiptNumber ?? "" }),
+        title: first ? t("email.hi", { name: first }) : t("email.hiAnon"),
+        body: `${bigAmount(total, capFirst(quoteTitle(q, t)))}
+          ${para(escape(q.manual ? t("email.thanksQuick", { amount: total, tax: quoteTitle(q, t) }) : t("email.thanks", { amount: total, tax: q.taxName, from: d(q.checkIn, locale), to: d(q.checkOut, locale) })))}
+          ${guideHtml}
+          ${button(t("email.viewOnline"), `${site.baseUrl}/p/${p.id}?lang=${locale}`)}
+          ${para(`${escape(t("email.seeYou"))}<br><strong style="color:#f1f2f4">${escape(issuer.name)}</strong>`, "margin-top:24px")}`,
+        note: t("email.sentOnBehalf", { company: site.company, host: issuer.name }),
+      }),
       attachments: [{ filename: `receipt-${p.receiptNumber}.pdf`, content: pdf }],
     });
     if (issuer.email) {
@@ -85,13 +74,19 @@ export async function sendPaidEmails(p: PaymentRecord) {
         from,
         to: issuer.email,
         subject: th("email.hostSubject", { amount: hostTotal, name: p.guestName || p.guestEmail, date: d(q.checkIn, hostLocale) }),
-        html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:560px"><p>${escape(
-          q.manual
-            ? th("email.hostBodyQuick", { name: p.guestName || p.guestEmail, amount: hostTotal, tax: quoteTitle(q, th) })
-            : th("email.hostBody", { name: p.guestName, amount: hostTotal, property: p.propertyName ?? "", from: d(q.checkIn, hostLocale), to: d(q.checkOut, hostLocale), nights: th.plural("line.nights", q.nights) }),
-        )}
-          ${p.bookingRef ? escape(th("receipt.bookingRef", { ref: p.bookingRef })) : ""}</p>
-          <p><a href="${site.baseUrl}/host">${escape(th("email.openDashboard"))}</a></p>${signature()}</div>`,
+        html: renderEmail({
+          lang: hostLocale,
+          eyebrow: th("email.eyebrowPaid"),
+          title: th("email.hostSubject", { amount: hostTotal, name: p.guestName || p.guestEmail, date: d(q.checkIn, hostLocale) }),
+          preheader: th(q.manual ? "email.hostBodyQuick" : "email.hostBody", { name: p.guestName || p.guestEmail, amount: hostTotal, tax: quoteTitle(q, th), property: p.propertyName ?? "", from: d(q.checkIn, hostLocale), to: d(q.checkOut, hostLocale), nights: th.plural("line.nights", q.nights) }),
+          body: `${bigAmount(hostTotal, p.receiptNumber ? th("email.eyebrowReceipt", { number: p.receiptNumber }) : undefined)}
+            ${para(escape(
+              q.manual
+                ? th("email.hostBodyQuick", { name: p.guestName || p.guestEmail, amount: hostTotal, tax: quoteTitle(q, th) })
+                : th("email.hostBody", { name: p.guestName, amount: hostTotal, property: p.propertyName ?? "", from: d(q.checkIn, hostLocale), to: d(q.checkOut, hostLocale), nights: th.plural("line.nights", q.nights) }),
+            ) + (p.bookingRef ? `<br>${escape(th("receipt.bookingRef", { ref: p.bookingRef }))}` : ""))}
+            ${button(th("email.openDashboard"), `${site.baseUrl}/host`)}`,
+        }),
       });
     }
     await updatePayment(p.id, { emailSentAt: new Date().toISOString() });
@@ -116,11 +111,16 @@ export async function sendPasswordResetEmail(to: { email: string; name: string; 
       from,
       to: to.email,
       subject: t("email.resetSubject", { brand: site.name }),
-      html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:520px">
-        <p>${escape(t("email.hi", { name: to.name.split(/\s+/)[0] || "" }))}</p>
-        <p>${escape(t("email.resetBody", { brand: site.name }))}</p>
-        <p><a href="${escape(link)}" style="display:inline-block;background:#16201b;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600">${escape(t("reset.title"))}</a></p>
-        <p style="color:#5f6b65;font-size:13px">${escape(t("email.resetIgnore"))}</p>${signature()}</div>`,
+      html: renderEmail({
+        lang: t.locale,
+        eyebrow: t("email.eyebrowSecurity"),
+        title: t("reset.title"),
+        preheader: t("email.resetBody", { brand: site.name }),
+        body: `${para(escape(t("email.hi", { name: to.name.split(/\s+/)[0] || "" })))}
+          ${para(escape(t("email.resetBody", { brand: site.name })))}
+          ${button(t("reset.title"), link)}
+          ${small(escape(t("email.resetIgnore")))}`,
+      }),
     });
     return true;
   } catch (err) {
@@ -147,14 +147,53 @@ export async function sendReportedEmail(p: PaymentRecord) {
       from,
       to: issuer.email,
       subject: t(onArrival ? "email.reportedCashSubject" : "email.reportedSubject", { name, amount }),
-      html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:560px"><p>${escape(t(onArrival ? "email.reportedCashBody" : "email.reportedBody", { name, amount, method, ref: paymentReference(p) }))}</p>
-        <p><a href="${site.baseUrl}/host">${escape(t("email.openDashboard"))}</a></p>${signature()}</div>`,
+      html: renderEmail({
+        lang: t.locale,
+        eyebrow: t("email.eyebrowReported"),
+        title: t(onArrival ? "email.reportedCashSubject" : "email.reportedSubject", { name, amount }),
+        preheader: t(onArrival ? "email.reportedCashBody" : "email.reportedBody", { name, amount, method, ref: paymentReference(p) }),
+        body: `${bigAmount(amount, method || undefined)}
+          ${para(escape(t(onArrival ? "email.reportedCashBody" : "email.reportedBody", { name, amount, method, ref: paymentReference(p) })))}
+          ${button(t("email.openDashboard"), `${site.baseUrl}/host`)}`,
+      }),
     });
   } catch (err) {
     console.error(`[email] reported-payment notice failed for ${p.id}`, err);
   }
 }
 
-function escape(s: string) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+/** First sign-up: a welcome with the three steps to the first payment link. */
+export async function sendWelcomeEmail(to: { email: string; name: string; locale?: string }) {
+  const from = process.env.EMAIL_FROM;
+  if (!process.env.RESEND_API_KEY || !from) {
+    console.log(`[email] welcome for ${to.email} skipped (RESEND_API_KEY / EMAIL_FROM not set)`);
+    return;
+  }
+  const { t } = await getI18n(to.locale ?? "en");
+  const first = to.name.split(/\s+/)[0] || to.name;
+  try {
+    await send({
+      from,
+      to: to.email,
+      reply_to: site.supportEmail,
+      subject: t("email.welcomeSubject", { brand: site.name, name: first }),
+      html: renderEmail({
+        lang: t.locale,
+        eyebrow: t("email.welcomeEyebrow"),
+        title: t("email.welcomeTitle", { name: first }),
+        preheader: t("email.welcomeIntro"),
+        body: `${para(escape(t("email.welcomeIntro")))}
+          ${steps([
+            { title: t("email.welcomeStep1Title"), body: t("email.welcomeStep1") },
+            { title: t("email.welcomeStep2Title"), body: t("email.welcomeStep2") },
+            { title: t("email.welcomeStep3Title"), body: t("email.welcomeStep3") },
+          ])}
+          ${button(t("email.welcomeCta"), `${site.baseUrl}/host`)}
+          ${small(escape(t("email.welcomeHelp", { email: site.supportEmail })))}`,
+      }),
+    });
+  } catch (err) {
+    console.error(`[email] welcome for ${to.email} failed`, err);
+  }
 }
