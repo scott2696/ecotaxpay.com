@@ -15,11 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function Privacy() {
   const c = site.company;
+  const addr = site.companyAddress.split("\n").join(", ");
   const mail = <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>;
   return (
     <LegalPage path="/privacy" titleKey="legal.privacy" description={DESC}>
       <p>
-        This policy explains how {c} (&quot;we&quot;) handles personal data when you use {site.name}. Questions or requests: {mail}.
+        This policy explains how {c}, {addr} (&quot;we&quot;, the data controller) handles personal data when you use {site.name}. Questions or requests: {mail}.
       </p>
 
       <h2>1. Our two roles</h2>

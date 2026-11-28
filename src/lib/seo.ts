@@ -37,7 +37,7 @@ export function siteSchema() {
       image: { "@id": `${site.baseUrl}/#logo` },
       description: "Software for holiday-rental hosts to calculate the local tourist or eco tax and collect it from guests before arrival, in any currency. Guests pay the host directly; Eco Tax Pay never handles the money.",
       email: site.supportEmail,
-      ...(site.companyAddress ? { address: site.companyAddress } : {}),
+      address: { "@type": "PostalAddress", ...site.companyPostal },
       contactPoint: [{ "@type": "ContactPoint", contactType: "customer support", email: site.supportEmail, availableLanguage: LANGUAGES }],
     },
     {

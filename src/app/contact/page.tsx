@@ -33,7 +33,7 @@ export default async function Contact() {
             <h2 className="font-semibold">{t("contact.guestsTitle")}</h2>
             <p className="mt-1 text-[var(--muted)]">{t("contact.guestsBody")}</p>
           </div>
-          {site.companyAddress && (
+          {(
             <div>
               <h2 className="font-semibold">{t("contact.address")}</h2>
               <p className="mt-1 whitespace-pre-line text-[var(--muted)]">{site.company}{"\n"}{site.companyAddress}</p>

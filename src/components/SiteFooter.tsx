@@ -47,6 +47,7 @@ export default async function SiteFooter() {
       </div>
       <div className="border-t border-[var(--line)] py-6 text-center text-xs text-[var(--muted)]">
         © {new Date().getFullYear()} {site.company} · {t("home.footer")}
+        <div className="mt-1.5">{site.company}, {site.companyAddress.split("\n").join(", ")}</div>
       </div>
     </footer>
   );

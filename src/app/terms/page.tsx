@@ -15,10 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function Terms() {
   const c = site.company;
+  const addr = site.companyAddress.split("\n").join(", ");
   return (
     <LegalPage path="/terms" titleKey="legal.terms" description={DESC}>
       <p>
-        These terms apply to the {site.name} website and service (the &quot;Service&quot;), operated by {c} (&quot;we&quot;, &quot;us&quot;). By creating an account or
+        These terms apply to the {site.name} website and service (the &quot;Service&quot;), operated by {c}, {addr} (&quot;we&quot;, &quot;us&quot;). By creating an account or
         paying through a {site.name} link you agree to them. If you do not agree, please do not use the Service.
       </p>
 
