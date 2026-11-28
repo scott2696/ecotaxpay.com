@@ -7,9 +7,9 @@ import type { MessageKey } from "@/i18n/messages/en";
 export type PlanOption = { id: string; months: number; label: string; perMonthLabel: string; savePct: number };
 
 /** Choose a subscription plan: 1, 3, 6 or 12 months. Works in a client form (onChange) or a server form (name). */
-export default function PlanPicker({ plans, value, onChange, name = "plan" }: { plans: PlanOption[]; value?: string; onChange?: (id: string) => void; name?: string }) {
+export default function PlanPicker({ plans, value, defaultValue, onChange, name = "plan" }: { plans: PlanOption[]; value?: string; defaultValue?: string; onChange?: (id: string) => void; name?: string }) {
   const t = useT();
-  const [own, setOwn] = useState(value ?? plans[0]?.id);
+  const [own, setOwn] = useState(value ?? (plans.some((p) => p.id === defaultValue) ? defaultValue : plans[0]?.id));
   const selected = value ?? own;
   const best = plans.reduce((a, b) => (b.savePct > a.savePct ? b : a), plans[0]);
   return (

@@ -123,8 +123,8 @@ export default async function Account({ searchParams }: { searchParams: Promise<
           </div>
         </div>
         {!active && (
-          <form action={subscribe} className="mt-5 max-w-md space-y-4">
-            <PlanPicker plans={plans} />
+          <form id="subscribe" action={subscribe} className="mt-5 max-w-md scroll-mt-24 space-y-4">
+            <PlanPicker plans={plans} defaultValue={sp.plan} />
             <button className="btn btn-primary btn-lg w-full">{t("account.subscribeFor")}</button>
           </form>
         )}
