@@ -48,7 +48,9 @@ export default function CookieConsent() {
   }, []);
 
   function choose(choice: Exclude<Choice, null>) {
-    document.cookie = `${CONSENT_COOKIE}=${choice}; Max-Age=${60 * 60 * 24 * 365}; Path=/; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+    // Shared by ecotaxpay.com and app.ecotaxpay.com, so visitors choose once for the site and the app.
+    const shared = /(^|\.)ecotaxpay\.com$/.test(location.hostname) ? "; Domain=ecotaxpay.com" : "";
+    document.cookie = `${CONSENT_COOKIE}=${choice}; Max-Age=${60 * 60 * 24 * 365}; Path=/${shared}; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
     setOpen(false);
     if (choice === "all") loadChat();
     // Withdrawing consent: reload so the chat (and its cookies) are no longer used.
