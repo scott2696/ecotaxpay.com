@@ -9,6 +9,19 @@ import { guideItems, translateGuide } from "./guide";
 import { paymentReference, paysOnArrival, PHONE_APP_NAMES, type PhoneApp } from "./payMethods";
 import { getProperty, issuerFor, updatePayment, type PaymentRecord } from "./store";
 
+/** Company signature at the foot of every email to hosts and guests. */
+function signature(note?: string) {
+  const addr = site.companyAddress.split("\n").map(escape).join(", ");
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:32px;border-top:1px solid #e3e8e5;padding-top:16px;font-family:system-ui,sans-serif;font-size:12px;line-height:1.5;color:#5f6b65">
+    <tr><td style="padding-top:16px;vertical-align:top;padding-right:12px"><img src="https://ecotaxpay.com/logo.png" width="36" height="36" alt="${escape(site.name)}" style="display:block;border-radius:8px"></td>
+    <td style="padding-top:16px;vertical-align:top">
+      ${note ? `<div style="margin-bottom:4px">${escape(note)}</div>` : ""}
+      <strong style="color:#16201b">${escape(site.company)}</strong><br>
+      ${addr}<br>
+      <a href="mailto:${site.supportEmail}" style="color:#5f6b65">${site.supportEmail}</a> · <a href="https://ecotaxpay.com" style="color:#5f6b65">ecotaxpay.com</a>
+    </td></tr></table>`;
+}
+
 async function send(body: Record<string, unknown>) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -62,7 +75,8 @@ export async function sendPaidEmails(p: PaymentRecord) {
         <p>${escape(q.manual ? t("email.thanksQuick", { amount: total, tax: quoteTitle(q, t) }) : t("email.thanks", { amount: total, tax: q.taxName, from: d(q.checkIn, locale), to: d(q.checkOut, locale) }))}</p>
         ${guideHtml}
         <p style="margin-top:24px"><a href="${site.baseUrl}/p/${p.id}?lang=${locale}">${escape(t("email.viewOnline"))}</a></p>
-        <p>${escape(t("email.seeYou"))}<br>${escape(issuer.name)}</p></div>`,
+        <p>${escape(t("email.seeYou"))}<br>${escape(issuer.name)}</p>
+        ${signature(t("email.sentOnBehalf", { company: site.company, host: issuer.name }))}</div>`,
       attachments: [{ filename: `receipt-${p.receiptNumber}.pdf`, content: pdf }],
     });
     if (issuer.email) {
@@ -71,13 +85,13 @@ export async function sendPaidEmails(p: PaymentRecord) {
         from,
         to: issuer.email,
         subject: th("email.hostSubject", { amount: hostTotal, name: p.guestName || p.guestEmail, date: d(q.checkIn, hostLocale) }),
-        html: `<p>${escape(
+        html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:560px"><p>${escape(
           q.manual
             ? th("email.hostBodyQuick", { name: p.guestName || p.guestEmail, amount: hostTotal, tax: quoteTitle(q, th) })
             : th("email.hostBody", { name: p.guestName, amount: hostTotal, property: p.propertyName ?? "", from: d(q.checkIn, hostLocale), to: d(q.checkOut, hostLocale), nights: th.plural("line.nights", q.nights) }),
         )}
           ${p.bookingRef ? escape(th("receipt.bookingRef", { ref: p.bookingRef })) : ""}</p>
-          <p><a href="${site.baseUrl}/host">${escape(th("email.openDashboard"))}</a></p>`,
+          <p><a href="${site.baseUrl}/host">${escape(th("email.openDashboard"))}</a></p>${signature()}</div>`,
       });
     }
     await updatePayment(p.id, { emailSentAt: new Date().toISOString() });
@@ -106,7 +120,7 @@ export async function sendPasswordResetEmail(to: { email: string; name: string; 
         <p>${escape(t("email.hi", { name: to.name.split(/\s+/)[0] || "" }))}</p>
         <p>${escape(t("email.resetBody", { brand: site.name }))}</p>
         <p><a href="${escape(link)}" style="display:inline-block;background:#16201b;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600">${escape(t("reset.title"))}</a></p>
-        <p style="color:#5f6b65;font-size:13px">${escape(t("email.resetIgnore"))}</p></div>`,
+        <p style="color:#5f6b65;font-size:13px">${escape(t("email.resetIgnore"))}</p>${signature()}</div>`,
     });
     return true;
   } catch (err) {
@@ -133,8 +147,8 @@ export async function sendReportedEmail(p: PaymentRecord) {
       from,
       to: issuer.email,
       subject: t(onArrival ? "email.reportedCashSubject" : "email.reportedSubject", { name, amount }),
-      html: `<p>${escape(t(onArrival ? "email.reportedCashBody" : "email.reportedBody", { name, amount, method, ref: paymentReference(p) }))}</p>
-        <p><a href="${site.baseUrl}/host">${escape(t("email.openDashboard"))}</a></p>`,
+      html: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#16201b;max-width:560px"><p>${escape(t(onArrival ? "email.reportedCashBody" : "email.reportedBody", { name, amount, method, ref: paymentReference(p) }))}</p>
+        <p><a href="${site.baseUrl}/host">${escape(t("email.openDashboard"))}</a></p>${signature()}</div>`,
     });
   } catch (err) {
     console.error(`[email] reported-payment notice failed for ${p.id}`, err);

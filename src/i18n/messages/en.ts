@@ -896,6 +896,7 @@ export const en = {
   "email.thanks": "Thank you. We have received your payment of {amount} for the {tax} ({from} → {to}). Your receipt is attached.",
   "email.viewOnline": "View your arrival guide and receipt online",
   "email.seeYou": "We look forward to welcoming you,",
+  "email.sentOnBehalf": "Sent by {company} on behalf of {host}.",
   "email.hostSubject": "Payment received: {amount} from {name} ({date})",
   "email.hostBody": "{name} paid {amount} for {property} ({from} → {to}), {nights}.",
   "email.openDashboard": "Open dashboard",

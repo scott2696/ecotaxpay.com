@@ -898,6 +898,7 @@ export const de: LocaleMessages = {
   "email.thanks": "vielen Dank – wir haben Ihre Zahlung über {amount} für die {tax} ({from} → {to}) erhalten. Ihre Quittung finden Sie im Anhang.",
   "email.viewOnline": "Anreiseinfos und Quittung online ansehen",
   "email.seeYou": "Wir freuen uns auf Ihren Besuch.",
+  "email.sentOnBehalf": "Gesendet von {company} im Auftrag von {host}.",
   "email.hostSubject": "Zahlung erhalten: {amount} von {name} ({date})",
   "email.hostBody": "{name} hat {amount} für {property} bezahlt ({from} → {to}), {nights}.",
   "email.openDashboard": "Übersicht öffnen",

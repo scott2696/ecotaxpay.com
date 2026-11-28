@@ -898,6 +898,7 @@ export const fr: LocaleMessages = {
   "email.thanks": "Merci : nous avons bien reçu votre paiement de {amount} au titre de la {tax} ({from} → {to}). Votre reçu est joint à ce message.",
   "email.viewOnline": "Consulter votre guide d'arrivée et votre reçu en ligne",
   "email.seeYou": "Au plaisir de vous accueillir,",
+  "email.sentOnBehalf": "Envoyé par {company} pour le compte de {host}.",
   "email.hostSubject": "Paiement reçu : {amount} de {name} ({date})",
   "email.hostBody": "{name} a payé {amount} pour {property} ({from} → {to}), {nights}.",
   "email.openDashboard": "Ouvrir le tableau de bord",

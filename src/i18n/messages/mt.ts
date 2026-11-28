@@ -931,6 +931,7 @@ export const mt: LocaleMessages = {
   "email.thanks": "Grazzi. Irċevejna l-ħlas tiegħek ta' {amount} għall-{tax} ({from} → {to}). Ir-riċevuta tiegħek hija mehmuża.",
   "email.viewOnline": "Ara l-gwida tal-wasla u r-riċevuta online",
   "email.seeYou": "Nistennewk,",
+  "email.sentOnBehalf": "Mibgħut minn {company} f’isem {host}.",
   "email.hostSubject": "Ħlas riċevut: {amount} minn {name} ({date})",
   "email.hostBody": "{name} ħallas {amount} għal {property} ({from} → {to}), {nights}.",
   "email.openDashboard": "Iftaħ id-dashboard",
