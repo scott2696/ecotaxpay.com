@@ -4,6 +4,7 @@ import { hashPassword, isAdmin, startSession } from "@/lib/auth";
 import { startSubscription } from "@/lib/billing";
 import { isPlanId } from "@/lib/pricing";
 import { createHost } from "@/lib/store";
+import { alertOwner } from "@/lib/ownerAlerts";
 import { trackEvent } from "@/lib/tracker";
 
 export async function POST(req: Request) {
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
   if (host === "exists") return NextResponse.json({ error: t("err.accountExists") }, { status: 409 });
   await startSession(host.id);
   void trackEvent({ event: "signup", hostId: host.id, ref: `signup-${host.id}` }); // in the background
+  void alertOwner({ subject: `New sign-up: ${name}`, host, lines: [`Chose plan: ${isPlanId(body.plan) ? body.plan : "monthly"} (not paid yet)`, `Language: ${locale}`] });
 
   // The €3/month subscription is taken here, at sign-up (the host has just agreed to it), and
   // never asked for again at login. Admins have free access and skip it.

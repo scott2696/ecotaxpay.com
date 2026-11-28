@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/config";
 import { applySubscription, recordSubscriptionPayment } from "@/lib/billing";
 import { confirmStripeSession } from "@/lib/payments";
+import { alertOwner, planText } from "@/lib/ownerAlerts";
 
 // Stripe → POST /api/webhook
 // Events: checkout.session.completed, checkout.session.async_payment_succeeded,
@@ -34,9 +35,24 @@ export async function POST(req: Request) {
     // Renewals, failed payments, cancellations (incl. from the billing portal), end of subscription.
     case "customer.subscription.created":
     case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      await applySubscription(event.data.object);
+    case "customer.subscription.deleted": {
+      const host = await applySubscription(event.data.object);
+      if (!host) break;
+      // Tell the owner about cancellations and failed payments (new subscribers come with invoice.paid).
+      const sub = event.data.object;
+      const before = (event.data as { previous_attributes?: { cancel_at_period_end?: boolean; status?: string } }).previous_attributes ?? {};
+      const ends = host.subscription.currentPeriodEnd ? new Date(host.subscription.currentPeriodEnd).toUTCString().slice(5, 16) : "";
+      const plan = planText(host) && `Plan: ${planText(host)}`;
+      if (event.type === "customer.subscription.deleted")
+        await alertOwner({ subject: `Subscription ended: ${host.name}`, host, lines: [plan] });
+      else if (before.cancel_at_period_end === false && sub.cancel_at_period_end)
+        await alertOwner({ subject: `Cancelled: ${host.name}`, host, lines: ["Cancelled renewal. No further charges.", ends && `Access until: ${ends}`, plan] });
+      else if (before.cancel_at_period_end === true && !sub.cancel_at_period_end)
+        await alertOwner({ subject: `Resumed: ${host.name}`, host, lines: ["Turned renewal back on.", plan] });
+      else if (before.status && before.status !== sub.status && (sub.status === "past_due" || sub.status === "unpaid"))
+        await alertOwner({ subject: `Payment failed: ${host.name}`, host, lines: ["Stripe could not charge the card and will retry.", plan] });
       break;
+    }
     // A host's subscription was charged (first payment or renewal): report it to the FTD Tracker.
     case "invoice.paid":
       await recordSubscriptionPayment(event.data.object);

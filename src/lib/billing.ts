@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 import { isDemoMode, site, stripe } from "./config";
 import { visitorPlan, type Plan, type PlanId } from "./pricing";
 import { getHostBy, updateHost, type Host, type SubscriptionStatus } from "./store";
+import { alertOwner, formatAmount, planText } from "./ownerAlerts";
 import { trackEvent } from "./tracker";
 
 const addMonths = (months: number, d = new Date()) => {
@@ -153,8 +154,15 @@ export async function recordSubscriptionPayment(invoice: Stripe.Invoice) {
   const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
   const host = customerId ? await getHostBy((h) => h.subscription.stripeCustomerId === customerId) : null;
   if (!host) return;
+  const first = invoice.billing_reason === "subscription_create";
+  const paid = formatAmount(invoice.amount_paid, invoice.currency);
+  await alertOwner({
+    subject: first ? `New subscriber: ${host.name}, ${planText(host) || paid}` : `Renewal paid: ${host.name}, ${paid}`,
+    host,
+    lines: [`${first ? "First payment" : "Renewal"}: ${paid}`, planText(host) && `Plan: ${planText(host)}`],
+  });
   await trackEvent({
-    event: invoice.billing_reason === "subscription_create" ? "ftd" : "deposit",
+    event: first ? "ftd" : "deposit",
     hostId: host.id,
     ref: invoice.id,
     amountCents: invoice.amount_paid,

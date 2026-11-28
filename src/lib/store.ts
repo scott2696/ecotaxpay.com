@@ -423,6 +423,12 @@ export async function getHostByEmail(email: string): Promise<Host | null> {
   return db.hosts?.find((h) => h.email === email.trim().toLowerCase()) ?? null;
 }
 
+/** Paying subscribers right now (for the owner's alerts). */
+export async function countSubscribers(): Promise<number> {
+  const db = await load();
+  return (db.hosts ?? []).filter((h) => !h.subscription.demo && ["active", "trialing", "past_due"].includes(h.subscription.status)).length;
+}
+
 export async function getHostBy(match: (h: Host) => boolean): Promise<Host | null> {
   const db = await load();
   return db.hosts?.find(match) ?? null;
